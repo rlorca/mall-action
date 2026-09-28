@@ -136,7 +136,7 @@ export const TEMPLATES = {
 const TILE_OF = { '#': 'wall', '.': 'floor', D: 'door', F: 'solid', R: 'solid', T: 'solid', c: 'solid', V: 'solid', G: 'floor', B: 'floor', L: 'booth', O: 'solid', I: 'floor' };
 
 export function parseRoom(template) {
-  const room = { cols: template[0].length, rows: template.length, tiles: [], fixtures: [], guards: [], door: [], oldMan: null, pedestal: null, booth: null, tvs: [] };
+  const room = { template, cols: template[0].length, rows: template.length, tiles: [], fixtures: [], guards: [], door: [], oldMan: null, pedestal: null, booth: null, tvs: [] };
   template.forEach((line, row) => {
     room.tiles.push([...line].map((ch, col) => {
       if (!(ch in TILE_OF)) throw new Error(`bad room tile "${ch}"`);

@@ -9,6 +9,7 @@ import { createKonami } from './logic/secrets.js';
 import { createGameState } from './game/state.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { MallScene } from './scenes/MallScene.js';
+import { StoreScene } from './scenes/StoreScene.js';
 import { placeOnFloor } from './game/mallPlayer.js';
 import { loseLife } from './game/state.js';
 import { GalleryScene } from './scenes/GalleryScene.js';
@@ -76,7 +77,12 @@ async function boot() {
     ctx.scenes.replace(new MallScene(), { newLevel: true });
   };
   ctx.toTitle = () => { ctx.highScore = Math.max(ctx.highScore, ctx.state?.score ?? 0); ctx.scenes.replace(new TitleScene()); };
-  ctx.enterStore = (storeId) => console.log('[mall] enter store', storeId); // StoreScene lands in Task 16
+  ctx.enterStore = (storeId) => ctx.scenes.replace(new StoreScene(), { storeId });
+  ctx.exitStore = (storeId) => ctx.scenes.replace(ctx.mallScene, { fromStore: storeId });
+  ctx.onStoreDeath = (scene) => {
+    if (loseLife(ctx.state) <= 0) { ctx.toTitle(); return; }
+    scene.respawn();
+  };
   ctx.onPlayerDied = (scene) => {
     const left = loseLife(ctx.state);
     if (left <= 0) { ctx.toTitle(); return; }
@@ -90,10 +96,12 @@ async function boot() {
     window.__mall = ctx;
     // deterministic driver for automated playtests: hold `buttons` for `frames` fixed steps (first step counts as a press)
     ctx.drive = (buttons = [], frames = 1) => {
+      ctx.manual = true; // scripted runs own the clock from now on
       for (let i = 0; i < frames; i++) { input.pad.step(new Set(buttons), i === 0 ? new Set(buttons) : new Set()); ctx.scenes.update(); }
       app.render();
-      const p = ctx.mallScene?.world?.player;
-      return p ? { mode: p.mode, floor: p.floor, x: Math.round(p.x), y: Math.round(p.y) } : null;
+      const top = ctx.scenes.scene;
+      const p = top?.world?.player;
+      return p ? { scene: top.constructor.name, mode: p.mode, floor: p.floor, x: Math.round(p.x), y: Math.round(p.y) } : null;
     };
   }
 
@@ -103,7 +111,7 @@ async function boot() {
 
   const fixed = createFixedStep();
   app.ticker.add((t) => {
-    fixed.advance(t.deltaMS, () => { input.poll(); ctx.scenes.update(); });
+    if (!ctx.manual) fixed.advance(t.deltaMS, () => { input.poll(); ctx.scenes.update(); });
     if (crtOn) { crt.time += 0.5; crt.seed = Math.random(); }
   });
 }
