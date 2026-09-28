@@ -3,6 +3,7 @@ import { CRTFilter } from 'pixi-filters';
 import { SCREEN_W, SCREEN_H } from './world/constants.js';
 import { createFixedStep } from './core/loop.js';
 import { createInput } from './core/input.js';
+import { makeText } from './gfx/font.js';
 
 TextureStyle.defaultOptions.scaleMode = 'nearest';
 
@@ -43,7 +44,9 @@ async function boot() {
   input.onHotkey('KeyC', () => { crtOn = !crtOn; applyFilters(); });
 
   // TEMP test pattern (removed in Task 9)
-  root.addChild(new Graphics().rect(0, 0, SCREEN_W, 16).fill(0x2038ec).rect(120, 100, 16, 24).fill(0xfc7460));
+  const demo = makeText('MALL ACTION\nPRESS START 0123\n^_<> !?.,:;\'"-+/()%&#@*=$');
+  demo.position.set(16, 100);
+  root.addChild(new Graphics().rect(0, 0, SCREEN_W, 16).fill(0x2038ec), demo);
 
   const fixed = createFixedStep();
   app.ticker.add((t) => {
