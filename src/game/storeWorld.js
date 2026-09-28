@@ -1,7 +1,7 @@
 import { STORES } from '../world/mallLevel.js';
 import { roomFor, TILE } from '../world/storeRooms.js';
 import { aabb, moveInRoom } from '../logic/physics.js';
-import { walkSpeed, searchFrames, fireCooldown, maxBullets, resolveHit, applyPowerup } from '../logic/powerups.js';
+import { walkSpeed, searchFrames, fireCooldown, maxBullets, resolveHit, applyPowerup, tickPowerups } from '../logic/powerups.js';
 import { addScore, difficulty, TARGET_COUNT } from '../logic/rules.js';
 
 export const EXIT_Y = 10 * TILE + 4;
@@ -221,6 +221,7 @@ export function stepStore(world, pad, state, rng) {
   const p = world.player;
   world.frame++;
   state.levelFrames++;
+  tickPowerups(state.power);
   const diff = difficulty(state.loop, { blackFriday: state.blackFriday });
   world.pops = world.pops.filter((x) => --x.t > 0);
   if (p.invulnT > 0) p.invulnT--;

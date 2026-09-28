@@ -56,6 +56,13 @@ function tryActions(p, world, state, up) {
     }
   }
   if (p.floor === null) return null;
+  // call button: standing beside a shaft summons its car to this floor (Elevator Action style)
+  for (const c of world.cars) {
+    const mid = c.x + c.w / 2;
+    if (inShaftX(c, p.x) || Math.abs(p.x - mid) > c.w / 2 + 12 || p.floor < c.minFloor || p.floor > c.maxFloor || carFloor(c) === p.floor) continue;
+    if (c.ai) { c.target = p.floor; c.aiTimer = 0; } else c.callTarget = p.floor;
+    return [{ type: 'sfx', name: 'blip' }];
+  }
   for (const e of ESCALATORS) {
     if (up && p.floor === e.bottomFloor && Math.abs(p.x - e.x) <= 6) {
       Object.assign(p, { mode: 'esc', esc: { e, dir: -1 }, x: e.x, facing: 1, duck: false, h: STAND_H });

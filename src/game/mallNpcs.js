@@ -6,7 +6,7 @@ import { walkSpeed } from '../logic/powerups.js';
 import { addScore, isAlarm } from '../logic/rules.js';
 import { bulletHooks } from './combat.js';
 
-const JANITOR_RANGE = [40, 360]; // 1F, clear of shaft B
+const JANITOR_RANGE = [40, 344]; // 1F: the 48 px patch (x±24) must stay clear of shaft B at 376
 const WALKER_RANGES = [[150, 360], [410, 620]];
 export const KIOSK_COOLDOWN = 1200;
 export const FOUNTAIN_COOLDOWN = 900;

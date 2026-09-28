@@ -14,7 +14,7 @@ import { MapOverlay, drawMallMap } from './scenes/MapOverlay.js';
 import { PauseOverlay } from './scenes/PauseOverlay.js';
 import { LevelClearScene } from './scenes/LevelClearScene.js';
 import { GameOverScene } from './scenes/GameOverScene.js';
-import { placeOnFloor } from './game/mallPlayer.js';
+import { respawnPlayer } from './game/mallWorld.js';
 import { loseLife, nextLoop } from './game/state.js';
 import { GalleryScene } from './scenes/GalleryScene.js';
 import { registerAllSprites } from './gfx/sprites/index.js';
@@ -104,10 +104,8 @@ async function boot() {
   ctx.onPlayerDied = (scene) => {
     const left = loseLife(ctx.state);
     if (left <= 0) { ctx.gameOver(); return; }
-    const w = scene.world, p = w.player;
-    w.spies = []; w.bullets = []; w.enemyBullets = [];
-    placeOnFloor(p, p.lastSafe.x, p.lastSafe.floor);
-    p.invulnT = 120;
+    const w = scene.world;
+    respawnPlayer(w);
     ctx.audio.playMusic(w.alarm ? 'mallAlarm' : 'mall');
   };
   if (ctx.debug) {
