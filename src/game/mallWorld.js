@@ -7,6 +7,7 @@ import { stepSpies, spyFromCar, killSpy, alive } from './spies.js';
 import { firePlayer, stepBullets, playerContacts } from './combat.js';
 import { stepLights, lampTop } from './lights.js';
 import { createNpcs, stepNpcs } from './mallNpcs.js';
+import { exitHook } from './exitHook.js';
 
 export function createMallWorld(state) {
   const world = {
@@ -19,7 +20,7 @@ export function createMallWorld(state) {
     wet: [], janitor: null, walkers: [], cop: null,
     kioskCooldown: KIOSKS.map(() => 0), fountainCooldown: FOUNTAINS.map(() => 0),
     spawnT: 300, alarm: false, banner: null, dark: null, exiting: false,
-    upHooks: [],
+    upHooks: [exitHook],
   };
   if (state) createNpcs(world, state.rng);
   return world;

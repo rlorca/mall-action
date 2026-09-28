@@ -57,7 +57,7 @@ export class MallScene {
   build(ctx) {
     const state = ctx.state;
     this.world = createMallWorld(state);
-    this.t = 0; this.shakeT = 0;
+    this.t = 0; this.shakeT = 0; this.clearT = 0;
     const c = this.container;
     c.removeChildren().forEach((ch) => ch.destroy({ children: true }));
 
@@ -144,6 +144,8 @@ export class MallScene {
       case 'photo': this.showPanel([makeSprite('photoStrip')], 'SAY CHEESE!', 120, 2); break;
       case 'enterStore': ctx.enterStore?.(ev.storeId); break;
       case 'playerDied': ctx.onPlayerDied?.(this, ev.cause); break;
+      case 'exitBlocked': this.banner(`PACKAGES LEFT: ${ev.left}`); break;
+      case 'levelClear': this.clearT = 45; ctx.audio.stopMusic(); break;
       default: break;
     }
   }
@@ -182,6 +184,7 @@ export class MallScene {
     this.t++;
     if (ctx.pad.pressed('start') && ctx.openPause) { ctx.openPause(); return; }
     if (ctx.pad.pressed('select') && ctx.openMap) { ctx.openMap(null); return; }
+    if (this.clearT > 0) { if (--this.clearT === 0) { ctx.levelClear(ctx.state.levelFrames); return; } this.render(); return; }
     const events = stepMall(world, ctx.pad, ctx.state, ctx.state.rng);
     for (const ev of events) this.handle(ev);
     this.render();
@@ -262,7 +265,7 @@ export class MallScene {
     ps.texture = tex(name, frame);
     ps.scale.x = p.facing;
     ps.position.set(Math.round(p.x), Math.round(p.y));
-    ps.visible = p.mode !== 'hidden' && !(p.invulnT > 0 && Math.floor(p.invulnT / 4) % 2);
+    ps.visible = p.mode !== 'hidden' && p.mode !== 'exit' && !(p.invulnT > 0 && Math.floor(p.invulnT / 4) % 2);
 
     // popups
     this.popups = this.popups.filter((pp) => { pp.life--; pp.t.y -= 0.4; if (pp.life <= 0) { pp.t.destroy(); return false; } return true; });

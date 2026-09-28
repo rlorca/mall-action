@@ -10,8 +10,12 @@ import { createGameState } from './game/state.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { MallScene } from './scenes/MallScene.js';
 import { StoreScene } from './scenes/StoreScene.js';
+import { MapOverlay, drawMallMap } from './scenes/MapOverlay.js';
+import { PauseOverlay } from './scenes/PauseOverlay.js';
+import { LevelClearScene } from './scenes/LevelClearScene.js';
+import { GameOverScene } from './scenes/GameOverScene.js';
 import { placeOnFloor } from './game/mallPlayer.js';
-import { loseLife } from './game/state.js';
+import { loseLife, nextLoop } from './game/state.js';
 import { GalleryScene } from './scenes/GalleryScene.js';
 import { registerAllSprites } from './gfx/sprites/index.js';
 
@@ -79,13 +83,27 @@ async function boot() {
   ctx.toTitle = () => { ctx.highScore = Math.max(ctx.highScore, ctx.state?.score ?? 0); ctx.scenes.replace(new TitleScene()); };
   ctx.enterStore = (storeId) => ctx.scenes.replace(new StoreScene(), { storeId });
   ctx.exitStore = (storeId) => ctx.scenes.replace(ctx.mallScene, { fromStore: storeId });
+  ctx.gameOver = () => ctx.scenes.replace(new GameOverScene());
+  ctx.openPause = () => ctx.scenes.push(new PauseOverlay());
+  ctx.openMap = (storeId) => ctx.scenes.push(new MapOverlay(), { storeId });
+  ctx.drawMiniMap = (scene, storeId) => {
+    const box = new Container();
+    drawMallMap(box, ctx.state, scene.world, { x: 0, y: 0, w: 160, h: 72, highlightStoreId: storeId, labels: false });
+    scene.showPanel([box], storeId ? 'GO TO THE WHITE STORE' : 'ALL PACKAGES FOUND!', 180);
+  };
+  ctx.levelClear = (levelFrames) => ctx.scenes.replace(new LevelClearScene(), { levelFrames });
+  ctx.nextLoop = () => {
+    nextLoop(ctx.state);
+    ctx.mallScene = null;
+    ctx.scenes.replace(new MallScene(), { newLevel: true });
+  };
   ctx.onStoreDeath = (scene) => {
-    if (loseLife(ctx.state) <= 0) { ctx.toTitle(); return; }
+    if (loseLife(ctx.state) <= 0) { ctx.gameOver(); return; }
     scene.respawn();
   };
   ctx.onPlayerDied = (scene) => {
     const left = loseLife(ctx.state);
-    if (left <= 0) { ctx.toTitle(); return; }
+    if (left <= 0) { ctx.gameOver(); return; }
     const w = scene.world, p = w.player;
     w.spies = []; w.bullets = []; w.enemyBullets = [];
     placeOnFloor(p, p.lastSafe.x, p.lastSafe.floor);
