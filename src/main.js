@@ -9,6 +9,8 @@ import { createKonami } from './logic/secrets.js';
 import { createGameState } from './game/state.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { PlaceholderScene } from './scenes/PlaceholderScene.js';
+import { GalleryScene } from './scenes/GalleryScene.js';
+import { registerAllSprites } from './gfx/sprites/index.js';
 
 TextureStyle.defaultOptions.scaleMode = 'nearest';
 
@@ -73,7 +75,9 @@ async function boot() {
   ctx.toTitle = () => ctx.scenes.replace(new TitleScene());
   if (ctx.debug) window.__mall = ctx;
 
-  ctx.scenes.replace(new TitleScene(), {}, { fade: false });
+  await registerAllSprites();
+  if (params.has('gallery')) ctx.scenes.replace(new GalleryScene(Number(params.get('page') ?? 0)), {}, { fade: false });
+  else ctx.scenes.replace(new TitleScene(), {}, { fade: false });
 
   const fixed = createFixedStep();
   app.ticker.add((t) => {
