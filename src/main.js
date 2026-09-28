@@ -4,6 +4,7 @@ import { SCREEN_W, SCREEN_H } from './world/constants.js';
 import { createFixedStep } from './core/loop.js';
 import { createInput } from './core/input.js';
 import { makeText } from './gfx/font.js';
+import { createSynth } from './audio/synth.js';
 
 TextureStyle.defaultOptions.scaleMode = 'nearest';
 
@@ -42,6 +43,12 @@ async function boot() {
 
   const input = createInput(window);
   input.onHotkey('KeyC', () => { crtOn = !crtOn; applyFilters(); });
+
+  const audio = createSynth();
+  const unlock = () => { audio.unlock(); window.__audioCheck?.(audio); };
+  window.addEventListener('keydown', unlock);
+  window.addEventListener('pointerdown', unlock);
+  input.onHotkey('KeyM', () => audio.toggleMute());
 
   // TEMP test pattern (removed in Task 9)
   const demo = makeText('MALL ACTION\nPRESS START 0123\n^_<> !?.,:;\'"-+/()%&#@*=$');
