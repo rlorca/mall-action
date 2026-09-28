@@ -8,7 +8,7 @@ import { makeSprite, tex } from '../gfx/textures.js';
 import { makeText } from '../gfx/font.js';
 import { C } from '../gfx/palette.js';
 import { createHud } from '../ui/hud.js';
-import { buildMallBackground, buildStorefront, updateStorefront, EntityViews, put } from './mallView.js';
+import { buildMallBackground, buildStorefront, updateStorefront, EntityViews, put, signTexture } from './mallView.js';
 
 const VIEW_H = 224;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -20,10 +20,20 @@ function playerFrame(p, t) {
     case 'air': return [p.kick ? 'agentKick' : 'agentJump', 0];
     case 'esc': return ['agentStand', 0];
     default:
-      if (p.duck) return [p.shootT > 8 ? 'agentDuckShoot' : 'agentDuck', 0];
-      if (p.shootT > 8) return ['agentShoot', 0];
+      if (p.duck) return [p.poseT > 0 ? 'agentDuckShoot' : 'agentDuck', 0];
+      if (p.poseT > 0) return ['agentShoot', 0];
       if (p.vx) return ['agentWalk', Math.floor(p.x / 6) % 2];
       return ['agentStand', 0];
+  }
+}
+
+function spyFrame(s) {
+  switch (s.state) {
+    case 'dead': return ['spyDie', s.t > 16 ? 0 : s.t > 8 ? 1 : 2];
+    case 'duck': return ['spyDuck', 0];
+    case 'aim': return [s.aimHigh ? 'spyAimHigh' : 'spyAimLow', 0];
+    case 'walk': case 'goWait': return ['spyWalk', Math.floor(s.x / 6) % 2];
+    default: return ['spyStand', 0];
   }
 }
 
@@ -82,10 +92,16 @@ export class MallScene {
     this.lightLayer = new Container(); this.worldLayer.addChild(this.lightLayer);
     this.entityLayer = new Container(); this.worldLayer.addChild(this.entityLayer);
     this.fxLayer = new Container(); this.worldLayer.addChild(this.fxLayer);
+    this.cords = new Graphics(); this.lightLayer.addChild(this.cords);
     this.lightViews = new EntityViews(this.lightLayer);
+    this.pickupViews = new EntityViews(this.entityLayer);
+    this.spyViews = new EntityViews(this.entityLayer);
+    this.bulletGfx = new Graphics();
+    this.darkGfx = new Graphics();
     this.playerSprite = new Sprite(tex('agentStand'));
     this.playerSprite.anchor.set(0.5, 1);
     this.entityLayer.addChild(this.playerSprite);
+    this.fxLayer.addChild(this.bulletGfx, this.darkGfx);
 
     this.hud = createHud();
     c.addChild(this.hud.container);
@@ -125,7 +141,7 @@ export class MallScene {
   }
 
   popup(text, x, y) {
-    const t = makeText(text, C.white); t.scale.set(0.5);
+    const t = new Sprite(signTexture(text, C.white));
     t.position.set(Math.round(x - t.width / 2), Math.round(y));
     this.fxLayer.addChild(t);
     this.popups.push({ t, life: 40 });
@@ -170,6 +186,24 @@ export class MallScene {
       s.texture = tex(l.kind === 'disco' ? 'disco' : 'lamp', l.state === 'hanging' ? Math.floor(this.t / 40) % 2 : 0);
       s.position.set(Math.round(l.x), Math.round(l.y));
     });
+
+    this.cords.clear();
+    for (const l of world.lights) if (l.state === 'hanging') this.cords.rect(l.x, floorTop(l.floor) + 8, 1, l.y - floorTop(l.floor) - 8).fill(C.darkGrey);
+
+    this.pickupViews.sync(world.pickups, (it, s) => {
+      s.texture = tex(`pu_${it.id}`); s.position.set(Math.round(it.x), Math.round(it.y) + 12);
+      s.visible = it.t > 120 || Math.floor(it.t / 4) % 2 === 0;
+    });
+    this.spyViews.sync(world.spies, (sp, s) => {
+      const [n, f] = spyFrame(sp);
+      s.texture = tex(n, f); s.scale.x = sp.facing; s.position.set(Math.round(sp.x), Math.round(sp.y));
+      s.alpha = sp.state === 'emerge' ? 1 - sp.t / 24 : 1;
+    });
+    const bg = this.bulletGfx.clear();
+    for (const b of world.bullets) bg.rect(Math.round(b.x), Math.round(b.y), 4, 2).fill(C.white);
+    for (const b of world.enemyBullets) bg.rect(Math.round(b.x), Math.round(b.y), 4, 2).fill(C.yellow);
+    this.darkGfx.clear();
+    if (world.dark) this.darkGfx.rect(world.dark.x0, floorTop(world.dark.floor) + 8, world.dark.x1 - world.dark.x0, 32).fill({ color: 0x000000, alpha: 0.6 });
 
     // player
     const [name, frame] = playerFrame(p, this.t);

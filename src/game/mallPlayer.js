@@ -18,7 +18,7 @@ export function createPlayer() {
     kind: 'player', x: ROOF_ENTRY_X - ZIP_DX, y: 0, w: 10, h: STAND_H, vx: 0, vy: 0, facing: 1,
     floor: null, grounded: false, riding: null, onRoof: null, fallFromY: null,
     mode: 'intro', introT: INTRO_FRAMES, duck: false, kick: false, esc: null,
-    frozenT: 0, invulnT: 0, hiddenT: 0, dieT: 0, deathCause: null, slideDir: 0, shootT: 0,
+    frozenT: 0, invulnT: 0, hiddenT: 0, dieT: 0, deathCause: null, slideDir: 0, shootT: 0, poseT: 0,
     lastSafe: { x: ROOF_ENTRY_X, floor: 0 },
   };
 }
