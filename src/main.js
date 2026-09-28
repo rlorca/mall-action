@@ -8,7 +8,9 @@ import { SceneManager } from './core/scenes.js';
 import { createKonami } from './logic/secrets.js';
 import { createGameState } from './game/state.js';
 import { TitleScene } from './scenes/TitleScene.js';
-import { PlaceholderScene } from './scenes/PlaceholderScene.js';
+import { MallScene } from './scenes/MallScene.js';
+import { placeOnFloor } from './game/mallPlayer.js';
+import { loseLife } from './game/state.js';
 import { GalleryScene } from './scenes/GalleryScene.js';
 import { registerAllSprites } from './gfx/sprites/index.js';
 
@@ -70,10 +72,30 @@ async function boot() {
   ctx.scenes = new SceneManager({ layer: sceneLayer, overlayLayer, setFade: (a) => { fade.alpha = a; } }, ctx);
   ctx.startGame = ({ blackFriday = false } = {}) => {
     ctx.state = createGameState({ seed: ctx.seed ?? undefined, blackFriday, highScore: ctx.highScore });
-    ctx.scenes.replace(new PlaceholderScene('MALL'), { newLevel: true });
+    ctx.mallScene = null;
+    ctx.scenes.replace(new MallScene(), { newLevel: true });
   };
-  ctx.toTitle = () => ctx.scenes.replace(new TitleScene());
-  if (ctx.debug) window.__mall = ctx;
+  ctx.toTitle = () => { ctx.highScore = Math.max(ctx.highScore, ctx.state?.score ?? 0); ctx.scenes.replace(new TitleScene()); };
+  ctx.enterStore = (storeId) => console.log('[mall] enter store', storeId); // StoreScene lands in Task 16
+  ctx.onPlayerDied = (scene) => {
+    const left = loseLife(ctx.state);
+    if (left <= 0) { ctx.toTitle(); return; }
+    const w = scene.world, p = w.player;
+    w.spies = []; w.bullets = []; w.enemyBullets = [];
+    placeOnFloor(p, p.lastSafe.x, p.lastSafe.floor);
+    p.invulnT = 120;
+    ctx.audio.playMusic(w.alarm ? 'mallAlarm' : 'mall');
+  };
+  if (ctx.debug) {
+    window.__mall = ctx;
+    // deterministic driver for automated playtests: hold `buttons` for `frames` fixed steps (first step counts as a press)
+    ctx.drive = (buttons = [], frames = 1) => {
+      for (let i = 0; i < frames; i++) { input.pad.step(new Set(buttons), i === 0 ? new Set(buttons) : new Set()); ctx.scenes.update(); }
+      app.render();
+      const p = ctx.mallScene?.world?.player;
+      return p ? { mode: p.mode, floor: p.floor, x: Math.round(p.x), y: Math.round(p.y) } : null;
+    };
+  }
 
   await registerAllSprites();
   if (params.has('gallery')) ctx.scenes.replace(new GalleryScene(Number(params.get('page') ?? 0)), {}, { fade: false });

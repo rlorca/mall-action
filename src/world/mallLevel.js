@@ -30,8 +30,10 @@ export const STORES = [
 export const doorX = (s) => s.x + STORE_W / 2;
 
 // hanging lights (ceiling), one per ~screen on each shopping floor; 2F = disco balls
+// placed in corridor gaps so they don't hide storefront signs
+const LIGHT_X = { 1: [160, 300, 720], 2: [256, 356, 600], 3: [160, 320, 480], 4: [160, 356, 600] };
 export const LIGHTS = [1, 2, 3, 4].flatMap((floor) =>
-  [64, 304, 584].map((x) => ({ floor, x, kind: floor === 3 ? 'disco' : 'lamp' })));
+  LIGHT_X[floor].map((x) => ({ floor, x, kind: floor === 3 ? 'disco' : 'lamp' })));
 
 export const KIOSKS = [{ floor: 1, x: 690 }, { floor: 2, x: 150 }, { floor: 3, x: 440 }, { floor: 4, x: 420 }];
 export const FOUNTAINS = [{ floor: 2, x: 408, w: 48 }, { floor: 4, x: 272, w: 48 }];
