@@ -54,8 +54,8 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
   AI-driven and move on their own on a timer.
 - **Escalators:** 2 escalator pairs connecting adjacent floors; player walks onto the
   base and is carried diagonally (press up/down at base to board).
-- **Stores:** 12 storefronts across 4F–1F. 6 are **target stores** (red flashing doors),
-  3 are **power-up shops** (blue doors, contain only power-up/empty fixtures and a
+- **Stores:** 13 storefronts across 4F–1F. 6 are **target stores** (red flashing doors),
+  4 are **power-up shops** (blue doors, contain only power-up/empty fixtures and a
   guard), 3 are **closed** (shutter down, decorative).
 - **Store names:** every storefront has a parody name riffing on a real (mostly
   80s/90s-mall) chain, shown on a pixel-art sign above its door and in the HUD when
@@ -72,6 +72,7 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
   | Crookstone | Brookstone | power-up shop | Gadgets |
   | Sharper Imagine | Sharper Image | power-up shop | Gadgets |
   | Spender's Gifts | Spencer's Gifts | power-up shop | Novelty |
+| GameStonk | GameStop | power-up shop | Games |
   | Blockbluster Video | Blockbuster | closed | — |
   | Circuit Pity | Circuit City | closed | — |
   | Borderline Books | Borders | closed | — |
@@ -92,6 +93,7 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
   | Crookstone | massage chair, gadget pedestals |
   | Sharper Imagine | robot vacuum, gadget pedestals, glowing orb |
   | Spender's Gifts | lava lamp (animated), black-light posters, plasma ball |
+| GameStonk | stacked consoles, cartridge wall, "TO THE MOON" rocket poster, demo TV |
   | Blockbluster Video | rolled-down shutter, "FOR LEASE" sign, faded VHS poster |
   | Circuit Pity | shutter, dark dead TVs |
   | Borderline Books | shutter, "CLOSING SALE" banner, empty shelves |
@@ -101,9 +103,10 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
   shutter = closed); a cleared target store dims its window lights. Display sprites are
   also reused as fixtures inside the matching store for visual continuity.
 - **Hanging lights:** one per ~screen per floor; shoot to drop it; falling light kills
-  spies beneath it (bonus), and briefly darkens that section.
-- **Decor:** glass railings, fountains, benches, plants, store signs, mall directory
-  kiosks (decorative nod; Select is the real map).
+  spies beneath it (bonus), and briefly darkens that section. On 2F the lights are
+  **disco balls**: when shot they drop and then **roll** along the floor in the
+  direction of the shot, flattening spies (and the player) until they hit a wall.
+- **Decor:** glass railings, fountains, benches, plants, store signs.
 
 ### 3.3 Rules
 
@@ -114,7 +117,9 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
 - **Alarm timer:** after 150 s on a level, the mall alarm sounds: music changes,
   spies spawn faster and move 25% faster until level clear.
 - **Scoring:** spy shot 100, spy crushed by elevator 300, spy killed by falling light
-  300, package 500, power-up 50, level clear 1000 + time bonus.
+  300, package 500, power-up 50, level clear 1000 + time bonus, fountain coin 50,
+  wet-floor slide kill 300, disco-ball kill 300, shooting a mall walker −200,
+  detained by mall cop −500.
 - **Difficulty per loop:** spy speed +10%, spawn interval −15%, enemy fire rate +15%,
   alarm timer −20 s (floors capped).
 
@@ -148,6 +153,39 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
 - Standing in an empty shaft opening at a floor: player falls to the car below (or
   shaft bottom → death), matching original danger.
 
+### 4.4 Elevator flavour
+
+- Every car arrival plays a "*ding*" and shows a floor announcement banner, e.g.
+  `3F — LADIES' WEAR, SPIES`, `P — PARKING. DRIVE SAFE`.
+- While the player rides a car, the music crossfades to a **muzak arrangement** of the
+  current theme; it crossfades back on exit.
+
+### 4.5 Mall hazards, NPCs and interactables
+
+- **Wet floor (janitor):** a janitor NPC periodically mops a ~48 px stretch of floor
+  and places a yellow sign. For 10 s the patch is slippery: anyone entering keeps
+  sliding at walk speed until they leave it (no stopping, no turning). A player who
+  **jump-kicks onto** the patch slides with the kick active, killing spies in the way.
+  The janitor is harmless and cannot be shot (bullets pass through).
+- **Mall walkers:** 1–2 retirees in tracksuits power-walking a floor back and forth.
+  Solid to bullets from both sides (moving cover). Shooting one: −200 points and a
+  "HEY!" bubble; they are never killed. Contact is harmless (they push you along).
+- **Mall cop on a Segway:** one per level, patrols a random floor. Neutral. If the
+  player fires a shot within his line of sight (same floor, ≤128 px, facing), he blows
+  a whistle and **chases** the player for 10 s at 1.25× walk speed; contact = player
+  "detained": loses 3 s frozen and 500 points (not a life). Cannot be killed; bullets
+  bounce off his helmet (ping SFX).
+- **Directory kiosks:** one per floor. Standing at a kiosk and pressing Up shows
+  `YOU ARE HERE` and highlights the **nearest uncollected package store** on a mini
+  map for 3 s. 20 s cooldown per kiosk.
+- **Photo booth:** one on 3F. Press Up to step in: the player is hidden (spies ignore
+  and walk past, bullets miss) for up to 5 s or until exit. On exit a 4-frame photo
+  strip of the agent's poses pops up for 2 s (cosmetic; strip added to map-screen
+  inventory, max one per game).
+- **Fountain coins:** fountains on 1F and 3F. Shooting a fountain sprays 3–5 coins
+  (50 points each) that bounce and can be collected. 1 in 20 sprays includes a
+  **golden coin** = 1-Up. Max one spray per fountain per 15 s.
+
 ## 5. Store View (top-down)
 
 - Entering a door fades to the store scene; exiting (walk onto the door tile) fades
@@ -168,10 +206,29 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
     kills.
   Guards respawn if the player leaves and re-enters a store with its package still
   inside.
-- **Themes (8):** Fashion, Electronics, Toys, Food Court, Sports, Music (the six
-  target stores), plus Gadgets and Novelty (power-up shops). Each has its own tiles,
+- **Themes (9):** Fashion, Electronics, Toys, Food Court, Sports, Music (the six
+  target stores), plus Gadgets, Novelty and Games (power-up shops). Each has its own tiles,
   palette, fixture set, and layout template; the two Gadgets shops share a tileset
   with different layouts. Store names per §3.2.
+- **Fitting rooms (Forever 12):** searching a fitting room has a 25% chance to reveal
+  a spy mid-change instead of its contents: he shrieks, throws a shoe (slow
+  projectile) and then fights normally. The fitting room's real contents are still
+  there afterwards.
+- **Wind-up toys (KGB Toys):** shooting a toy shelf releases 3 wind-up toys that march
+  in straight lines, turning at walls, for 8 s. They trigger any trap fixture they
+  touch (smoke hits guards instead of the player) and stun guards on contact.
+- **Listening booth (Sam Baddy):** a booth tile with headphones; stepping on it
+  switches music to a bonus chiptune track until the player leaves the store.
+- **Easter egg — "It's dangerous to go alone" (GameStonk):** the first time the
+  player enters **GameStonk** each game, a Zelda-cave tableau appears at the top of the
+  room: an old clerk standing between two flickering CRT demo TVs (in place of the cave
+  fires). Input freezes while a typewriter text box prints
+  `IT'S DANGEROUS TO GO ALONE! TAKE THIS.` (per-letter blip SFX), then an item appears
+  on the counter. Walking onto it plays the item-get jingle with the agent holding it
+  overhead. The item is random from: **EXPIRED COUPON**, **PRE-OWNED STRATEGY GUIDE**,
+  **PET ROCK**, **MOOD RING**, **1 SHARE (DOWN 99%)**. It is completely useless: +1
+  point, listed under "INVENTORY" on the map screen. The clerk then vanishes; later
+  visits play as a normal power-up shop. Guards stay frozen until the item is taken.
 - Once the package is collected the store is **cleared**: its mall door goes dark and
   no longer spawns spies.
 
@@ -185,6 +242,12 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
 | Sneakers | faster walk, higher jump, faster search | 20 s |
 | Radar | reveals package fixture in stores and on map | rest of level |
 | 1-Up | +1 life | instant |
+| **Cinnabomb** (food) | invincible, flashing palette; contact kills spies | 6 s |
+| **Orange Juli-Ooze** (food) | walk speed ×1.5 (same slot as Sneakers, doesn't stack with it) | 12 s |
+| **Soft Pretzel** (food) | armor, like Armor Vest (pretzel-shaped icon) | until hit |
+
+Food items appear mostly in **Hot Spy on a Stick** fixtures and as spy drops
+(food is 50% of spy drops); non-food power-ups mostly in power-up shops.
 
 Only one timed weapon (Rapid/Spread) active at a time; picking another replaces it.
 Armor, Sneakers, Radar stack with weapons. Power-ups persist across mall/store
@@ -197,14 +260,20 @@ transitions; timers pause while the map is open.
   code: red = package remaining, grey = cleared, blue = power-up shop, dark = closed.
   Player position blinks. With Radar: target stores show a "!" marker. Select closes.
   From inside a store the map shows the mall with the current store highlighted.
+  An **INVENTORY** line lists joke items (GameStonk gift, photo strip).
 - **HUD (top 16 px strip):** score, lives, `PKG n/6`, active power-up icon + timer bar,
   floor indicator styled as an elevator panel (`R`, `4F`…`P`; in store shows store
   name).
 - **Pause (Start):** "PAUSE" overlay, music ducks.
 - **Title:** logo, animated mall facade, "PRESS START", controls hint, high score
   (session only).
-- **Level Clear:** car drives off, tally of bonus, "LOOP n".
-- **Game Over:** "GAME OVER", score, back to Title.
+- **Black Friday Mode (secret):** entering the Konami code (↑↑↓↓←→←→ B A) on the
+  title screen flashes `BLACK FRIDAY!` and starts a game with 2× spy cap and spawn rate,
+  and "70% OFF" signs on every store: all non-package fixtures contain power-ups.
+- **Level Clear:** the agent drives off in a wood-panelled 80s station wagon while a
+  spy runs after it waving a receipt; bonus tally; "LOOP n".
+- **Game Over:** PA chime + `ATTENTION SHOPPERS: THE MALL IS NOW CLOSED` while store
+  shutters roll down over the agent; then "GAME OVER", score, back to Title.
 
 ## 8. Graphics & Audio
 
@@ -218,9 +287,10 @@ transitions; timers pause while the map is open.
 - **Effects:** screen shake on crush/light fall, brief palette flash on package
   pickup, fade transitions between views.
 - **Audio:** music sequencer on NES-style channels: Mall theme, Store theme,
-  Alarm variant, Title, Level Clear jingle, Game Over. SFX: shot, enemy shot, jump,
+  Alarm variant, Elevator muzak variant, Listening-booth bonus track, Title,
+  Level Clear jingle, Game Over, item-get jingle. SFX: shot, enemy shot, jump,
   elevator ding + hum, crush, light fall, search tick, package fanfare, power-up,
-  hurt/death, door. Audio starts on first input (autoplay policy). `M` mutes.
+  hurt/death, door, text blip, whistle, helmet ping, coins, slide, PA chime. Audio starts on first input (autoplay policy). `M` mutes.
 
 ## 9. Controls
 
@@ -274,8 +344,11 @@ src/
     rules.js           exit condition, scoring, difficulty scaling, alarm timer
     loot.js            fixture contents rolls
     powerups.js        power-up state and timers
+    npcs.js            janitor/wet-floor, walker, mall-cop rules (pure)
+    secrets.js         Konami code detector, Black Friday config, joke inventory
   entities/            entity state + update (logic) and a view class (Pixi sprites)
-    player.js, spy.js, bot.js, bullet.js, light.js, pickup.js
+    player.js, spy.js, bot.js, bullet.js, light.js (incl. disco ball), pickup.js,
+    janitor.js, walker.js, mallCop.js, windupToy.js, oldMan.js
   scenes/
     TitleScene.js, MallScene.js, StoreScene.js, MapOverlay.js,
     PauseOverlay.js, LevelClearScene.js, GameOverScene.js
@@ -302,7 +375,8 @@ tests/                 Vitest specs for logic/ and world/levelSetup
 
 - **Unit (Vitest):** physics collisions; elevator crush + floor stops; exit rule
   (can't leave without 6 packages); scoring and difficulty scaling; loot rolls and
-  exactly-one-package per target store; level setup invariants (exactly 6 targets,
+  exactly-one-package per target store; wet-floor sliding; mall-cop trigger/chase;
+  Konami code detection; walker bullet blocking; food power-up slot rules; level setup invariants (exactly 6 targets,
   every store reachable via floors/elevators/escalators); power-up timers and stacking.
 - **Browser playtest:** Chrome automation loads the dev server, checks console is free
   of errors, drives input to walk, ride an elevator, enter a store, search, open the
