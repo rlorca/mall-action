@@ -1,7 +1,7 @@
 # Mall Action — Design Spec
 
 Date: 2026-09-28
-Status: Draft for review
+Status: Approved 2026-09-28
 
 ## 1. Intent
 
@@ -72,7 +72,7 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
   | Crookstone | Brookstone | power-up shop | Gadgets |
   | Sharper Imagine | Sharper Image | power-up shop | Gadgets |
   | Spender's Gifts | Spencer's Gifts | power-up shop | Novelty |
-| GameStonk | GameStop | power-up shop | Games |
+  | GameStonk | GameStop | power-up shop | Games |
   | Blockbluster Video | Blockbuster | closed | — |
   | Circuit Pity | Circuit City | closed | — |
   | Borderline Books | Borders | closed | — |
@@ -93,7 +93,7 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
   | Crookstone | massage chair, gadget pedestals |
   | Sharper Imagine | robot vacuum, gadget pedestals, glowing orb |
   | Spender's Gifts | lava lamp (animated), black-light posters, plasma ball |
-| GameStonk | stacked consoles, cartridge wall, "TO THE MOON" rocket poster, demo TV |
+  | GameStonk | stacked consoles, cartridge wall, "TO THE MOON" rocket poster, demo TV |
   | Blockbluster Video | rolled-down shutter, "FOR LEASE" sign, faded VHS poster |
   | Circuit Pity | shutter, dark dead TVs |
   | Borderline Books | shutter, "CLOSING SALE" banner, empty shelves |
