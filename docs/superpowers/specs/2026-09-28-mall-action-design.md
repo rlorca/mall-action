@@ -57,6 +57,26 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
 - **Stores:** 12 storefronts across 4F–1F. 6 are **target stores** (red flashing doors),
   3 are **power-up shops** (blue doors, contain only power-up/empty fixtures and a
   guard), 3 are **closed** (shutter down, decorative).
+- **Store names:** every storefront has a parody name riffing on a real (mostly
+  80s/90s-mall) chain, shown on a pixel-art sign above its door and in the HUD when
+  inside. Names are puns, not replicas: no real logos, trade dress or exact names.
+
+  | Store | Riffs on | Role | Theme |
+  |---|---|---|---|
+  | Forever 12 | Forever 21 | target | Fashion |
+  | RadioShock | RadioShack | target | Electronics |
+  | KGB Toys | KB Toys | target | Toys |
+  | Hot Spy on a Stick | Hot Dog on a Stick | target | Food Court |
+  | Foot Lockpicker | Foot Locker | target | Sports |
+  | Sam Baddy | Sam Goody | target | Music |
+  | Crookstone | Brookstone | power-up shop | Gadgets |
+  | Sharper Imagine | Sharper Image | power-up shop | Gadgets |
+  | Spender's Gifts | Spencer's Gifts | power-up shop | Novelty |
+  | Blockbluster Video | Blockbuster | closed | — |
+  | Circuit Pity | Circuit City | closed | — |
+  | Borderline Books | Borders | closed | — |
+
+  Floor placement of stores is fixed in level data; roles are fixed for this build.
 - **Hanging lights:** one per ~screen per floor; shoot to drop it; falling light kills
   spies beneath it (bonus), and briefly darkens that section.
 - **Decor:** glass railings, fountains, benches, plants, store signs, mall directory
@@ -125,9 +145,10 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
     kills.
   Guards respawn if the player leaves and re-enters a store with its package still
   inside.
-- **Themes (6):** Fashion, Electronics, Toys, Food Court, Sports, Music. Each has its
-  own tiles, palette, fixture set, and layout template. Target stores get 1 theme each;
-  power-up shops reuse themes with different layouts.
+- **Themes (8):** Fashion, Electronics, Toys, Food Court, Sports, Music (the six
+  target stores), plus Gadgets and Novelty (power-up shops). Each has its own tiles,
+  palette, fixture set, and layout template; the two Gadgets shops share a tileset
+  with different layouts. Store names per §3.2.
 - Once the package is collected the store is **cleared**: its mall door goes dark and
   no longer spawns spies.
 
@@ -195,6 +216,8 @@ transitions; timers pause while the map is open.
 Large department stores (Sears-style) inside the mall:
 - In the mall view an anchor occupies a wide facade spanning **two floors**, with an
   entrance on each floor.
+- Parody names in the same spirit, e.g. **Spears** (Sears), **J.C. Pennyless**
+  (JCPenney), **Spacy's** (Macy's).
 - Inside: a multi-screen scrolling tilemap and/or several connected departments,
   possibly with internal escalators, multiple packages, and more guards.
 - Enabled by the §5 room model (arbitrary-size tilemaps + camera) and by mall store
