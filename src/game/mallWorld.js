@@ -6,9 +6,10 @@ import { createPlayer, stepPlayer, killPlayer } from './mallPlayer.js';
 import { stepSpies, spyFromCar, killSpy, alive } from './spies.js';
 import { firePlayer, stepBullets, playerContacts } from './combat.js';
 import { stepLights, lampTop } from './lights.js';
+import { createNpcs, stepNpcs } from './mallNpcs.js';
 
-export function createMallWorld() {
-  return {
+export function createMallWorld(state) {
+  const world = {
     frame: 0,
     cars: SHAFTS.map(createCar),
     player: createPlayer(),
@@ -20,6 +21,8 @@ export function createMallWorld() {
     spawnT: 300, alarm: false, banner: null, dark: null, exiting: false,
     upHooks: [],
   };
+  if (state) createNpcs(world, state.rng);
+  return world;
 }
 
 export const currentDifficulty = (world, state) => difficulty(state.loop, { blackFriday: state.blackFriday, alarm: world.alarm });
@@ -37,6 +40,7 @@ function stepCars(world, state, rng, ev) {
     if (!dy) continue;
     if (p.riding === car.id) p.y = car.y;
     if (p.onRoof === car.id) p.y = car.y - CAR_H;
+    if (playerDriving && world.frame % 8 === 0) ev.push({ type: 'sfx', name: 'hum' });
     const victims = crushVictims(car, dy, [p, ...world.spies.filter(alive)]);
     for (const v of victims) {
       if (v === p) killPlayer(p, 'crush', state, ev);
@@ -53,6 +57,7 @@ export function stepMall(world, pad, state, rng) {
   const diff = currentDifficulty(world, state);
   stepCars(world, state, rng, ev);
   ev.push(...stepPlayer(world.player, pad, world, state));
+  ev.push(...stepNpcs(world, state, rng));
   ev.push(...firePlayer(world, pad, state));
   ev.push(...stepSpies(world, state, rng, diff));
   ev.push(...stepBullets(world, state, rng));

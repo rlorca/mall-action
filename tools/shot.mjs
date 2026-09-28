@@ -24,7 +24,7 @@ for (const s of steps) {
   else if (op === 'up') await page.keyboard.up(a);
   else if (op === 'hold') { await page.keyboard.down(a); await sleep(Number(b)); await page.keyboard.up(a); }
   else if (op === 'shot') await page.screenshot({ path: `${outDir}/${a}.png` });
-  else if (op === 'eval') logs.push(`[eval] ${JSON.stringify(await page.evaluate(a))}`);
+  else if (op === "eval") logs.push(`[eval] ${JSON.stringify(await page.evaluate(`(() => eval(${JSON.stringify(a)}))()`))}`);
 }
 console.log(logs.join('\n') || '(no console output)');
 await browser.close();

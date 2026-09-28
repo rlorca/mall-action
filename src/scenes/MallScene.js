@@ -95,18 +95,24 @@ export class MallScene {
     this.cords = new Graphics(); this.lightLayer.addChild(this.cords);
     this.lightViews = new EntityViews(this.lightLayer);
     this.pickupViews = new EntityViews(this.entityLayer);
+    this.npcViews = new EntityViews(this.entityLayer);
+    this.wetViews = new EntityViews(this.dyn);
+    this.coinViews = new EntityViews(this.entityLayer);
     this.spyViews = new EntityViews(this.entityLayer);
+    this.bubbles = new Container();
     this.bulletGfx = new Graphics();
     this.darkGfx = new Graphics();
     this.playerSprite = new Sprite(tex('agentStand'));
     this.playerSprite.anchor.set(0.5, 1);
     this.entityLayer.addChild(this.playerSprite);
-    this.fxLayer.addChild(this.bulletGfx, this.darkGfx);
+    this.fxLayer.addChild(this.bulletGfx, this.darkGfx, this.bubbles);
 
     this.hud = createHud();
     c.addChild(this.hud.container);
     this.bannerBox = new Container(); this.bannerBox.visible = false;
     c.addChild(this.bannerBox);
+    this.panel = new Container(); this.panel.visible = false;
+    c.addChild(this.panel);
     this.popups = [];
   }
 
@@ -134,10 +140,34 @@ export class MallScene {
         else if (Math.abs(world.cars.find((c) => c.id === ev.carId).x - p.x) < 128) ctx.audio.sfx('ding');
         break;
       case 'score': this.popup(`${ev.pts}`, ev.x, ev.y); break;
+      case 'kiosk': this.showKiosk(ev.storeId); break;
+      case 'photo': this.showPanel([makeSprite('photoStrip')], 'SAY CHEESE!', 120, 2); break;
       case 'enterStore': ctx.enterStore?.(ev.storeId); break;
       case 'playerDied': ctx.onPlayerDied?.(this, ev.cause); break;
       default: break;
     }
+  }
+
+  showPanel(sprites, caption, frames, scale = 1) {
+    const pn = this.panel;
+    pn.removeChildren().forEach((ch) => ch.destroy({ children: true }));
+    const body = new Container();
+    let x = 0;
+    for (const s of sprites) { s.scale.set(scale); s.position.set(x, 0); body.addChild(s); x += s.width + 4; }
+    const cap = makeText(caption, C.yellow);
+    const w = Math.max(body.width, cap.width) + 12, h = body.height + 22;
+    pn.addChild(new Graphics().rect(0, 0, w, h).fill(C.black).rect(0, 0, w, h).stroke({ color: C.white, width: 1 }));
+    body.position.set(Math.floor((w - body.width) / 2), 6); cap.position.set(Math.floor((w - cap.width) / 2), h - 12);
+    pn.addChild(body, cap);
+    pn.position.set(Math.floor((256 - w) / 2), 64);
+    pn.visible = true; this.panelT = frames;
+  }
+
+  showKiosk(storeId) {
+    if (this.ctx.drawMiniMap) { this.ctx.drawMiniMap(this, storeId); return; }
+    const s = STORES.find((x) => x.id === storeId);
+    const text = s ? `NEAREST: ${s.name} ${FLOOR_NAMES[s.floor]}` : 'ALL PACKAGES FOUND!';
+    this.showPanel([makeText('YOU ARE HERE', C.white)], text, 180);
   }
 
   popup(text, x, y) {
@@ -194,6 +224,27 @@ export class MallScene {
       s.texture = tex(`pu_${it.id}`); s.position.set(Math.round(it.x), Math.round(it.y) + 12);
       s.visible = it.t > 120 || Math.floor(it.t / 4) % 2 === 0;
     });
+    const npcs = [world.janitor, world.cop, ...world.walkers].filter(Boolean);
+    this.npcViews.sync(npcs, (n, s) => {
+      if (n === world.janitor) s.texture = tex(n.state === 'mop' ? 'janitorMop' : 'janitorWalk', Math.floor(this.t / (n.state === 'mop' ? 8 : 12)));
+      else if (n === world.cop) { s.texture = tex('copSegway', Math.floor(this.t / 6)); s.tint = n.state === 'chase' && Math.floor(this.t / 6) % 2 ? 0xff8080 : 0xffffff; }
+      else s.texture = tex('walker', Math.floor(n.x / 6) % 2);
+      s.scale.x = n.facing; s.position.set(Math.round(n.x), Math.round(n.y));
+    });
+    this.wetViews.sync(world.wet, (w, s) => {
+      s.anchor.set(0, 1); s.texture = tex('puddle', Math.floor(this.t / 20));
+      s.width = w.x1 - w.x0; s.position.set(w.x0, feetY(w.floor) + 1);
+      s.alpha = w.t < 120 ? w.t / 120 : 1;
+      if (!s.sign) { s.sign = makeSprite('wetSign'); this.dyn.addChild(s.sign); s.on('destroyed', () => s.sign.destroy()); }
+      s.sign.position.set(w.x0 + 20, feetY(w.floor) - 12);
+    });
+    this.coinViews.sync(world.coins, (c, s) => {
+      s.anchor.set(0, 0); s.texture = tex(c.gold ? 'coinGold' : 'coin', Math.floor(this.t / 5)); s.position.set(Math.round(c.x), Math.round(c.y));
+      s.visible = c.life > 60 || Math.floor(c.life / 4) % 2 === 0;
+    });
+    this.bubbles.removeChildren().forEach((b) => b.destroy({ children: true }));
+    for (const w of world.walkers) if (w.heyT > 0) { const b = makeText('HEY!', C.red); b.position.set(Math.round(w.x) - 16, Math.round(w.y) - 36); this.bubbles.addChild(b); }
+
     this.spyViews.sync(world.spies, (sp, s) => {
       const [n, f] = spyFrame(sp);
       s.texture = tex(n, f); s.scale.x = sp.facing; s.position.set(Math.round(sp.x), Math.round(sp.y));
@@ -216,6 +267,7 @@ export class MallScene {
     // popups
     this.popups = this.popups.filter((pp) => { pp.life--; pp.t.y -= 0.4; if (pp.life <= 0) { pp.t.destroy(); return false; } return true; });
     if (this.bannerT > 0 && --this.bannerT === 0) this.bannerBox.visible = false;
+    if (this.panelT > 0 && --this.panelT === 0) this.panel.visible = false;
 
     const floorLabel = FLOOR_NAMES[p.floor ?? p.lastSafe.floor];
     this.hud.update(state, { floorLabel, alarm: world.alarm, frame: this.t });

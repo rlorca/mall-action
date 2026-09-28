@@ -3,7 +3,7 @@ import { ESCALATORS, ESC_RUN, STORES, doorX, ROOF_ENTRY_X } from '../world/mallL
 import { stepAir, supportedAt, findLanding, MAX_SAFE_FALL } from '../logic/physics.js';
 import { carFloor, doorwayState, inShaftX, CAR_H } from '../logic/elevator.js';
 import { walkSpeed, jumpVelocity, resolveHit } from '../logic/powerups.js';
-import { slideStep } from '../logic/npcs.js';
+import { slideStep, onWet } from '../logic/npcs.js';
 
 export const STAND_H = 24;
 export const DUCK_H = 14;
@@ -80,6 +80,7 @@ function tryActions(p, world, state, up) {
 }
 
 function stepGround(p, pad, world, state, ev) {
+  p.grounded = true;
   if (p.frozenT > 0) { p.frozenT--; p.vx = 0; return; }
   const speed = walkSpeed(state.power);
   const cars = world.cars;
@@ -87,6 +88,7 @@ function stepGround(p, pad, world, state, ev) {
 
   const sliding = p.floor !== null && slideStep(world.wet, p, speed);
   if (!sliding) {
+    p.kick = false;
     p.vx = pad.held('left') ? -speed : pad.held('right') ? speed : 0;
     if (p.vx) p.facing = Math.sign(p.vx);
   }
@@ -136,7 +138,9 @@ function stepAirMode(p, world, state, ev) {
     if (land) {
       p.y = land.y;
       if (p.y - p.fallFromY > MAX_SAFE_FALL) { killPlayer(p, 'fall', state, ev); return; }
-      Object.assign(p, { mode: 'ground', grounded: true, floor: land.floor, onRoof: land.roof, vx: 0, vy: 0, kick: false });
+      // a jump-kick that lands on a wet patch keeps the kick active while sliding
+      const keepKick = p.kick && land.floor !== null && onWet(world.wet, { x: p.x, floor: land.floor });
+      Object.assign(p, { mode: 'ground', grounded: true, floor: land.floor, onRoof: land.roof, vx: 0, vy: 0, kick: keepKick, slideDir: keepKick ? p.facing : 0 });
       return;
     }
   }
@@ -183,7 +187,15 @@ export function stepPlayer(p, pad, world, state) {
     case 'dying':
       if (p.dieT > 0 && --p.dieT === 0) ev.push({ type: 'playerDied', cause: p.deathCause });
       break;
-    default: break; // 'hidden' is driven by the photo-booth hook (Task 15)
+    case 'hidden': {
+      const leave = ['left', 'right', 'up', 'down'].some((b) => pad.pressed(b));
+      if (--p.hiddenT <= 0 || leave) {
+        p.mode = 'ground';
+        if (!state.photoTaken) { state.photoTaken = true; state.inventory.push('PHOTO STRIP'); ev.push({ type: 'photo' }); }
+      }
+      break;
+    }
+    default: break;
   }
   return ev;
 }
