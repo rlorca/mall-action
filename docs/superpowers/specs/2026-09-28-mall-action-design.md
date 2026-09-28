@@ -77,6 +77,29 @@ to Title. `Map` and `Pause` are overlays on Mall/Store.
   | Borderline Books | Borders | closed | — |
 
   Floor placement of stores is fixed in level data; roles are fixed for this build.
+- **Storefronts show what they sell.** Each facade is ~80 px wide: sign on top, door in
+  the middle, a display window on each side with themed merchandise sprites, so the
+  shop is readable at a glance without the sign:
+
+  | Store | Window display |
+  |---|---|
+  | Forever 12 | mannequins in outfits, clothing rack |
+  | RadioShock | stacked TVs (flickering static/test pattern), walkie-talkies |
+  | KGB Toys | teddy bears in ushankas, robot toys, toy rockets |
+  | Hot Spy on a Stick | striped counter, lemonade tub being pumped, corn dogs |
+  | Foot Lockpicker | sneaker wall, basketballs, jerseys |
+  | Sam Baddy | cassettes & vinyl, poster, boombox (bouncing speakers) |
+  | Crookstone | massage chair, gadget pedestals |
+  | Sharper Imagine | robot vacuum, gadget pedestals, glowing orb |
+  | Spender's Gifts | lava lamp (animated), black-light posters, plasma ball |
+  | Blockbluster Video | rolled-down shutter, "FOR LEASE" sign, faded VHS poster |
+  | Circuit Pity | shutter, dark dead TVs |
+  | Borderline Books | shutter, "CLOSING SALE" banner, empty shelves |
+
+  Displays use 1–3 frame idle animations (TV static, lava lamp, pump) to keep the mall
+  alive. The door colour still carries the role (red = package, blue = power-up shop,
+  shutter = closed); a cleared target store dims its window lights. Display sprites are
+  also reused as fixtures inside the matching store for visual continuity.
 - **Hanging lights:** one per ~screen per floor; shoot to drop it; falling light kills
   spies beneath it (bonus), and briefly darkens that section.
 - **Decor:** glass railings, fountains, benches, plants, store signs, mall directory
