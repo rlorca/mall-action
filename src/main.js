@@ -2,6 +2,7 @@ import { Application, Container, Graphics, TextureStyle } from 'pixi.js';
 import { CRTFilter } from 'pixi-filters';
 import { SCREEN_W, SCREEN_H } from './world/constants.js';
 import { createFixedStep } from './core/loop.js';
+import { createInput } from './core/input.js';
 
 TextureStyle.defaultOptions.scaleMode = 'nearest';
 
@@ -38,16 +39,15 @@ async function boot() {
   window.addEventListener('resize', resize);
   resize();
 
-  window.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyC') { crtOn = !crtOn; applyFilters(); }
-  });
+  const input = createInput(window);
+  input.onHotkey('KeyC', () => { crtOn = !crtOn; applyFilters(); });
 
   // TEMP test pattern (removed in Task 9)
   root.addChild(new Graphics().rect(0, 0, SCREEN_W, 16).fill(0x2038ec).rect(120, 100, 16, 24).fill(0xfc7460));
 
   const fixed = createFixedStep();
   app.ticker.add((t) => {
-    fixed.advance(t.deltaMS, () => { /* update(): wired in Task 9 */ });
+    fixed.advance(t.deltaMS, () => { input.poll(); /* scenes: wired in Task 9 */ });
     crt.time += 0.5; crt.seed = Math.random();
   });
 }
