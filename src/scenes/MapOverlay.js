@@ -33,7 +33,8 @@ export function drawMallMap(c, state, world, { x, y, w, h, highlightStoreId = nu
     if (hl && !blink) continue;
     const color = hl ? C.white : s.role === 'target' ? (cleared ? C.grey : C.red) : ROLE_COLOR[s.role];
     const sx = mx(s.x), sw = (STORE_W / MALL_W) * w, sy = my(feetY(s.floor)) - band * 0.75;
-    g.rect(sx, sy, sw, band * 0.7).fill(color);
+    if (s.role === 'closed' && !hl) g.rect(sx, sy, sw, band * 0.7).stroke({ color: C.darkGrey, width: 1 });
+    else g.rect(sx, sy, sw, band * 0.7).fill(color);
     if (state.power.radar && s.role === 'target' && !cleared) {
       const bang = new Sprite(signTexture('!', C.yellow)); bang.position.set(Math.round(sx + sw / 2 - 1), Math.round(sy - 6)); c.addChild(bang);
     }

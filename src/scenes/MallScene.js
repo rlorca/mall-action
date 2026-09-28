@@ -64,7 +64,7 @@ export class MallScene {
     this.worldLayer = new Container();
     c.addChild(this.worldLayer);
     const bg = buildMallBackground();
-    bg.cacheAsTexture(true);
+    // (no cacheAsTexture: caching while the CRT filter is active renders the whole stage black in Pixi 8)
     this.worldLayer.addChild(bg);
 
     this.fronts = STORES.map((s) => buildStorefront(s, { blackFriday: state.blackFriday }));

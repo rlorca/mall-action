@@ -112,6 +112,7 @@ async function boot() {
   };
   if (ctx.debug) {
     window.__mall = ctx;
+    ctx.app = app; ctx.root = root;
     // deterministic driver for automated playtests: hold `buttons` for `frames` fixed steps (first step counts as a press)
     ctx.drive = (buttons = [], frames = 1) => {
       ctx.manual = true; // scripted runs own the clock from now on
