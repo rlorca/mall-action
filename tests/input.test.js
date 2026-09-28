@@ -11,6 +11,14 @@ describe('Pad', () => {
     p.step(new Set());
     expect(p.released('a')).toBe(true); expect(p.held('a')).toBe(false);
   });
+  it('counts queued taps as presses even while the key stays held', () => {
+    const p = new Pad();
+    p.step(new Set(['up']), new Set(['up']));
+    p.step(new Set(['up']), new Set(['up'])); // second tap arrived before the poll saw a release
+    expect(p.pressed('up')).toBe(true);
+    p.step(new Set(['up']));
+    expect(p.pressed('up')).toBe(false);
+  });
   it('lists pressed buttons in BUTTONS order', () => {
     const p = new Pad(); p.step(new Set(['b', 'up']));
     expect(p.pressedList()).toEqual(['up', 'b']);
