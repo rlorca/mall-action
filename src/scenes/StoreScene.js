@@ -8,6 +8,7 @@ import { makeText, setText } from '../gfx/font.js';
 import { C } from '../gfx/palette.js';
 import { createHud } from '../ui/hud.js';
 import { EntityViews } from './mallView.js';
+import { EGG_TEXT, JOKE_SPRITES } from '../game/storeExtras.js'; // also registers the store extras
 
 const ROOM_Y = 16;
 const STRIP_Y = 192;
@@ -167,7 +168,30 @@ export class StoreScene {
     if (this.bannerT > 0 && --this.bannerT === 0) this.bannerBox.visible = false;
 
     this.hud.update(state, { floorLabel: FLOOR_NAMES[world.store.floor], marquee: world.store.name, frame: this.t });
-    this.renderExtras?.();
+    this.renderExtras();
+  }
+
+  renderExtras() {
+    const { world } = this;
+    const ex = this.extras;
+    ex.removeChildren().forEach((ch) => ch.destroy());
+    const room = world.room;
+    if (room.oldMan && !world.oldManGone) {
+      const s = makeSprite('oldMan'); s.position.set(room.oldMan.col * TILE, room.oldMan.row * TILE); ex.addChild(s);
+    }
+    if (world.egg?.phase === 'offer') {
+      const s = makeSprite(JOKE_SPRITES[world.egg.item]); s.position.set(room.pedestal.col * TILE, room.pedestal.row * TILE - 6); ex.addChild(s);
+    }
+    for (const t of world.toys) { const s = makeSprite('windupToy', Math.floor(this.t / 6)); s.position.set(Math.round(t.x), Math.round(t.y)); ex.addChild(s); }
+    for (const b of world.enemyBullets) if (b.shoe) { const s = makeSprite('shoe', Math.floor(this.t / 6)); s.position.set(Math.round(b.x), Math.round(b.y)); ex.addChild(s); }
+    if (world.booth) { const g = new Graphics().rect(room.booth.col * TILE, room.booth.row * TILE, TILE, TILE).stroke({ color: this.t % 20 < 10 ? C.magenta : C.white, width: 1 }); ex.addChild(g); }
+    // typewriter dialogue (wrapped after the first sentence)
+    const shown = world.egg ? EGG_TEXT.slice(0, world.egg.i) : '';
+    if (shown !== this.dialogueText) {
+      this.dialogueText = shown;
+      const [a, ...rest] = shown.split('! ');
+      setText(this.dialogue, rest.length ? `${a}!\n${rest.join('! ')}` : a, C.white);
+    }
   }
 
   exit() {}
