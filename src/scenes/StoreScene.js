@@ -109,6 +109,7 @@ export class StoreScene {
     this.world = createStoreWorld(this.storeId, this.ctx.state, this.ctx.state.rng);
     this.world.player.invulnT = 120;
     this.build();
+    this.ctx.audio.playMusic(`store_${this.storeId}`);
   }
 
   render() {

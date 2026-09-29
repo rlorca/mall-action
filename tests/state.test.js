@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createGameState, nextLoop, loseLife } from '../src/game/state.js';
+import { createGameState, nextLoop, loseLife, useContinue } from '../src/game/state.js';
 
 describe('game state', () => {
   it('starts with 3 lives, loop 1, fresh setup', () => {
@@ -17,5 +17,24 @@ describe('game state', () => {
   it('loseLife decrements and resets power-ups', () => {
     const s = createGameState({ seed: 1 }); s.power.weapon = 'rapid';
     expect(loseLife(s)).toBe(2); expect(s.power.weapon).toBeNull();
+  });
+});
+
+describe('continues', () => {
+  it('each game starts with 3 continues', () => {
+    expect(createGameState({ seed: 1 }).continues).toBe(3);
+  });
+  it('continuing refills lives, keeps progress, and uses one continue', () => {
+    const s = createGameState({ seed: 1 });
+    s.score = 4200; s.packages.add('radioshock'); s.lives = 0; s.power.weapon = 'rapid';
+    expect(useContinue(s)).toBe(true);
+    expect(s).toMatchObject({ lives: 3, continues: 2, score: 4200 });
+    expect(s.packages.has('radioshock')).toBe(true);
+    expect(s.power.weapon).toBeNull();
+  });
+  it('no continues left means game over', () => {
+    const s = createGameState({ seed: 1 }); s.continues = 0; s.lives = 0;
+    expect(useContinue(s)).toBe(false);
+    expect(s.lives).toBe(0);
   });
 });

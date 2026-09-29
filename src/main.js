@@ -15,6 +15,7 @@ import { MapOverlay, drawMallMap } from './scenes/MapOverlay.js';
 import { PauseOverlay } from './scenes/PauseOverlay.js';
 import { LevelClearScene } from './scenes/LevelClearScene.js';
 import { GameOverScene } from './scenes/GameOverScene.js';
+import { ContinueOverlay } from './scenes/ContinueOverlay.js';
 import { respawnPlayer } from './game/mallWorld.js';
 import { loseLife, nextLoop } from './game/state.js';
 import { GalleryScene } from './scenes/GalleryScene.js';
@@ -99,6 +100,11 @@ async function boot() {
   ctx.enterStore = (storeId) => ctx.scenes.replace(new StoreScene(), { storeId });
   ctx.exitStore = (storeId) => ctx.scenes.replace(ctx.mallScene, { fromStore: storeId });
   ctx.gameOver = () => ctx.scenes.replace(new GameOverScene());
+  // last life lost: offer a continue if any are left, otherwise it's game over
+  ctx.outOfLives = (onContinue) => {
+    if (ctx.state.continues > 0) ctx.scenes.push(new ContinueOverlay(), { onContinue });
+    else ctx.gameOver();
+  };
   ctx.openPause = () => ctx.scenes.push(new PauseOverlay());
   ctx.openMap = (storeId) => ctx.scenes.push(new MapOverlay(), { storeId });
   ctx.drawMiniMap = (scene, storeId) => {
@@ -113,15 +119,17 @@ async function boot() {
     ctx.scenes.replace(new MallScene(), { newLevel: true });
   };
   ctx.onStoreDeath = (scene) => {
-    if (loseLife(ctx.state) <= 0) { ctx.gameOver(); return; }
+    if (loseLife(ctx.state) <= 0) { ctx.outOfLives(() => scene.respawn()); return; }
     scene.respawn();
   };
   ctx.onPlayerDied = (scene) => {
-    const left = loseLife(ctx.state);
-    if (left <= 0) { ctx.gameOver(); return; }
-    const w = scene.world;
-    respawnPlayer(w);
-    ctx.audio.playMusic(w.alarm ? 'mallAlarm' : 'mall');
+    const respawn = () => {
+      const w = scene.world;
+      respawnPlayer(w);
+      ctx.audio.playMusic(w.alarm ? 'mallAlarm' : 'mall');
+    };
+    if (loseLife(ctx.state) <= 0) { ctx.outOfLives(respawn); return; }
+    respawn();
   };
   if (ctx.debug) {
     window.__mall = ctx;
