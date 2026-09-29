@@ -1,0 +1,44 @@
+/**
+ * Canonical 64-color NES Master Palette.
+ */
+export const NES_PALETTE = [
+  "#666666", "#002A88", "#1412A7", "#3B00A4", "#5C007E", "#6E0040", "#6C0600", "#561D00",
+  "#333500", "#0B4800", "#005200", "#004F08", "#00404D", "#000000", "#000000", "#000000",
+  "#ADADAD", "#155FD9", "#4240FF", "#7527FE", "#A01ACC", "#B71E7B", "#B53120", "#994E00",
+  "#6B6D00", "#267F00", "#00870D", "#00824E", "#0078A6", "#000000", "#000000", "#000000",
+  "#FFFFFF", "#64B0FF", "#9290FF", "#C676FF", "#F26AFF", "#FF6EBE", "#FF8170", "#EA9E22",
+  "#BCBE00", "#7CB800", "#4DBF45", "#46C697", "#3FC1E8", "#3C3C3C", "#000000", "#000000",
+  "#FFFFFF", "#C0DFFF", "#D3D2FF", "#E8C8FF", "#FBC2FF", "#FECEE4", "#FEC7C1", "#F5D6A5",
+  "#E0E290", "#C7E690", "#B4F1B9", "#B2ECE2", "#B3ECF8", "#AB9E9E", "#000000", "#000000"
+];
+
+// Named Palette Indices for quick access
+export const PAL = {
+  BLACK: "#000000",
+  WHITE: "#FFFFFF",
+  LIGHT_GRAY: "#ADADAD",
+  DARK_GRAY: "#666666",
+  VERY_DARK_GRAY: "#3C3C3C",
+  RED: "#B53120",
+  BRIGHT_RED: "#FF8170",
+  LIGHT_RED: "#FEC7C1",
+  MAGENTA: "#A01ACC",
+  HOT_PINK: "#FF6EBE",
+  LIGHT_PINK: "#FECEE4",
+  DARK_BLUE: "#002A88",
+  BLUE: "#155FD9",
+  CYAN: "#3FC1E8",
+  LIGHT_CYAN: "#B3ECF8",
+  DARK_GREEN: "#005200",
+  GREEN: "#267F00",
+  LIGHT_GREEN: "#4DBF45",
+  PALE_GREEN: "#B4F1B9",
+  YELLOW: "#BCBE00",
+  GOLD: "#EA9E22",
+  LIGHT_YELLOW: "#F5D6A5",
+  BROWN: "#561D00",
+  ORANGE: "#994E00",
+  PURPLE: "#3B00A4",
+  LIGHT_PURPLE: "#9290FF",
+  TRANSPARENT: "transparent"
+};

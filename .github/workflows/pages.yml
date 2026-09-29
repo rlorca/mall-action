@@ -1,0 +1,42 @@
+name: Publish to GitHub Pages
+
+on:
+  push:
+    branches: [gemini-3-6-flash]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
+env:
+  PUBLISH_DIR: gemini-3.6-flash
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Publish dist/ to gh-pages/${{ env.PUBLISH_DIR }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone --depth 1 --branch gh-pages "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" site
+          rm -rf "site/$PUBLISH_DIR"
+          mkdir -p "site/$PUBLISH_DIR"
+          cp -r dist/. "site/$PUBLISH_DIR/"
+          cd site
+          git add -A
+          if git diff --cached --quiet; then echo "nothing to publish"; exit 0; fi
+          git commit -m "Publish $PUBLISH_DIR from ${{ github.sha }}"
+          git push origin gh-pages
