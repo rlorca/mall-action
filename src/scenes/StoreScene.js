@@ -23,7 +23,7 @@ export class StoreScene {
     this.ctx = ctx; this.storeId = storeId; this.t = 0;
     this.world = createStoreWorld(storeId, ctx.state, ctx.state.rng);
     this.build();
-    ctx.audio.playMusic('store');
+    ctx.audio.playMusic(`store_${storeId}`);
   }
 
   build() {

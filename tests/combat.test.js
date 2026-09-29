@@ -63,4 +63,36 @@ describe('combat', () => {
     expect(s.state).toBe('dead'); expect(state.score).toBe(300);
     expect(['rolling', 'broken']).toContain(ball.state);
   });
+  it('spies dodge only a small share of shots (most straight shots land)', () => {
+    let kills = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const state = createGameState({ seed }); const world = createMallWorld(state);
+      world.cars.forEach((c) => { c.ai = false; }); world.spawnT = 1e9; world.cop = null; world.walkers = []; world.janitor = null;
+      Object.assign(world.player, { mode: 'ground', introT: 0, x: 200, floor: 1, y: feetY(1), facing: 1 });
+      const s = createSpy(270, 1, 'door'); Object.assign(s, { state: 'walk', fireT: 999 }); world.spies.push(s);
+      run(world, state, pad([], ['a']), 1); run(world, state, NONE, 40);
+      if (s.state === 'dead') kills++;
+    }
+    expect(kills).toBeGreaterThanOrEqual(85);
+  });
+  it('a freshly spawned spy gives you ~2 s before its first shot, with a long aim warning', () => {
+    const { state, world, p } = setup();
+    world.spawnT = 1; // spawn now, next to a store door near the player
+    Object.assign(p, { x: 120, floor: 1, y: feetY(1) }); // radioshock door at 216 is in spawn range
+    let firstShot = null, aimStart = null;
+    for (let f = 1; f <= 400 && firstShot === null; f++) {
+      stepMall(world, NONE, state, state.rng);
+      const s = world.spies[0];
+      if (s && s.state === 'aim' && aimStart === null) aimStart = f;
+      if (world.enemyBullets.length) firstShot = f;
+    }
+    expect(world.spies.length).toBe(1);
+    expect(firstShot).toBeGreaterThanOrEqual(120);
+    expect(firstShot - aimStart).toBeGreaterThanOrEqual(30);
+  });
+  it('player bullets outrun enemy bullets', () => {
+    const { state, world } = setup();
+    run(world, state, pad([], ['a']), 1);
+    expect(Math.abs(world.bullets[0].vx)).toBeGreaterThanOrEqual(4);
+  });
 });

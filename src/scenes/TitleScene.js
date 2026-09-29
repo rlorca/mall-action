@@ -3,6 +3,7 @@ import { makeText } from '../gfx/font.js';
 import { C } from '../gfx/palette.js';
 import { hasSprite, makeSprite, tex, frames } from '../gfx/textures.js';
 import { STORES } from '../world/mallLevel.js';
+import { buildStorefront, updateStorefront } from './mallView.js';
 
 const center = (t, y) => { t.position.set(Math.floor((256 - t.width) / 2), y); return t; };
 
@@ -47,22 +48,20 @@ export class TitleScene {
   buildFacade() {
     this.facade.removeChildren();
     const W = 80;
+    const open = STORES.filter((s) => s.role !== 'closed');
+    this.fronts = [];
     for (let i = 0; i < 5; i++) {
-      const s = STORES[i % STORES.length];
-      const x = i * W;
-      if (hasSprite('facade')) {
-        const f = makeSprite('facade'); f.position.set(x, 0); this.facade.addChild(f);
-      } else {
-        this.facade.addChild(new Graphics().rect(x + 2, 0, W - 4, 40).fill(C.paleYellow).rect(x + 32, 16, 16, 24).fill(s.role === 'target' ? C.red : C.blue));
-      }
-      const name = makeText(s.name.slice(0, 9), C.black); name.position.set(x + Math.floor((W - Math.min(9, s.name.length) * 8) / 2), 2);
-      this.facade.addChild(name);
+      const h = buildStorefront(open[i % open.length], { blackFriday: false });
+      h.container.position.set(i * W, 0);
+      this.facade.addChild(h.container);
+      this.fronts.push(h);
     }
   }
 
   update(ctx) {
     this.t++;
     this.facade.x = -((this.t >> 1) % 80);
+    for (const f of this.fronts) updateStorefront(f, NO_PROGRESS, this.t);
     this.press.visible = this.t % 48 < 32;
     for (const b of ctx.pad.pressedList()) {
       if (ctx.konami.push(b) && !this.blackFriday) { this.blackFriday = true; ctx.audio.sfx('powerup'); return; }
@@ -79,3 +78,4 @@ export class TitleScene {
 }
 
 const NES_BLUE_MID = '#0000bc';
+const NO_PROGRESS = { cleared: new Set() };

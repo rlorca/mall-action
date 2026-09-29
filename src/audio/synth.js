@@ -40,7 +40,8 @@ export function createSynth() {
     s.connect(f).connect(g).connect(out); s.start(t); s.stop(t + dur);
   }
 
-  let song = null, timer = null;
+  let song = null, timer = null, ducked = false;
+  const songGain = () => (song?.track.gain ?? 1) * (ducked ? 0.25 : 1);
   const CH = { p1: ['pulse25', 0.12], p2: ['pulse12', 0.08], tri: ['triangle', 0.25] };
 
   function schedule() {
@@ -70,7 +71,7 @@ export function createSynth() {
     song = { name, track, channels };
     api.musicName = name;
     musicBus.gain.cancelScheduledValues(ctx.currentTime);
-    musicBus.gain.setValueAtTime(0, ctx.currentTime); musicBus.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.25);
+    musicBus.gain.setValueAtTime(0, ctx.currentTime); musicBus.gain.linearRampToValueAtTime(songGain(), ctx.currentTime + 0.25);
     timer = setInterval(schedule, 25); schedule();
   }
   function stopMusic() { clearInterval(timer); timer = null; song = null; api.musicName = null; }
@@ -81,7 +82,7 @@ export function createSynth() {
     playMusic, stopMusic,
     sfx(name) { const f = SFX[name]; if (f && ctx.state === 'running') f(ctx, sfxBus, ctx.currentTime, { ...lib, tone: (w, fr, t, d, v) => tone(w, fr, t, d, v, sfxBus), hit: (k, t) => hit(k, t, sfxBus) }); },
     toggleMute() { api.muted = !api.muted; master.gain.value = api.muted ? 0 : 0.35; },
-    duck(on) { musicBus.gain.setTargetAtTime(on ? 0.25 : 1, ctx.currentTime, 0.05); },
+    duck(on) { ducked = on; musicBus.gain.setTargetAtTime(songGain(), ctx.currentTime, 0.05); },
   };
   return api;
 }

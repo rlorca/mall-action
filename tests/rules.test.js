@@ -26,13 +26,13 @@ describe('exit rule', () => {
 
 describe('difficulty', () => {
   it('loop 1 base values', () => {
-    expect(difficulty(1)).toEqual({ spySpeed: 0.75, spawnInterval: 240, fireInterval: 90, alarmAt: 9000, spyCap: 4 });
+    expect(difficulty(1)).toEqual({ spySpeed: 0.75, spawnInterval: 240, fireInterval: 150, alarmAt: 9000, spyCap: 4 });
   });
   it('scales per loop with caps', () => {
     const d2 = difficulty(2);
-    expect(d2.spySpeed).toBeCloseTo(0.825); expect(d2.spawnInterval).toBe(204); expect(d2.fireInterval).toBe(78); expect(d2.alarmAt).toBe(130 * 60);
+    expect(d2.spySpeed).toBeCloseTo(0.825); expect(d2.spawnInterval).toBe(204); expect(d2.fireInterval).toBe(130); expect(d2.alarmAt).toBe(130 * 60);
     const d20 = difficulty(20);
-    expect(d20.spySpeed).toBe(1.5); expect(d20.spawnInterval).toBe(90); expect(d20.fireInterval).toBe(40); expect(d20.alarmAt).toBe(3600);
+    expect(d20.spySpeed).toBe(1.5); expect(d20.spawnInterval).toBe(90); expect(d20.fireInterval).toBe(60); expect(d20.alarmAt).toBe(3600);
   });
   it('alarm and black friday modifiers', () => {
     const a = difficulty(1, { alarm: true });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Pad, mapGamepad, KEYMAP } from '../src/core/input.js';
+import { Pad, mapGamepad, KEYMAP, buttonForKey } from '../src/core/input.js';
 
 describe('Pad', () => {
   it('tracks held / pressed / released edges', () => {
@@ -45,4 +45,19 @@ describe('mapGamepad', () => {
     expect([...mapGamepad(gp([], [-0.9, 0.2]))]).toEqual(['left']);
     expect([...mapGamepad(gp([], [0.3, 0.3]))]).toEqual([]);
   });
+});
+
+describe('buttonForKey', () => {
+  it('maps by printed letter so QWERTZ/AZERTY keyboards work (Z shoots even when its code is KeyY)', () => {
+    expect(buttonForKey({ code: 'KeyY', key: 'z' })).toBe('a');
+    expect(buttonForKey({ code: 'KeyY', key: 'Z' })).toBe('a');
+    expect(buttonForKey({ code: 'KeyX', key: 'x' })).toBe('b');
+    expect(buttonForKey({ code: 'KeyQ', key: 'a' })).toBe('left'); // AZERTY: A is where Q is
+  });
+  it('still maps arrows, Enter, Shift by code', () => {
+    expect(buttonForKey({ code: 'ArrowUp', key: 'ArrowUp' })).toBe('up');
+    expect(buttonForKey({ code: 'ShiftLeft', key: 'Shift' })).toBe('select');
+    expect(buttonForKey({ code: 'Enter', key: 'Enter' })).toBe('start');
+  });
+  it('ignores unmapped keys', () => expect(buttonForKey({ code: 'KeyP', key: 'p' })).toBeUndefined());
 });

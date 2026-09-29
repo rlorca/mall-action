@@ -47,7 +47,7 @@ function stepEgg(world, pad, state, rng, events) {
     world.oldManGone = true;
     world.frozen = false;
     world.pops.push({ name: 'smoke', col: world.room.oldMan.col, row: world.room.oldMan.row, t: 36 });
-    events.push({ type: 'banner', text: `YOU GOT: ${egg.item}` }, { type: 'sfx', name: 'smoke' }, { type: 'music', name: 'store' });
+    events.push({ type: 'banner', text: `YOU GOT: ${egg.item}` }, { type: 'sfx', name: 'smoke' }, { type: 'music', name: `store_${world.store.id}` });
     world.egg = null;
   }
 }

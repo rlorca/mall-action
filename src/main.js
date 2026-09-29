@@ -5,6 +5,7 @@ import { createFixedStep } from './core/loop.js';
 import { createInput } from './core/input.js';
 import { createSynth } from './audio/synth.js';
 import { SceneManager } from './core/scenes.js';
+import { makeText } from './gfx/font.js';
 import { createKonami } from './logic/secrets.js';
 import { createGameState } from './game/state.js';
 import { TitleScene } from './scenes/TitleScene.js';
@@ -46,8 +47,10 @@ async function boot() {
   const clip = new Graphics().rect(0, 0, SCREEN_W, SCREEN_H).fill(0xffffff);
   root.addChild(clip); root.mask = clip;
 
-  const crt = new CRTFilter({ curvature: 2, lineWidth: 1.5, lineContrast: 0.2, noise: 0.06, noiseSize: 1, vignetting: 0.25, vignettingAlpha: 0.5 });
-  let crtOn = true;
+  const crt = new CRTFilter({ curvature: 4, lineWidth: 1.5, lineContrast: 0.35, noise: 0.08, noiseSize: 1, vignetting: 0.3, vignettingAlpha: 0.7 });
+  const load = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v === '1'; } catch { return d; } };
+  const save = (k, v) => { try { localStorage.setItem(k, v ? '1' : '0'); } catch { /* storage unavailable */ } };
+  let crtOn = load('mallAction.crt', true);
   const applyFilters = () => { app.stage.filters = crtOn ? [crt] : []; };
   applyFilters();
 
@@ -55,19 +58,31 @@ async function boot() {
     const s = fitScale();
     app.renderer.resize(SCREEN_W * s, SCREEN_H * s);
     root.scale.set(s);
-    crt.lineWidth = Math.max(1, s * 0.5);
+    crt.lineWidth = Math.max(1, s * 0.6);
     app.stage.filterArea = app.screen;
   };
   window.addEventListener('resize', resize);
   resize();
 
   const input = createInput(window);
-  input.onHotkey('KeyC', () => { crtOn = !crtOn; applyFilters(); });
+  // on-screen confirmation for toggles
+  const toast = new Container();
+  root.addChild(toast);
+  let toastT = 0;
+  const showToast = (text) => {
+    toast.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const t = makeText(text, '#fcfcfc');
+    toast.addChild(new Graphics().rect(0, 0, t.width + 8, 12).fill(0x000000), t);
+    t.position.set(4, 2);
+    toast.position.set(Math.floor((SCREEN_W - t.width - 8) / 2), 104);
+    toastT = 90;
+  };
+  input.onHotkey('c', () => { crtOn = !crtOn; applyFilters(); save('mallAction.crt', crtOn); showToast(crtOn ? 'CRT ON' : 'CRT OFF'); });
   const audio = createSynth();
   const unlock = () => audio.unlock();
   window.addEventListener('keydown', unlock);
   window.addEventListener('pointerdown', unlock);
-  input.onHotkey('KeyM', () => audio.toggleMute());
+  input.onHotkey('m', () => { audio.toggleMute(); showToast(audio.muted ? 'SOUND OFF' : 'SOUND ON'); });
 
   const params = new URLSearchParams(location.search);
   const ctx = {
@@ -130,6 +145,7 @@ async function boot() {
   app.ticker.add((t) => {
     if (!ctx.manual) fixed.advance(t.deltaMS, () => { input.poll(); ctx.scenes.update(); });
     if (crtOn) { crt.time += 0.5; crt.seed = Math.random(); }
+    if (toastT > 0 && --toastT === 0) toast.removeChildren();
   });
 }
 

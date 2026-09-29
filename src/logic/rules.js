@@ -19,7 +19,7 @@ export function difficulty(loop, { blackFriday = false, alarm = false } = {}) {
   const n = loop - 1;
   let spySpeed = Math.min(0.75 * 1.1 ** n, 1.5);
   let spawnInterval = Math.max(90, Math.round(240 * 0.85 ** n));
-  const fireInterval = Math.max(40, Math.round(90 / 1.15 ** n));
+  const fireInterval = Math.max(60, Math.round(150 / 1.15 ** n));
   const alarmAt = Math.max(60 * 60, (150 - 20 * n) * 60);
   let spyCap = 4;
   if (blackFriday) { spyCap = 8; spawnInterval = Math.round(spawnInterval / 2); }

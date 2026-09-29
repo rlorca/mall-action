@@ -27,7 +27,7 @@ export function firePlayer(world, pad, state) {
   const floor = p.floor ?? floorOfY(p.y - 1);
   const x = p.facing > 0 ? p.x + 6 : p.x - 10;
   const spreads = state.power.weapon === 'spread' ? [0, -0.6, 0.6] : [0];
-  for (const vy of spreads) world.bullets.push({ x, y, vx: 3 * p.facing, vy, floor, w: 4, h: 2, owner: 'player', life: 90 });
+  for (const vy of spreads) world.bullets.push({ x, y, vx: 4 * p.facing, vy, floor, w: 4, h: 2, owner: 'player', life: 90 });
   events.push({ type: 'sfx', name: 'shot' });
   if (world.cop && copSeesShot(world.cop, p)) {
     startChase(world.cop);

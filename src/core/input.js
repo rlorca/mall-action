@@ -17,6 +17,17 @@ export class Pad {
   pressedList() { return BUTTONS.filter((b) => this.pressed(b)); }
 }
 
+// Letter keys are matched by the printed letter (e.key), so Z shoots on QWERTZ and WASD works on AZERTY.
+// Everything else (arrows, Enter, Shift, Tab) is matched by physical code.
+const LETTERS = { w: 'up', a: 'left', s: 'down', d: 'right', z: 'a', j: 'a', x: 'b', k: 'b' };
+const letterOf = (e) => (e.key && e.key.length === 1 ? e.key.toLowerCase() : null);
+
+export function buttonForKey(e) {
+  const letter = letterOf(e);
+  if (letter) return LETTERS[letter];
+  return KEYMAP[e.code];
+}
+
 const GP_BUTTONS = { 0: 'a', 1: 'b', 8: 'select', 9: 'start', 12: 'up', 13: 'down', 14: 'left', 15: 'right' };
 
 export function mapGamepad(gp) {
@@ -36,11 +47,12 @@ export function createInput(target = window) {
   const queue = [];
   const hotkeys = new Map();
   const down = (e) => {
-    const b = KEYMAP[e.code];
+    const b = buttonForKey(e);
     if (b) { keys.add(b); if (!e.repeat) queue.push(b); e.preventDefault(); }
-    if (!e.repeat && hotkeys.has(e.code)) hotkeys.get(e.code)();
+    const hk = hotkeys.get(letterOf(e)) ?? hotkeys.get(e.code);
+    if (!e.repeat && hk) hk();
   };
-  const up = (e) => { const b = KEYMAP[e.code]; if (b) keys.delete(b); };
+  const up = (e) => { const b = buttonForKey(e); if (b) keys.delete(b); };
   const blur = () => keys.clear();
   target.addEventListener('keydown', down);
   target.addEventListener('keyup', up);
@@ -58,7 +70,7 @@ export function createInput(target = window) {
       for (const gp of pads) if (gp) for (const b of mapGamepad(gp)) held.add(b);
       pad.step(held, taps);
     },
-    onHotkey(code, fn) { hotkeys.set(code, fn); },
+    onHotkey(keyOrCode, fn) { hotkeys.set(keyOrCode, fn); }, // e.g. 'c' (printed letter) or 'F1' (code)
     destroy() { target.removeEventListener('keydown', down); target.removeEventListener('keyup', up); target.removeEventListener('blur', blur); },
   };
 }
