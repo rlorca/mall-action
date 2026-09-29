@@ -47,23 +47,28 @@ function main() {
   const FRAME_TIME = 1000 / 60; // 60 Hz
 
   function gameLoop(timestamp: number) {
-    if (gameState.frame === 0) {
+    try {
+      if (gameState.frame === 0) {
+        accumulator = timestamp;
+      }
+
+      const delta = timestamp - accumulator;
       accumulator = timestamp;
+
+      let stepped = 0;
+      const maxSteps = 5; // Prevent catch-up spiral
+
+      while (stepped < maxSteps && delta >= FRAME_TIME) {
+        const input = inputHandler.getInput();
+        gameState = step(gameState, input);
+        stepped++;
+      }
+
+      renderer.render(gameState);
+    } catch (error) {
+      console.error('Game loop error:', error);
+      console.error(error instanceof Error ? error.stack : 'Unknown error');
     }
-
-    const delta = timestamp - accumulator;
-    accumulator = timestamp;
-
-    let stepped = 0;
-    const maxSteps = 5; // Prevent catch-up spiral
-
-    while (stepped < maxSteps && delta >= FRAME_TIME) {
-      const input = inputHandler.getInput();
-      gameState = step(gameState, input);
-      stepped++;
-    }
-
-    renderer.render(gameState);
     requestAnimationFrame(gameLoop);
   }
 
