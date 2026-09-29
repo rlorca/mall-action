@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Storefront preview (dev only)</title>
+<style>
+  html, body { margin: 0; background: #111; color: #ccc; font: 12px monospace; }
+  canvas { display: block; image-rendering: pixelated; margin: 8px auto; border: 1px solid #333; }
+  label { margin: 0 8px; }
+</style>
+</head>
+<body>
+<div style="text-align:center;padding:6px">
+  <label><input type="checkbox" id="cleared"> cleared</label>
+  <label><input type="checkbox" id="bf"> black friday</label>
+  <label>scale <select id="scale"><option>2</option><option selected>3</option><option>4</option></select></label>
+</div>
+<canvas id="c"></canvas>
+<script type="module" src="/src/art/storefront-preview.ts"></script>
+</body>
+</html>

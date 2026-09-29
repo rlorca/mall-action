@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Screens preview (dev only)</title>
+<style>
+  html, body { margin: 0; background: #111; color: #ccc; font: 12px monospace; }
+  canvas { display: block; image-rendering: pixelated; margin: 8px auto; border: 1px solid #333; }
+  #bar { text-align: center; padding: 6px; }
+  #bar a { color: #8cf; margin: 0 6px; }
+  #log { text-align: center; color: #9a9; min-height: 14px; }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<canvas id="c"></canvas>
+<div id="log"></div>
+<div style="text-align:center;color:#777">arrows, Z=A, X=B, Shift=Select, Enter=Start. ?screen=title|map|pause|levelclear|continue|gameover|spygram &amp; frame=N radar=1 store=kgbtoys konami=1 score=N</div>
+<script type="module" src="/src/screens/screens-preview.ts"></script>
+</body>
+</html>

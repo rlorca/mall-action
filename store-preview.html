@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Store preview (dev only)</title>
+<style>
+  html, body { margin: 0; background: #111; color: #ccc; font: 12px monospace; }
+  canvas { display: block; image-rendering: pixelated; margin: 6px auto; border: 1px solid #333; }
+  #nav { text-align: center; padding: 4px; }
+  #nav a { color: #8cf; margin: 0 4px; }
+</style>
+</head>
+<body>
+<div id="nav"></div>
+<canvas id="c" tabindex="0"></canvas>
+<script type="module" src="/src/render/store-preview.ts"></script>
+</body>
+</html>
