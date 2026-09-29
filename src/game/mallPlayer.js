@@ -4,6 +4,7 @@ import { stepAir, supportedAt, findLanding, MAX_SAFE_FALL } from '../logic/physi
 import { carFloor, doorwayState, inShaftX, CAR_H } from '../logic/elevator.js';
 import { walkSpeed, jumpVelocity, resolveHit } from '../logic/powerups.js';
 import { slideStep, onWet } from '../logic/npcs.js';
+import { ARRIVAL_POSTS, pickPost } from './humor.js';
 
 export const STAND_H = 24;
 export const DUCK_H = 14;
@@ -13,7 +14,6 @@ export const DUCK_H = 14;
 export const ZIP = { x0: 36, y0: 10, x1: ROOF_ENTRY_X, y1: feetY(0) - 40, slideFrames: 80, landFrames: 14 };
 export const INTRO_FRAMES = 120; // upper bound: slide + drop + landing crouch
 export const SELFIE_FRAMES = 150;
-export const SELFIE_CAPTION = 'FEELING CUTE, MIGHT DELETE LATER';
 const HANG = 24;
 
 const clampX = (x) => Math.min(WALL_R - 6, Math.max(WALL_L + 6, x));
@@ -24,7 +24,7 @@ export function createPlayer() {
     kind: 'player', x: ZIP.x0, y: ZIP.y0 + HANG, w: 10, h: STAND_H, vx: 0, vy: 0, facing: 1,
     floor: null, grounded: false, riding: null, onRoof: null, fallFromY: null,
     mode: 'intro', introPhase: 'slide', introT: 0, duck: false, kick: false, esc: null,
-    frozenT: 0, invulnT: 0, hiddenT: 0, dieT: 0, deathCause: null, slideDir: 0, shootT: 0, poseT: 0,
+    frozenT: 0, invulnT: 0, hiddenT: 0, dieT: 0, deathCause: null, slideDir: 0, shootT: 0, poseT: 0, waitT: 0,
     lastSafe: { x: ROOF_ENTRY_X, floor: 0 },
   };
 }
@@ -32,6 +32,23 @@ export function createPlayer() {
 export function placeOnFloor(p, x, floor) {
   Object.assign(p, { x, floor, y: feetY(floor), mode: 'ground', grounded: true, onRoof: null, riding: null, vx: 0, vy: 0, duck: false, kick: false, h: STAND_H, esc: null });
 }
+
+// A car the player can call from where they stand: in the opening (on the grate) or right beside it.
+export function callableCar(p, world) {
+  if (p.floor === null) return null;
+  return world.cars.find((c) => {
+    if (p.floor < c.minFloor || p.floor > c.maxFloor || carFloor(c) === p.floor) return false;
+    if (inShaftX(c, p.x)) return doorwayState(c, p.floor) === 'solid';
+    return Math.abs(p.x - (c.x + c.w / 2)) <= c.w / 2 + 12;
+  }) ?? null;
+}
+
+export function callCar(c, floor) {
+  if (c.ai) { c.target = floor; c.aiTimer = 0; } else c.callTarget = floor;
+}
+
+// a car on its way to pick someone up doesn't crush them
+export const calledFor = (c, floor) => floor !== null && (c.callTarget === floor || (c.ai && c.target === floor));
 
 function startFall(p) {
   Object.assign(p, { mode: 'air', grounded: false, vy: 0, fallFromY: p.y, floor: null, onRoof: null });
@@ -62,13 +79,9 @@ function tryActions(p, world, state, up) {
     }
   }
   if (p.floor === null) return null;
-  // call button: standing beside a shaft summons its car to this floor (Elevator Action style)
-  for (const c of world.cars) {
-    const mid = c.x + c.w / 2;
-    if (inShaftX(c, p.x) || Math.abs(p.x - mid) > c.w / 2 + 12 || p.floor < c.minFloor || p.floor > c.maxFloor || carFloor(c) === p.floor) continue;
-    if (c.ai) { c.target = p.floor; c.aiTimer = 0; } else c.callTarget = p.floor;
-    return [{ type: 'sfx', name: 'blip' }];
-  }
+  // call button: Up/Down in or beside an empty shaft opening summons its car to this floor
+  const c = callableCar(p, world);
+  if (c) { callCar(c, p.floor); return [{ type: 'sfx', name: 'blip' }]; }
   for (const e of ESCALATORS) {
     if (up && p.floor === e.bottomFloor && Math.abs(p.x - e.x) <= 6) {
       Object.assign(p, { mode: 'esc', esc: { e, dir: -1 }, x: e.x, facing: 1, duck: false, h: STAND_H });
@@ -140,6 +153,10 @@ function stepGround(p, pad, world, state, ev) {
   } else if (!cars.some((c) => inShaftX(c, p.x) && doorwayState(c, p.floor) !== 'none')) {
     p.lastSafe = { x: p.x, floor: p.floor };
   }
+  // waiting still by a shaft for half a second calls its car, like pressing the button
+  const waitingFor = p.vx === 0 && !p.onRoof ? callableCar(p, world) : null;
+  if (waitingFor) { if (++p.waitT === 30 && !calledFor(waitingFor, p.floor)) callCar(waitingFor, p.floor); }
+  else p.waitT = 0;
 }
 
 function stepAirMode(p, world, state, ev) {
@@ -182,7 +199,7 @@ function stepEscalator(p) {
 }
 
 // slide down the cable (hanging by the hands) → let go and drop onto the roof → landing crouch → control
-function stepIntro(p, ev) {
+function stepIntro(p, ev, rng) {
   if (p.introPhase === 'slide') {
     if (p.introT === 0) ev.push({ type: 'sfx', name: 'slide' });
     const k = p.introT / ZIP.slideFrames;
@@ -200,7 +217,7 @@ function stepIntro(p, ev) {
     p.lastSafe = { x: p.x, floor: 0 };
     // first things first: a selfie for the followers
     Object.assign(p, { mode: 'selfie', selfieT: SELFIE_FRAMES, facing: -1 });
-    ev.push({ type: 'selfie', caption: SELFIE_CAPTION });
+    ev.push({ type: 'selfie', post: pickPost(rng, ARRIVAL_POSTS) });
   }
 }
 
@@ -208,7 +225,7 @@ export function stepPlayer(p, pad, world, state) {
   const ev = [];
   if (p.invulnT > 0) p.invulnT--;
   switch (p.mode) {
-    case 'intro': stepIntro(p, ev); break;
+    case 'intro': stepIntro(p, ev, state.rng); break;
     case 'ground': stepGround(p, pad, world, state, ev); break;
     case 'air': stepAirMode(p, world, state, ev); break;
     case 'car': stepCar(p, pad, world, ev); break;

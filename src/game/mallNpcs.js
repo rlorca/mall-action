@@ -5,6 +5,7 @@ import { createWetPatch, tickWet, createCop, stepCop, copCatches, createWalker, 
 import { walkSpeed } from '../logic/powerups.js';
 import { addScore, isAlarm } from '../logic/rules.js';
 import { bulletHooks } from './combat.js';
+import { PA_FRAMES, pickPA } from './humor.js';
 
 const JANITOR_RANGE = [40, 344]; // 1F: the 48 px patch (x±24) must stay clear of shaft B at 376
 const WALKER_RANGES = [[150, 360], [410, 620]];
@@ -99,6 +100,8 @@ export function stepNpcs(world, state, rng) {
     if (p.mode !== 'car') events.push({ type: 'music', name: 'mallAlarm' });
     events.push({ type: 'banner', text: 'ALARM! SECURITY ALERTED' });
   }
+
+  if (world.frame % PA_FRAMES === 0) events.push({ type: 'pa', text: pickPA(world, rng) });
 
   world.wet = tickWet(world.wet);
   stepJanitor(world);

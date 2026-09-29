@@ -3,12 +3,13 @@ import { feetY } from '../world/constants.js';
 import { createCar, updateCar, aiCommand, crushVictims, carFloor, inShaftX, CAR_H } from '../logic/elevator.js';
 import { tickPowerups } from '../logic/powerups.js';
 import { difficulty } from '../logic/rules.js';
-import { createPlayer, stepPlayer, killPlayer, placeOnFloor } from './mallPlayer.js';
+import { createPlayer, stepPlayer, killPlayer, placeOnFloor, calledFor } from './mallPlayer.js';
 import { stepSpies, spyFromCar, killSpy, alive } from './spies.js';
 import { firePlayer, stepBullets, playerContacts } from './combat.js';
 import { stepLights, lampTop } from './lights.js';
 import { createNpcs, stepNpcs } from './mallNpcs.js';
 import { exitHook } from './exitHook.js';
+import { tickBubbles } from './humor.js';
 
 export function createMallWorld(state) {
   const world = {
@@ -21,7 +22,7 @@ export function createMallWorld(state) {
     wet: [], janitor: null, walkers: [], cop: null,
     kioskCooldown: KIOSKS.map(() => 0), fountainCooldown: FOUNTAINS.map(() => 0),
     spawnT: 300, alarm: false, banner: null, dark: null, exiting: false,
-    upHooks: [exitHook],
+    upHooks: [exitHook], bubbles: [], lastPA: null,
   };
   if (state) createNpcs(world, state.rng);
   return world;
@@ -65,7 +66,7 @@ function stepCars(world, state, rng, ev) {
     if (playerDriving && world.frame % 8 === 0) ev.push({ type: 'sfx', name: 'hum' });
     const victims = crushVictims(car, dy, [p, ...world.spies.filter(alive)]);
     for (const v of victims) {
-      if (v === p) killPlayer(p, 'crush', state, ev);
+      if (v === p) { if (!calledFor(car, p.floor)) killPlayer(p, 'crush', state, ev); }
       else if (killSpy(world, v, 'spyCrushed', state, ev)) ev.push({ type: 'sfx', name: 'crush' }, { type: 'shake', frames: 6 });
     }
   }
@@ -76,6 +77,7 @@ export function stepMall(world, pad, state, rng) {
   world.frame++;
   state.levelFrames++;
   tickPowerups(state.power);
+  tickBubbles(world);
   const diff = currentDifficulty(world, state);
   stepCars(world, state, rng, ev);
   ev.push(...stepPlayer(world.player, pad, world, state));

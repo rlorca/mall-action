@@ -62,3 +62,32 @@ describe('review fixes', () => {
     expect(world.spies).toEqual([]);
   });
 });
+
+describe('calling elevators', () => {
+  const at = (p, x, floor) => Object.assign(p, { x, floor, y: feetY(floor), mode: 'ground', onRoof: null, riding: null, grounded: true });
+  it('standing in an empty shaft opening and pressing down calls the car, which picks you up (no crush)', () => {
+    const { state, world, p } = setup();
+    const b = world.cars.find((k) => k.id === 'B'); // parked at 4F
+    at(p, b.x + 12, 4); // on the 1F grate of shaft B
+    run(world, state, pad([], ['down']), 1);
+    const ev = run(world, state, NONE, 200);
+    expect(ev.some((e) => e.type === 'playerDied')).toBe(false);
+    expect(carFloor(b)).toBe(4);
+    run(world, state, pad([], ['down']), 1);
+    expect(p.mode).toBe('car');
+  });
+  it('waiting beside a shaft calls its car automatically', () => {
+    const { state, world, p } = setup();
+    const b = world.cars.find((k) => k.id === 'B');
+    at(p, b.x + b.w + 6, 4);
+    run(world, state, NONE, 40);
+    expect(b.callTarget).toBe(4);
+  });
+  it('walking past a shaft does not call it', () => {
+    const { state, world, p } = setup();
+    const b = world.cars.find((k) => k.id === 'B');
+    at(p, b.x - 30, 4);
+    run(world, state, pad(['right']), 70);
+    expect(b.callTarget ?? null).toBeNull();
+  });
+});

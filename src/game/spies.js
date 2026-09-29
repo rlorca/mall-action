@@ -6,6 +6,7 @@ import { slideStep } from '../logic/npcs.js';
 import { addScore } from '../logic/rules.js';
 import { rollSpyDrop } from '../logic/loot.js';
 import { STAND_H, DUCK_H } from './mallPlayer.js';
+import { say, LAST_WORDS, LAST_WORDS_CHANCE, LIFT_LINES } from './humor.js';
 
 export const AIM_FRAMES = 32;      // telegraph before a shot: time to duck, jump or shoot first
 export const FIRST_SHOT_DELAY = 110; // frames after stepping out before a spy may start aiming
@@ -27,6 +28,7 @@ export function killSpy(world, spy, scoreKey, state, events) {
     const { pts } = addScore(state, scoreKey);
     events.push({ type: 'score', pts, x: spy.x, y: spy.y - 30 }, { type: 'sfx', name: 'hurt' });
   }
+  if (state.rng.chance(LAST_WORDS_CHANCE)) say(world, spy, state.rng.pick(LAST_WORDS));
   const drop = rollSpyDrop(state.rng);
   if (drop) world.pickups.push({ id: drop, x: spy.x, y: spy.y - 20, floor: spy.floor, vy: -2, t: 600 });
   return true;
@@ -53,6 +55,7 @@ export function spyFromCar(world, car, floor, rng, diff) {
   const spy = createSpy(car.x + car.w / 2, floor, 'car');
   spy.fireT = FIRST_SHOT_DELAY + rng.int(0, 40);
   world.spies.push(spy);
+  say(world, spy, rng.pick(LIFT_LINES));
 }
 
 function tryMove(world, s, speed) {

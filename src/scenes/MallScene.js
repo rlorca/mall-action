@@ -8,7 +8,8 @@ import { makeSprite, tex } from '../gfx/textures.js';
 import { makeText, setText } from '../gfx/font.js';
 import { C } from '../gfx/palette.js';
 import { createHud } from '../ui/hud.js';
-import { buildMallBackground, buildStorefront, updateStorefront, EntityViews, put, signTexture } from './mallView.js';
+import { buildSpygram, likesAt, CARD_W } from './spygram.js';
+import { buildMallBackground, buildStorefront, updateStorefront, EntityViews, put, signTexture, makeBubble } from './mallView.js';
 
 const VIEW_H = 224;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -121,8 +122,8 @@ export class MallScene {
     const b = this.bannerBox;
     b.removeChildren().forEach((ch) => ch.destroy({ children: true }));
     const txt = makeText(text, C.white);
-    const w = txt.width + 8;
-    b.addChild(new Graphics().rect(0, 0, w, 14).fill(C.black).rect(0, 0, w, 14).stroke({ color: C.yellow, width: 1 }));
+    const w = txt.width + 8, h = txt.height + 6;
+    b.addChild(new Graphics().rect(0, 0, w, h).fill(C.black).rect(0, 0, w, h).stroke({ color: C.yellow, width: 1 }));
     txt.position.set(4, 3); b.addChild(txt);
     b.position.set(Math.max(0, Math.floor((256 - w) / 2)), 40);
     b.visible = true; this.bannerT = frames;
@@ -142,7 +143,8 @@ export class MallScene {
         break;
       case 'score': this.popup(`${ev.pts}`, ev.x, ev.y); break;
       case 'kiosk': this.showKiosk(ev.storeId); break;
-      case 'selfie': this.showSpygram(ev.caption); break;
+      case 'selfie': this.showSpygram(ev.post); break;
+      case 'pa': ctx.audio.sfx('paChime'); this.banner(ev.text, 240); break;
       case 'photo': this.showPanel([makeSprite('photoStrip')], 'SAY CHEESE!', 120, 2); break;
       case 'enterStore': ctx.enterStore?.(ev.storeId); break;
       case 'playerDied': ctx.onPlayerDied?.(this, ev.cause); break;
@@ -167,20 +169,12 @@ export class MallScene {
     pn.visible = true; this.panelT = frames;
   }
 
-  // the SPYGRAM post: header, photo, caption, likes ticking up, a comment from Mom
-  showSpygram(caption) {
+  showSpygram(post) {
     const pn = this.panel;
     pn.removeChildren().forEach((ch) => ch.destroy({ children: true }));
-    const W = 176, H = 132;
-    pn.addChild(new Graphics().rect(0, 0, W, H).fill(C.white).rect(0, 0, W, H).stroke({ color: C.black, width: 1 })
-      .rect(0, 0, W, 14).fill(C.magenta).rect(40, 16, 96, 52).fill(C.sky));
-    const head = makeText('SPYGRAM', C.white); head.position.set(8, 3); pn.addChild(head);
-    const me = makeSprite('agentStand'); me.scale.set(2); me.position.set(72, 18); pn.addChild(me);
-    const [a, b] = caption.split(', ');
-    [b ? `${a},` : a, b ?? ''].forEach((line, i) => { const t = makeText(line, C.black); t.position.set(6, 72 + i * 10); pn.addChild(t); });
-    this.likes = makeText('', C.red); this.likes.position.set(6, 94); pn.addChild(this.likes);
-    const mom = makeText('MOM: SO PROUD OF U', C.darkGrey); mom.position.set(6, 108); pn.addChild(mom);
-    pn.position.set(Math.floor((256 - W) / 2), 44);
+    this.card = buildSpygram(post);
+    pn.addChild(this.card.container);
+    pn.position.set(Math.floor((256 - CARD_W) / 2), 44);
     pn.visible = true; this.panelT = 0; this.spygram = 0;
     this.ctx.audio.sfx('blip');
   }
@@ -267,6 +261,13 @@ export class MallScene {
     });
     this.bubbles.removeChildren().forEach((b) => b.destroy({ children: true }));
     for (const w of world.walkers) if (w.heyT > 0) { const b = makeText('HEY!', C.red); b.position.set(Math.round(w.x) - 16, Math.round(w.y) - 36); this.bubbles.addChild(b); }
+    // speech bubbles are laid out in screen space so they stay inside the 256 px view
+    for (const bb of world.bubbles) {
+      const sx = bb.target.x - camX, sy = bb.target.y - (bb.target.h ?? 24) - 2 - camY;
+      const bub = makeBubble(bb.text, sx, sy);
+      bub.position.set(camX, camY);
+      this.bubbles.addChild(bub);
+    }
 
     this.spyViews.sync(world.spies, (sp, s) => {
       const [n, f] = spyFrame(sp);
@@ -293,7 +294,7 @@ export class MallScene {
     if (this.panelT > 0 && --this.panelT === 0) this.panel.visible = false;
     if (this.spygram !== undefined && this.spygram !== null) {
       if (p.mode !== 'selfie') { this.panel.visible = false; this.spygram = null; }
-      else { this.spygram++; setText(this.likes, `♥ ${Math.min(999, Math.floor(this.spygram ** 1.6 / 4))} LIKES`, C.red); }
+      else { this.spygram++; this.card.setLikes(likesAt(this.spygram)); }
     }
     // phone + camera flash while posing
     this.phone.clear();

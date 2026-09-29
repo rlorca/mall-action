@@ -10,6 +10,23 @@ export const QUIPS = {
     { guard: 0, text: "DIMITRI, HE'S HERE!", at: 0, dur: 80 },
     { guard: 1, text: 'DA! HIDE THE TEDDIES!', at: 70, dur: 80 },
   ],
+  forever12: [
+    { guard: 0, text: "IT'S NOT A DISGUISE.", at: 0, dur: 70 },
+    { guard: 1, text: "IT'S A LOOK, SERGEI.", at: 60, dur: 80 },
+  ],
+  radioshock: [
+    { guard: 0, text: "YOU'LL NEED BATTERIES.", at: 0, dur: 70 },
+    { guard: 1, text: 'BEEP. NOT INCLUDED.', at: 60, dur: 70 },
+  ],
+  hotspy: [{ guard: 0, text: 'WANT FRIES WITH THAT?', at: 0, dur: 90 }],
+  footlockpicker: [
+    { guard: 0, text: 'THESE ARE MY GETAWAY SHOES', at: 0, dur: 80 },
+    { guard: 1, text: 'BOTH LEFT FEET, COMRADE', at: 70, dur: 80 },
+  ],
+  sambaddy: [{ guard: 0, text: 'TURN IT UP, BORIS!', at: 0, dur: 90 }],
+  crookstone: [{ guard: 0, text: 'TRY THE MASSAGE CHAIR...', at: 0, dur: 90 }],
+  sharperimagine: [{ guard: 0, text: "BEEP. PLEASE DON'T TOUCH.", at: 0, dur: 90 }],
+  spenders: [{ guard: 0, text: 'WHOA... THE LAVA LAMP...', at: 0, dur: 90 }],
 };
 
 function createQuips(world, state) {
