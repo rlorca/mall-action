@@ -2,6 +2,7 @@ import { GameState, Input, Screen, Floor, Player, Spy } from './types';
 import { RNG } from './rng';
 import { STORES, PHYSICS, TIMINGS, SCORES } from './data';
 import { audioEngine } from './audio';
+import { createElevators } from './elevator';
 
 const MALL_WIDTH = 768;
 const FLOOR_HEIGHT = 48;
@@ -43,6 +44,7 @@ export function createInitialState(seed: number): GameState {
     levelStartFrame: 0,
     levelClearTime: null,
     eventLog: [],
+    elevators: createElevators(),
   };
 }
 
@@ -470,4 +472,21 @@ function updateGameOver(state: GameState, input: Input): GameState {
 function getFloorY(floor: Floor): number {
   const floorIdx = FLOORS.indexOf(floor);
   return 240 - (floorIdx * FLOOR_HEIGHT);
+}
+
+function updateElevatorPhysics(state: GameState, elev: any, input: Input) {
+  if (!elev || !elev.moving) return;
+
+  const targetY = getFloorY(elev.currentFloor);
+  elev.currentY += elev.velocity * 0.5;
+
+  // Check if reached
+  const reached = elev.velocity > 0 ? elev.currentY >= targetY : elev.currentY <= targetY;
+  if (reached) {
+    elev.currentY = targetY;
+    elev.moving = false;
+    elev.targetFloor = null;
+    elev.doorsOpen = true;
+    audioEngine.playSfx('ding');
+  }
 }

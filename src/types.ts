@@ -104,6 +104,7 @@ export interface GameState {
   levelStartFrame: number;
   levelClearTime: number | null;
   eventLog: GameEvent[];
+  elevators?: any[]; // Elevator[] - avoiding circular import
 }
 
 export interface GameEvent {
