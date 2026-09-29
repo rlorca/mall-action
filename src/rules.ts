@@ -3,6 +3,7 @@ import { RNG } from './rng';
 import { STORES, PHYSICS, TIMINGS, SCORES } from './data';
 import { audioEngine } from './audio';
 import { createElevators } from './elevator';
+import { enterStore, exitStore, searchFixture } from './store';
 
 const MALL_WIDTH = 768;
 const FLOOR_HEIGHT = 48;
@@ -135,6 +136,21 @@ function updateMall(state: GameState, input: Input): GameState {
     if (state.alarmFrames > alarmTriggerTime && !state.alarmActive) {
       state.alarmActive = true;
       audioEngine.playSfx('alarm');
+    }
+
+    // Check for store entry
+    if (input.justPressed.has('up') && !state.player.inElevator) {
+      for (const store of STORES) {
+        if (store.floor === state.player.floor &&
+            Math.abs(state.player.x - store.x) < 40 &&
+            store.role !== 'closed') {
+          if (enterStore(state, store.name)) {
+            state.screen = Screen.Store;
+            state.frame = 0;
+          }
+          break;
+        }
+      }
     }
 
     // Check level clear (all packages collected, at parking level)
@@ -413,10 +429,51 @@ function spawnSpies(state: GameState) {
 }
 
 function updateStore(state: GameState, input: Input): GameState {
-  // TODO: Implement store logic
-  if (input.justPressed.has('up')) {
+  const storeRoom = (state as any).currentStore;
+  if (!storeRoom) {
     state.screen = Screen.Mall;
+    return state;
   }
+
+  // Move player in store (tile-based, 4-directional)
+  const moveUp = input.pressed.has('up');
+  const moveDown = input.pressed.has('down');
+  const moveLeft = input.pressed.has('left');
+  const moveRight = input.pressed.has('right');
+
+  // Vertical input has priority
+  if (moveUp && storeRoom.playerY > 0) {
+    storeRoom.playerY--;
+  } else if (moveDown && storeRoom.playerY < 10) {
+    storeRoom.playerY++;
+  } else if (moveLeft && storeRoom.playerX > 0) {
+    storeRoom.playerX--;
+    storeRoom.playerFacingRight = false;
+  } else if (moveRight && storeRoom.playerX < 15) {
+    storeRoom.playerX++;
+    storeRoom.playerFacingRight = true;
+  }
+
+  // Check if at door (bottom center)
+  if (storeRoom.playerY === 10 && storeRoom.playerX >= 7 && storeRoom.playerX <= 9 && input.justPressed.has('up')) {
+    exitStore(state);
+    state.screen = Screen.Mall;
+    return state;
+  }
+
+  // Check for searchable fixtures nearby
+  if (input.justPressed.has('b')) {
+    for (const fixture of storeRoom.fixtures) {
+      const dx = Math.abs(storeRoom.playerX - fixture.x);
+      const dy = Math.abs(storeRoom.playerY - fixture.y);
+      if (dx < 2 && dy < 2 && !fixture.opened) {
+        searchFixture(state, fixture.id);
+        fixture.searchingFrames = 45; // 0.75 seconds
+        break;
+      }
+    }
+  }
+
   return state;
 }
 

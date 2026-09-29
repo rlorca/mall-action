@@ -273,19 +273,61 @@ export class Renderer {
 
   private renderStore(state: GameState) {
     const ctx = this.ctx;
+    const storeRoom = (state as any).currentStore;
 
-    ctx.fillStyle = '#8f8';
-    ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+    if (!storeRoom) {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+      return;
+    }
 
-    ctx.fillStyle = '#000';
-    ctx.font = '14px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('STORE', INTERNAL_WIDTH / 2, 50);
-    ctx.fillText(`${state.player.currentStore}`, INTERNAL_WIDTH / 2, 100);
-    ctx.fillText('(Not yet implemented)', INTERNAL_WIDTH / 2, 150);
+    // Top-down view with tiles
+    const tileSize = 16;
 
-    ctx.textAlign = 'left';
+    // Floor background based on theme
+    const themeColors: Record<string, string> = {
+      'fashion': '#daa', 'electronics': '#aad', 'toys': '#ada', 'music': '#dda',
+      'sports': '#aaa', 'food': '#fd9', 'gadgets': '#ffa', 'novelty': '#88f',
+      'games': '#fda', 'video': '#888', 'books': '#dba',
+    };
+    ctx.fillStyle = themeColors[storeRoom.theme] || '#ccc';
+    ctx.fillRect(0, HUD_HEIGHT, INTERNAL_WIDTH, INTERNAL_HEIGHT - HUD_HEIGHT);
 
+    // Grid
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= 16; x++) {
+      ctx.beginPath();
+      ctx.moveTo(x * tileSize, HUD_HEIGHT);
+      ctx.lineTo(x * tileSize, INTERNAL_HEIGHT);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 11; y++) {
+      ctx.beginPath();
+      ctx.moveTo(0, HUD_HEIGHT + y * tileSize);
+      ctx.lineTo(INTERNAL_WIDTH, HUD_HEIGHT + y * tileSize);
+      ctx.stroke();
+    }
+
+    // Draw fixtures
+    storeRoom.fixtures.forEach((fixture: any) => {
+      const x = fixture.x * tileSize;
+      const y = HUD_HEIGHT + fixture.y * tileSize;
+      ctx.fillStyle = fixture.opened ? '#9a9' : '#7a7';
+      ctx.fillRect(x + 2, y + 2, tileSize - 4, tileSize - 4);
+    });
+
+    // Draw player
+    ctx.fillStyle = '#f00';
+    const playerX = storeRoom.playerX * tileSize + 2;
+    const playerY = HUD_HEIGHT + storeRoom.playerY * tileSize + 2;
+    ctx.fillRect(playerX, playerY, 12, 12);
+
+    // Door (bottom center)
+    ctx.fillStyle = '#8b4';
+    ctx.fillRect(7 * tileSize, HUD_HEIGHT + 10 * tileSize, 2 * tileSize, tileSize);
+
+    // HUD
     this.drawHUD(state);
   }
 
