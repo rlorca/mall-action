@@ -62,6 +62,8 @@ export function step(state: GameState, input: Input): GameState {
       return updateStore(state, input);
     case Screen.LevelClear:
       return updateLevelClear(state, input);
+    case Screen.Continue:
+      return updateContinue(state, input);
     case Screen.GameOver:
       return updateGameOver(state, input);
     default:
@@ -425,6 +427,28 @@ function updateLevelClear(state: GameState, input: Input): GameState {
     state.player.packages = 0;
     state.packages.clear();
     state.clearedStores.clear();
+  }
+
+  return state;
+}
+
+function updateContinue(state: GameState, input: Input): GameState {
+  // Check if countdown reaches zero (about 540 frames / 9 seconds)
+  if (state.frame > 540) {
+    state.screen = Screen.GameOver;
+    state.frame = 0;
+    return state;
+  }
+
+  // Start button confirms continue
+  if (input.justPressed.has('start')) {
+    state.continues--;
+    state.player.lives = 3;
+    state.screen = Screen.Mall;
+    state.frame = 0;
+    state.alarmActive = false;
+    state.alarmFrames = 0;
+    // Keep packages, score, and loop
   }
 
   return state;

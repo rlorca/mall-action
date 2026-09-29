@@ -1,4 +1,6 @@
 import { GameState, Screen } from './types';
+import { PALETTE } from './data';
+import { Art } from './art';
 
 const INTERNAL_WIDTH = 256;
 const INTERNAL_HEIGHT = 240;
@@ -7,7 +9,10 @@ const HUD_HEIGHT = 16;
 export class Renderer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
+  private crtCanvas: HTMLCanvasElement;
+  private crtCtx: CanvasRenderingContext2D;
   private scale: number;
+  private showCRT: boolean;
 
   constructor(container: HTMLElement) {
     this.canvas = document.createElement('canvas');
@@ -16,17 +21,32 @@ export class Renderer {
 
     const ctx = this.canvas.getContext('2d');
     if (!ctx) throw new Error('Could not get canvas context');
-
     this.ctx = ctx;
+
+    // CRT overlay canvas
+    this.crtCanvas = document.createElement('canvas');
+    this.crtCanvas.width = INTERNAL_WIDTH;
+    this.crtCanvas.height = INTERNAL_HEIGHT;
+    const crtCtx = this.crtCanvas.getContext('2d');
+    if (!crtCtx) throw new Error('Could not get CRT context');
+    this.crtCtx = crtCtx;
+
     this.scale = this.calculateScale();
+    this.showCRT = true; // Default ON
 
-    this.canvas.style.width = (INTERNAL_WIDTH * this.scale) + 'px';
-    this.canvas.style.height = (INTERNAL_HEIGHT * this.scale) + 'px';
-    this.canvas.style.imageRendering = 'pixelated';
-
+    this.setupCanvas();
+    this.generateCRTOverlay();
     container.appendChild(this.canvas);
 
     window.addEventListener('resize', () => this.handleResize());
+  }
+
+  private setupCanvas() {
+    this.canvas.style.width = (INTERNAL_WIDTH * this.scale) + 'px';
+    this.canvas.style.height = (INTERNAL_HEIGHT * this.scale) + 'px';
+    this.canvas.style.imageRendering = 'pixelated';
+    this.canvas.style.display = 'block';
+    this.canvas.style.margin = '0 auto';
   }
 
   private calculateScale(): number {
@@ -41,9 +61,35 @@ export class Renderer {
     const newScale = this.calculateScale();
     if (newScale !== this.scale) {
       this.scale = newScale;
-      this.canvas.style.width = (INTERNAL_WIDTH * this.scale) + 'px';
-      this.canvas.style.height = (INTERNAL_HEIGHT * this.scale) + 'px';
+      this.setupCanvas();
     }
+  }
+
+  private generateCRTOverlay() {
+    // Create scanlines and vignette effect
+    const imageData = this.crtCtx.createImageData(INTERNAL_WIDTH, INTERNAL_HEIGHT);
+    const data = imageData.data;
+
+    for (let y = 0; y < INTERNAL_HEIGHT; y++) {
+      for (let x = 0; x < INTERNAL_WIDTH; x++) {
+        const idx = (y * INTERNAL_WIDTH + x) * 4;
+
+        // Scanline effect (every other line slightly darker)
+        const scanlineAlpha = (y % 2 === 0) ? 0.8 : 0.9;
+
+        // Vignette effect (edges darker)
+        const vx = x / INTERNAL_WIDTH - 0.5;
+        const vy = y / INTERNAL_HEIGHT - 0.5;
+        const vignetteAlpha = Math.max(0.3, 1 - Math.sqrt(vx * vx + vy * vy) * 0.8);
+
+        data[idx] = 0;     // R
+        data[idx + 1] = 0; // G
+        data[idx + 2] = 0; // B
+        data[idx + 3] = Math.round(255 * (1 - scanlineAlpha * vignetteAlpha) * 0.3);
+      }
+    }
+
+    this.crtCtx.putImageData(imageData, 0, 0);
   }
 
   render(state: GameState) {
@@ -67,76 +113,157 @@ export class Renderer {
       case Screen.LevelClear:
         this.renderLevelClear(state);
         break;
+      case Screen.Continue:
+        this.renderContinue(state);
+        break;
       case Screen.GameOver:
         this.renderGameOver(state);
         break;
+    }
+
+    // Apply CRT effect if enabled
+    if (this.showCRT) {
+      this.ctx.drawImage(this.crtCanvas, 0, 0);
     }
   }
 
   private renderSplash(state: GameState) {
     const elapsed = state.frame;
+    const ctx = this.ctx;
 
-    // Simple flicker effect for "FLICKERSOFT"
-    if (Math.floor(elapsed / 3) % 2 === 0) {
-      this.drawText('FLICKERSOFT', INTERNAL_WIDTH / 2 - 40, 100, '#f0f');
+    // Black background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+
+    // FLICKERSOFT text with flicker
+    const letters = 'FLICKERSOFT';
+    const letterWidth = 16;
+    const startX = (INTERNAL_WIDTH - letters.length * letterWidth) / 2;
+    const y = 100;
+
+    for (let i = 0; i < letters.length; i++) {
+      const flicker = Math.floor(elapsed / 3) % (letters.length * 2);
+      const shouldShow = Math.abs(flicker - i) < 3 || elapsed > 120;
+
+      if (shouldShow) {
+        const hues = ['#f0f', '#0ff', '#ff0', '#f00', '#0f0'];
+        ctx.fillStyle = hues[i % hues.length];
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText(letters[i], startX + i * letterWidth, y);
+      }
     }
 
+    // PRESENTS text after delay
     if (elapsed > 60) {
-      this.drawText('PRESENTS', INTERNAL_WIDTH / 2 - 30, 150, '#0f0');
+      ctx.fillStyle = '#0f0';
+      ctx.font = '12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PRESENTS', INTERNAL_WIDTH / 2, 150);
     }
+
+    ctx.textAlign = 'left';
   }
 
   private renderTitle(state: GameState) {
-    // Background
-    for (let y = 0; y < INTERNAL_HEIGHT; y++) {
-      const hue = (y / INTERNAL_HEIGHT) * 360;
-      this.ctx.fillStyle = `hsl(${hue}, 100%, 30%)`;
-      this.ctx.fillRect(0, y, INTERNAL_WIDTH, 1);
-    }
+    const ctx = this.ctx;
 
-    // Title text
-    this.drawText('MALL ACTION', 40, 80, '#ff0');
-    this.drawText('A SHOPPING MALL ESPIONAGE', 20, 100, '#fff');
-
-    // High score
-    this.drawText(`HIGH SCORE: ${state.player.score}`, 50, 160, '#fff');
-
-    // Start prompt
-    if ((state.frame % 20) < 10) {
-      this.drawText('PRESS START', 60, 200, '#ff0');
-    }
-  }
-
-  private renderMall(state: GameState) {
-    // Sky gradient background
-    for (let y = 0; y < 100; y++) {
-      const hue = 200 - (y / 100) * 20;
-      const light = 50 - (y / 100) * 30;
-      this.ctx.fillStyle = `hsl(${hue}, 100%, ${light}%)`;
-      this.ctx.fillRect(0, y, INTERNAL_WIDTH, 1);
+    // Night sky gradient
+    for (let y = 0; y < 150; y++) {
+      const ratio = y / 150;
+      const hue = 220 - ratio * 40;
+      const light = 40 - ratio * 20;
+      ctx.fillStyle = `hsl(${hue}, 60%, ${light}%)`;
+      ctx.fillRect(0, y, INTERNAL_WIDTH, 1);
     }
 
     // Ground
-    this.ctx.fillStyle = '#888';
-    this.ctx.fillRect(0, 100, INTERNAL_WIDTH, INTERNAL_HEIGHT - 100);
+    ctx.fillStyle = '#444';
+    ctx.fillRect(0, 150, INTERNAL_WIDTH, INTERNAL_HEIGHT - 150);
 
-    // Draw player (simple rectangle for now)
-    this.ctx.fillStyle = '#f00';
-    this.ctx.fillRect(state.player.x - 8, state.player.y - 16, 16, 24);
+    // Title
+    ctx.fillStyle = '#ff0';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('MALL ACTION', INTERNAL_WIDTH / 2, 60);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('A SHOPPING MALL ESPIONAGE', INTERNAL_WIDTH / 2, 80);
+
+    // High score
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`(C) 2026 FLICKERSOFT`, 20, INTERNAL_HEIGHT - 30);
+    ctx.fillText(`HIGH SCORE: ${state.player.score.toString().padStart(6)}`, 20, INTERNAL_HEIGHT - 16);
+
+    // Start prompt (blinking)
+    ctx.fillStyle = (state.frame % 20) < 10 ? '#ff0' : '#000';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('PRESS START', INTERNAL_WIDTH / 2, INTERNAL_HEIGHT - 20);
+
+    ctx.textAlign = 'left';
+  }
+
+  private renderMall(state: GameState) {
+    const ctx = this.ctx;
+
+    // Sky gradient background
+    for (let y = 0; y < 120; y++) {
+      const hue = 200 - (y / 120) * 40;
+      const light = 60 - (y / 120) * 30;
+      ctx.fillStyle = `hsl(${hue}, 80%, ${light}%)`;
+      ctx.fillRect(0, y, INTERNAL_WIDTH, 1);
+    }
+
+    // Ground/mall floors
+    ctx.fillStyle = '#888';
+    ctx.fillRect(0, 120, INTERNAL_WIDTH, INTERNAL_HEIGHT - 120);
+
+    // Floor lines
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    for (let f = 0; f < 6; f++) {
+      const y = 120 + f * 20;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(INTERNAL_WIDTH, y);
+      ctx.stroke();
+    }
+
+    // Draw player (use simple sprite for now)
+    ctx.fillStyle = '#f00';
+    ctx.fillRect(
+      Math.round(state.player.x - 8),
+      Math.round(state.player.y - 16),
+      16,
+      24
+    );
 
     // Draw spies
-    this.ctx.fillStyle = '#333';
+    ctx.fillStyle = '#333';
     state.spies.forEach(spy => {
       if (spy.alive && spy.floor === state.player.floor) {
-        this.ctx.fillRect(spy.x - 8, spy.y - 12, 16, 24);
+        ctx.fillRect(
+          Math.round(spy.x - 8),
+          Math.round(spy.y - 12),
+          16,
+          24
+        );
       }
     });
 
     // Draw bullets
-    this.ctx.fillStyle = '#ff0';
+    ctx.fillStyle = '#ff0';
     state.bullets.forEach(bullet => {
       if (bullet.floor === state.player.floor) {
-        this.ctx.fillRect(bullet.x - 2, bullet.y - 2, 4, 4);
+        ctx.fillRect(
+          Math.round(bullet.x - 2),
+          Math.round(bullet.y - 2),
+          4,
+          4
+        );
       }
     });
 
@@ -145,44 +272,141 @@ export class Renderer {
   }
 
   private renderStore(state: GameState) {
-    this.ctx.fillStyle = '#8f8';
-    this.ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+    const ctx = this.ctx;
 
-    this.drawText('STORE', 100, 50, '#000');
+    ctx.fillStyle = '#8f8';
+    ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+
+    ctx.fillStyle = '#000';
+    ctx.font = '14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('STORE', INTERNAL_WIDTH / 2, 50);
+    ctx.fillText(`${state.player.currentStore}`, INTERNAL_WIDTH / 2, 100);
+    ctx.fillText('(Not yet implemented)', INTERNAL_WIDTH / 2, 150);
+
+    ctx.textAlign = 'left';
+
     this.drawHUD(state);
   }
 
   private renderLevelClear(state: GameState) {
-    this.ctx.fillStyle = '#00f';
-    this.ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+    const ctx = this.ctx;
 
-    this.drawText('LEVEL CLEAR', 50, 80, '#fff');
-    this.drawText(`SCORE: ${state.player.score}`, 60, 110, '#fff');
-    this.drawText(`LOOP: ${state.loop}`, 80, 140, '#fff');
-    this.drawText('PRESS START', 60, 200, '#ff0');
+    // Parking garage backdrop
+    ctx.fillStyle = '#444';
+    ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+
+    // Grid effect
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < INTERNAL_WIDTH; x += 32) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, INTERNAL_HEIGHT);
+      ctx.stroke();
+    }
+
+    // Text
+    ctx.fillStyle = '#ff0';
+    ctx.font = 'bold 20px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('LEVEL CLEAR', INTERNAL_WIDTH / 2, 60);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px monospace';
+    ctx.fillText(`SCORE: ${state.player.score}`, INTERNAL_WIDTH / 2, 100);
+    ctx.fillText(`PACKAGES: ${state.player.packages}/6`, INTERNAL_WIDTH / 2, 120);
+    ctx.fillText(`LOOP: ${state.loop}`, INTERNAL_WIDTH / 2, 140);
+
+    ctx.fillStyle = (state.frame % 20) < 10 ? '#ff0' : '#000';
+    ctx.font = 'bold 12px monospace';
+    ctx.fillText('PRESS START', INTERNAL_WIDTH / 2, 200);
+
+    ctx.textAlign = 'left';
+  }
+
+  private renderContinue(state: GameState) {
+    const ctx = this.ctx;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+
+    // Blinking "CONTINUE?" text
+    if ((state.frame % 10) < 5) {
+      ctx.fillStyle = '#ff0';
+      ctx.font = 'bold 20px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CONTINUE?', INTERNAL_WIDTH / 2, 80);
+    }
+
+    // Countdown timer (9 to 0)
+    const countdown = Math.max(0, 9 - Math.floor((state.frame - 30) / 60));
+    ctx.fillStyle = countdown > 3 ? '#fff' : '#f00';
+    ctx.font = 'bold 32px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(countdown.toString(), INTERNAL_WIDTH / 2, 150);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px monospace';
+    ctx.fillText(`CONTINUES LEFT: ${state.continues}`, INTERNAL_WIDTH / 2, 200);
+
+    ctx.textAlign = 'left';
   }
 
   private renderGameOver(state: GameState) {
-    this.ctx.fillStyle = '#000';
-    this.ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+    const ctx = this.ctx;
 
-    this.drawText('GAME OVER', 70, 100, '#f00');
-    this.drawText(`FINAL SCORE: ${state.player.score}`, 40, 150, '#fff');
-    this.drawText('PRESS START', 60, 200, '#ff0');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+
+    ctx.fillStyle = '#f00';
+    ctx.font = 'bold 24px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', INTERNAL_WIDTH / 2, 80);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px monospace';
+    ctx.fillText(`FINAL SCORE: ${state.player.score}`, INTERNAL_WIDTH / 2, 120);
+    ctx.fillText(`LOOP: ${state.loop}`, INTERNAL_WIDTH / 2, 140);
+
+    ctx.fillStyle = (state.frame % 20) < 10 ? '#ff0' : '#000';
+    ctx.fillText('PRESS START', INTERNAL_WIDTH / 2, 200);
+
+    ctx.textAlign = 'left';
   }
 
   private drawHUD(state: GameState) {
-    this.ctx.fillStyle = '#223';
-    this.ctx.fillRect(0, 0, INTERNAL_WIDTH, HUD_HEIGHT);
+    const ctx = this.ctx;
 
-    this.drawText(`SCORE:${state.player.score.toString().padStart(6)}`, 2, 8, '#fff');
-    this.drawText(`PKG:${state.player.packages}/6`, 100, 8, state.player.packages === 6 ? '#0f0' : '#f00');
-    this.drawText(`LIVES:${state.player.lives}`, 160, 8, '#fff');
-  }
+    // HUD background
+    ctx.fillStyle = '#223';
+    ctx.fillRect(0, 0, INTERNAL_WIDTH, HUD_HEIGHT);
 
-  private drawText(text: string, x: number, y: number, color: string) {
-    this.ctx.fillStyle = color;
-    this.ctx.font = '8px monospace';
-    this.ctx.fillText(text, x, y);
+    // Score
+    ctx.fillStyle = '#fff';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`SCORE:${state.player.score.toString().padStart(6)}`, 4, 12);
+
+    // Packages
+    const pkgColor = state.player.packages === 6 ? '#0f0' : '#f00';
+    ctx.fillStyle = pkgColor;
+    ctx.fillText(`PKG:${state.player.packages}/6`, 100, 12);
+
+    // Lives
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`LIVES:${state.player.lives}`, 160, 12);
+
+    // Power-up display
+    if (state.powerUps.size > 0) {
+      ctx.fillStyle = '#0f0';
+      let offset = 220;
+      state.powerUps.forEach((time, name) => {
+        ctx.fillText(name.substring(0, 3), offset, 12);
+        offset += 20;
+      });
+    }
+
+    ctx.textAlign = 'left';
   }
 }

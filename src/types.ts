@@ -24,6 +24,16 @@ export enum Screen {
   GameOver = 'gameover'
 }
 
+export interface StoreState {
+  name: string;
+  searching: boolean;
+  searchProgress: number;
+  searchFrames: number;
+  playerX: number;
+  playerY: number;
+  visitedOnce: boolean;
+}
+
 export enum Floor {
   Roof = 'R',
   Floor4 = '4F',
