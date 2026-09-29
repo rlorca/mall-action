@@ -12,6 +12,8 @@ export const DUCK_H = 14;
 // so feet are 24 px below the cable.
 export const ZIP = { x0: 36, y0: 10, x1: ROOF_ENTRY_X, y1: feetY(0) - 40, slideFrames: 80, landFrames: 14 };
 export const INTRO_FRAMES = 120; // upper bound: slide + drop + landing crouch
+export const SELFIE_FRAMES = 150;
+export const SELFIE_CAPTION = 'FEELING CUTE, MIGHT DELETE LATER';
 const HANG = 24;
 
 const clampX = (x) => Math.min(WALL_R - 6, Math.max(WALL_L + 6, x));
@@ -196,6 +198,9 @@ function stepIntro(p, ev) {
   } else if (--p.introT <= 0) {
     placeOnFloor(p, Math.round(p.x), 0);
     p.lastSafe = { x: p.x, floor: 0 };
+    // first things first: a selfie for the followers
+    Object.assign(p, { mode: 'selfie', selfieT: SELFIE_FRAMES, facing: -1 });
+    ev.push({ type: 'selfie', caption: SELFIE_CAPTION });
   }
 }
 
@@ -210,6 +215,11 @@ export function stepPlayer(p, pad, world, state) {
     case 'esc': stepEscalator(p); break;
     case 'dying':
       if (p.dieT > 0 && --p.dieT === 0) ev.push({ type: 'playerDied', cause: p.deathCause });
+      break;
+    case 'selfie':
+      if (['a', 'b', 'start', 'left', 'right', 'up', 'down'].some((b) => pad.pressed(b)) || --p.selfieT <= 0) {
+        p.mode = 'ground'; p.facing = 1;
+      }
       break;
     case 'hidden': {
       const leave = ['left', 'right', 'up', 'down'].some((b) => pad.pressed(b));

@@ -4,6 +4,31 @@ import { addScore } from '../logic/rules.js';
 import { pickJokeItem } from '../logic/secrets.js';
 import { storeHooks, isSolidAt, createGuard } from './storeWorld.js';
 
+// One-off lines spoken the first time you walk into a store each game (guard index → speech bubble).
+export const QUIPS = {
+  kgbtoys: [
+    { guard: 0, text: "DIMITRI, HE'S HERE!", at: 0, dur: 80 },
+    { guard: 1, text: 'DA! HIDE THE TEDDIES!', at: 70, dur: 80 },
+  ],
+};
+
+function createQuips(world, state) {
+  const lines = QUIPS[world.store.id];
+  state.quipsSeen ??= new Set();
+  if (!lines || state.quipsSeen.has(world.store.id)) return;
+  state.quipsSeen.add(world.store.id);
+  world.quips = lines.map((q) => ({ ...q }));
+  world.quipClock = 0;
+  world.talkT = Math.max(...lines.map((q) => q.at + q.dur)); // guards hold still while they talk
+}
+
+function stepQuips(world) {
+  if (!world.quips.length) return;
+  world.quipClock++;
+  if (world.talkT > 0) world.talkT--;
+  world.quips = world.quips.filter((q) => world.quipClock < q.at + q.dur);
+}
+
 export const EGG_TEXT = "IT'S DANGEROUS TO GO ALONE! TAKE THIS.";
 export const JOKE_SPRITES = {
   'EXPIRED COUPON': 'joke_coupon', 'PRE-OWNED STRATEGY GUIDE': 'joke_guide', 'PET ROCK': 'joke_rock',
@@ -118,7 +143,7 @@ function stepShoes(world) {
   }
 }
 
-storeHooks.create.push(createEgg);
+storeHooks.create.push(createEgg, createQuips);
 storeHooks.beforeReveal.push(fittingRoomSurprise);
 storeHooks.bulletSolid.push((world, b, col, row, state, rng) => {
   const idx = world.room.fixtures.findIndex((f) => f.col === col && f.row === row && f.kind === 'T');
@@ -126,6 +151,7 @@ storeHooks.bulletSolid.push((world, b, col, row, state, rng) => {
 });
 storeHooks.step.push((world, pad, state, rng, events) => {
   stepEgg(world, pad, state, rng, events);
+  stepQuips(world);
   stepBooth(world, events);
   stepToys(world, events);
   stepShoes(world);

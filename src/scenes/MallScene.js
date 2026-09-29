@@ -2,10 +2,10 @@ import { Container, Graphics, Sprite } from 'pixi.js';
 import { MALL_W, MALL_H, FLOOR_NAMES, floorTop, feetY } from '../world/constants.js';
 import { SHAFTS, STORES, FOUNTAINS, PHOTO_BOOTH, GETAWAY_CAR, FLOOR_ANNOUNCE, doorX } from '../world/mallLevel.js';
 import { createMallWorld, stepMall } from '../game/mallWorld.js';
-import { placeOnFloor } from '../game/mallPlayer.js';
+import { placeOnFloor, SELFIE_FRAMES } from '../game/mallPlayer.js';
 import { doorwayState, carFloor } from '../logic/elevator.js';
 import { makeSprite, tex } from '../gfx/textures.js';
-import { makeText } from '../gfx/font.js';
+import { makeText, setText } from '../gfx/font.js';
 import { C } from '../gfx/palette.js';
 import { createHud } from '../ui/hud.js';
 import { buildMallBackground, buildStorefront, updateStorefront, EntityViews, put, signTexture } from './mallView.js';
@@ -105,7 +105,8 @@ export class MallScene {
     this.playerSprite = new Sprite(tex('agentStand'));
     this.playerSprite.anchor.set(0.5, 1);
     this.entityLayer.addChild(this.playerSprite);
-    this.fxLayer.addChild(this.bulletGfx, this.darkGfx, this.bubbles);
+    this.phone = new Graphics();
+    this.fxLayer.addChild(this.bulletGfx, this.darkGfx, this.bubbles, this.phone);
 
     this.hud = createHud();
     c.addChild(this.hud.container);
@@ -141,6 +142,7 @@ export class MallScene {
         break;
       case 'score': this.popup(`${ev.pts}`, ev.x, ev.y); break;
       case 'kiosk': this.showKiosk(ev.storeId); break;
+      case 'selfie': this.showSpygram(ev.caption); break;
       case 'photo': this.showPanel([makeSprite('photoStrip')], 'SAY CHEESE!', 120, 2); break;
       case 'enterStore': ctx.enterStore?.(ev.storeId); break;
       case 'playerDied': ctx.onPlayerDied?.(this, ev.cause); break;
@@ -163,6 +165,24 @@ export class MallScene {
     pn.addChild(body, cap);
     pn.position.set(Math.floor((256 - w) / 2), 64);
     pn.visible = true; this.panelT = frames;
+  }
+
+  // the SPYGRAM post: header, photo, caption, likes ticking up, a comment from Mom
+  showSpygram(caption) {
+    const pn = this.panel;
+    pn.removeChildren().forEach((ch) => ch.destroy({ children: true }));
+    const W = 176, H = 132;
+    pn.addChild(new Graphics().rect(0, 0, W, H).fill(C.white).rect(0, 0, W, H).stroke({ color: C.black, width: 1 })
+      .rect(0, 0, W, 14).fill(C.magenta).rect(40, 16, 96, 52).fill(C.sky));
+    const head = makeText('SPYGRAM', C.white); head.position.set(8, 3); pn.addChild(head);
+    const me = makeSprite('agentStand'); me.scale.set(2); me.position.set(72, 18); pn.addChild(me);
+    const [a, b] = caption.split(', ');
+    [b ? `${a},` : a, b ?? ''].forEach((line, i) => { const t = makeText(line, C.black); t.position.set(6, 72 + i * 10); pn.addChild(t); });
+    this.likes = makeText('', C.red); this.likes.position.set(6, 94); pn.addChild(this.likes);
+    const mom = makeText('MOM: SO PROUD OF U', C.darkGrey); mom.position.set(6, 108); pn.addChild(mom);
+    pn.position.set(Math.floor((256 - W) / 2), 44);
+    pn.visible = true; this.panelT = 0; this.spygram = 0;
+    this.ctx.audio.sfx('blip');
   }
 
   showKiosk(storeId) {
@@ -271,6 +291,18 @@ export class MallScene {
     this.popups = this.popups.filter((pp) => { pp.life--; pp.t.y -= 0.4; if (pp.life <= 0) { pp.t.destroy(); return false; } return true; });
     if (this.bannerT > 0 && --this.bannerT === 0) this.bannerBox.visible = false;
     if (this.panelT > 0 && --this.panelT === 0) this.panel.visible = false;
+    if (this.spygram !== undefined && this.spygram !== null) {
+      if (p.mode !== 'selfie') { this.panel.visible = false; this.spygram = null; }
+      else { this.spygram++; setText(this.likes, `♥ ${Math.min(999, Math.floor(this.spygram ** 1.6 / 4))} LIKES`, C.red); }
+    }
+    // phone + camera flash while posing
+    this.phone.clear();
+    if (p.mode === 'selfie') {
+      const hx = Math.round(p.x) - 9, hy = Math.round(p.y) - 22;
+      this.phone.rect(hx, hy, 3, 5).fill(C.black);
+      const ft = SELFIE_FRAMES - p.selfieT;
+      if (ft < 6) this.phone.circle(hx + 1, hy + 2, 10 - ft).fill({ color: 0xffffff, alpha: 0.9 });
+    }
 
     const floorLabel = FLOOR_NAMES[p.floor ?? p.lastSafe.floor];
     this.hud.update(state, { floorLabel, alarm: world.alarm, frame: this.t });

@@ -77,7 +77,7 @@ export function stepSpies(world, state, rng, diff) {
     if (s.state === 'emerge') { if (--s.t <= 0) s.state = 'walk'; continue; }
     if (slideStep(world.wet, s, diff.spySpeed)) { s.x = Math.min(WALL_R - 8, Math.max(WALL_L + 8, s.x + s.vx)); continue; }
 
-    const sees = p.floor === s.floor && Math.abs(p.x - s.x) < 160 && !['hidden', 'dying', 'intro'].includes(p.mode);
+    const sees = p.floor === s.floor && Math.abs(p.x - s.x) < 160 && !['hidden', 'dying', 'intro', 'selfie'].includes(p.mode);
     // one duck decision per incoming volley (10%), then a cooldown — most straight shots should land
     if (s.dodgeT > 0) s.dodgeT--;
     if (s.dodge && s.dodgeT === 0 && s.state === 'walk' && bulletIncoming(world, s)) {

@@ -34,7 +34,7 @@ describe('mall player', () => {
     // then the drop and landing crouch, then control on the roof
     const rest = run(world, state, NONE, INTRO_FRAMES);
     expect(rest).toContainEqual({ type: 'sfx', name: 'jump' });
-    expect(p).toMatchObject({ mode: 'ground', floor: 0, y: feetY(0) });
+    expect(p).toMatchObject({ mode: 'selfie', floor: 0, y: feetY(0) });
   });
   it('walks and is clamped by walls', () => {
     const { state, world, p } = setup(); place(p, 20, 1);

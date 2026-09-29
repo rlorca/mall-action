@@ -30,7 +30,7 @@ export function createStoreWorld(storeId, state, rng) {
     player: { x: 7.5 * TILE - 6, y: 9 * TILE + 2, w: 12, h: 12, facing: 'up', shootT: 0, stunT: 0, holdT: 0, holdItem: null, invulnT: 0, dead: false, dieT: 0 },
     guards: room.guards.map(createGuard),
     bullets: [], enemyBullets: [], search: null, pops: [], toys: [],
-    frozen: false, egg: null, booth: false, oldManGone: true, exiting: false,
+    frozen: false, egg: null, booth: false, oldManGone: true, exiting: false, quips: [], talkT: 0,
     released: new Set(),
   };
   for (const h of storeHooks.create) h(world, state, rng);
@@ -285,7 +285,7 @@ export function stepStore(world, pad, state, rng) {
     return events;
   }
 
-  if (!world.frozen) for (const g of world.guards) stepGuard(world, g, state, rng, diff, events);
+  if (!world.frozen && !(world.talkT > 0)) for (const g of world.guards) stepGuard(world, g, state, rng, diff, events);
   stepBullets(world, state, rng, events);
   return events;
 }

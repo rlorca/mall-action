@@ -5,6 +5,7 @@ import { makeSprite, tex, textureFromGrid } from '../gfx/textures.js';
 import { tinyText } from '../gfx/sprites/tiny.js';
 import { ZIP } from '../game/mallPlayer.js';
 import { C } from '../gfx/palette.js';
+import { makeText } from '../gfx/font.js';
 
 const SIGN_COLOR = { target: C.red, powerup: C.blue, closed: C.darkGrey };
 
@@ -126,3 +127,19 @@ export class EntityViews {
 }
 
 export { put };
+
+// White speech bubble with a tail, anchored so the tail tip sits at (x, y); kept inside the 256 px screen.
+export function makeBubble(text, x, y) {
+  const c = new Container();
+  const t = makeText(text, C.black);
+  const w = t.width + 8, h = 14;
+  const left = Math.max(2, Math.min(254 - w, Math.round(x - w / 2)));
+  const top = Math.round(y - h - 4);
+  const tip = Math.max(left + 4, Math.min(left + w - 4, Math.round(x)));
+  c.addChild(new Graphics()
+    .rect(left, top, w, h).fill(C.white).rect(left, top, w, h).stroke({ color: C.black, width: 1 })
+    .poly([tip - 3, top + h, tip + 3, top + h, tip, top + h + 4]).fill(C.white));
+  t.position.set(left + 4, top + 3);
+  c.addChild(t);
+  return c;
+}

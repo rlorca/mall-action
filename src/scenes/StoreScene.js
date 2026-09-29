@@ -7,7 +7,7 @@ import { makeSprite, tex, hasSprite } from '../gfx/textures.js';
 import { makeText, setText } from '../gfx/font.js';
 import { C } from '../gfx/palette.js';
 import { createHud } from '../ui/hud.js';
-import { EntityViews } from './mallView.js';
+import { EntityViews, makeBubble } from './mallView.js';
 import { EGG_TEXT, JOKE_SPRITES } from '../game/storeExtras.js'; // also registers the store extras
 
 const ROOM_Y = 16;
@@ -186,6 +186,11 @@ export class StoreScene {
     for (const t of world.toys) { const s = makeSprite('windupToy', Math.floor(this.t / 6)); s.position.set(Math.round(t.x), Math.round(t.y)); ex.addChild(s); }
     for (const b of world.enemyBullets) if (b.shoe) { const s = makeSprite('shoe', Math.floor(this.t / 6)); s.position.set(Math.round(b.x), Math.round(b.y)); ex.addChild(s); }
     if (world.booth) { const g = new Graphics().rect(room.booth.col * TILE, room.booth.row * TILE, TILE, TILE).stroke({ color: this.t % 20 < 10 ? C.magenta : C.white, width: 1 }); ex.addChild(g); }
+    for (const q of world.quips) {
+      const g = world.guards[q.guard];
+      if (world.quipClock < q.at || !g || g.dead) continue;
+      ex.addChild(makeBubble(q.text, g.x + 6, g.y - 2));
+    }
     // typewriter dialogue (wrapped after the first sentence)
     const shown = world.egg ? EGG_TEXT.slice(0, world.egg.i) : '';
     if (shown !== this.dialogueText) {
