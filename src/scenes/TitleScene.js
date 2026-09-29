@@ -41,7 +41,7 @@ export class TitleScene {
     c.addChild(center(makeText('SHIFT MAP  ENTER PAUSE  C CRT'), 228));
     this.hi = center(makeText(`HI ${String(ctx.highScore ?? 0).padStart(6, '0')}`, C.yellow), 8);
     c.addChild(this.hi);
-    c.addChild(center(makeText('(C) 2026', C.lightGrey), 20));
+    c.addChild(center(makeText('(C) 2026 FLICKERSOFT', C.lightGrey), 20));
     ctx.audio.playMusic('title');
   }
 

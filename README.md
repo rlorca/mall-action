@@ -1,5 +1,7 @@
 # MALL ACTION
 
+**▶ [Play it in your browser](https://rlorca.github.io/mall-action/)** · a FLICKERSOFT game
+
 **An 8-bit spy caper in an 80s shopping mall.** A spiritual successor to Taito's *Elevator Action* (1983) that you can play in the browser. Zip-line onto the roof, ride the elevators, drop the lights on enemy spies, and search the stores for six secret packages. Then make it down to the parking garage before the alarm goes off.
 
 <p align="center">
@@ -55,6 +57,8 @@ npm run dev
 ```
 
 Open <http://localhost:5173>. It runs in any modern desktop browser with WebGL.
+
+Every push to `main` is tested, built and published to GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml).
 
 ### Controls
 
@@ -113,6 +117,7 @@ src/world    mall layout, store rooms, level setup
 src/logic    pure rules: physics, elevators, scoring, power-ups, NPCs, secrets
 src/game     mall and store simulation, jokes (humor.js)
 src/scenes   title, mall, store, map, pause, continue, level clear, game over
+src/flickersoft  the FLICKERSOFT boot logo, shared by all FLICKERSOFT games
 tests        Vitest specs
 docs         design spec and implementation plan
 ```
@@ -121,4 +126,4 @@ Want to add a joke? Every line lives in [`src/game/humor.js`](src/game/humor.js)
 
 ## Disclaimer
 
-*Mall Action* is a fan-made homage. It is not affiliated with or endorsed by Taito or any of the brands its stores parody. All store names are jokes, and all trademarks belong to their owners.
+*Mall Action* is made by **FLICKERSOFT**. It is a fan-made homage. It is not affiliated with or endorsed by Taito or any of the brands its stores parody. All store names are jokes, and all trademarks belong to their owners.

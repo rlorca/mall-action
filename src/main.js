@@ -19,6 +19,7 @@ import { ContinueOverlay } from './scenes/ContinueOverlay.js';
 import { respawnPlayer } from './game/mallWorld.js';
 import { loseLife, nextLoop } from './game/state.js';
 import { GalleryScene } from './scenes/GalleryScene.js';
+import { SplashScene } from './flickersoft/SplashScene.js';
 import { registerAllSprites } from './gfx/sprites/index.js';
 
 TextureStyle.defaultOptions.scaleMode = 'nearest';
@@ -147,7 +148,8 @@ async function boot() {
 
   await registerAllSprites();
   if (params.has('gallery')) ctx.scenes.replace(new GalleryScene(Number(params.get('page') ?? 0)), {}, { fade: false });
-  else ctx.scenes.replace(new TitleScene(), {}, { fade: false });
+  else if (ctx.debug) ctx.scenes.replace(new TitleScene(), {}, { fade: false }); // debug/playtests skip the logo
+  else ctx.scenes.replace(new SplashScene(() => ctx.scenes.replace(new TitleScene())), {}, { fade: false });
 
   const fixed = createFixedStep();
   app.ticker.add((t) => {
