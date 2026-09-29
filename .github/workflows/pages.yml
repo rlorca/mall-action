@@ -1,52 +1,42 @@
-name: Deploy to GitHub Pages
+name: Publish to GitHub Pages
 
 on:
   push:
     branches: [haiku-4-5]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 concurrency:
-  group: mall-action-pages-haiku
+  group: pages-publish
   cancel-in-progress: false
 
+env:
+  PUBLISH_DIR: haiku-4.5
+
 jobs:
-  build-and-deploy:
+  publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Prepare deployment
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Publish dist/ to gh-pages/${{ env.PUBLISH_DIR }}
         run: |
-          mkdir -p _site/haiku-4.5
-          cp -r dist/* _site/haiku-4.5/
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone --depth 1 --branch gh-pages "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" site
+          rm -rf "site/$PUBLISH_DIR"
+          mkdir -p "site/$PUBLISH_DIR"
+          cp -r dist/. "site/$PUBLISH_DIR/"
+          cd site
+          git add -A
+          if git diff --cached --quiet; then echo "nothing to publish"; exit 0; fi
+          git commit -m "Publish $PUBLISH_DIR from ${{ github.sha }}"
+          git push origin gh-pages
