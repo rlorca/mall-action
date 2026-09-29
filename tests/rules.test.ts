@@ -180,6 +180,46 @@ describe('NPC rules', () => {
   });
 });
 
+describe('lights', () => {
+  it('a shot lamp falls, kills a spy underneath for 300, shatters and darkens the floor', () => {
+    const g = playing();
+    const L = lvl(g);
+    const lamp = L.mall.lamps.find((l) => l.floor === 1 && l.x === 604)!;
+    L.mall.cop.floor = 4;
+    placeAgent(g, 1, 560);
+    L.mall.player.facing = 1;
+    L.mall.spawnT = -100000;
+    const s = spawnSpy(g, L, 604, surf(1));
+    s.mode = 'wait';
+    s.shotT = 9999;
+    const before = g.score;
+    press(g, 'a');
+    run(g, 40);
+    expect(lamp.state).toBe('gone');
+    expect(g.score - before).toBe(300);
+    expect(L.mall.dark.length).toBe(1);
+  });
+  it('a disco ball drops and rolls in the direction of the shot, flattening spies', () => {
+    const g = playing();
+    const L = lvl(g);
+    const ball = L.mall.lamps.find((l) => l.disco && l.x === 608)!;
+    L.mall.walkers.forEach((w) => (w.x = w.x0));
+    L.mall.cop.floor = 4;
+    placeAgent(g, 3, 570);
+    L.mall.player.facing = 1;
+    L.mall.spawnT = -100000;
+    const s = spawnSpy(g, L, 632, surf(3));
+    s.mode = 'wait';
+    s.shotT = 9999;
+    press(g, 'a');
+    run(g, 30);
+    expect(['roll', 'gone']).toContain(ball.state);
+    expect(ball.x).toBeGreaterThan(608);
+    run(g, 20);
+    expect(String(s.mode) === 'dying' || !L.mall.spies.includes(s)).toBe(true);
+  });
+});
+
 describe('spy fairness', () => {
   it('first shot no sooner than ~2 s after appearing, after a clear aiming pose of ~0.5 s', () => {
     const g = playing(11);

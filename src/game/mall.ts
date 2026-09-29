@@ -973,6 +973,21 @@ function stepBullets(g: GameState, lvl: Level): void {
 function playerBulletHits(g: GameState, lvl: Level, b: Bullet, xa: number, xb: number): boolean {
   const m = lvl.mall;
   const rng = lvl.rng;
+  // Hanging lamps and disco balls (cord and shade) come first: shooting at a spy under a lamp drops it on him.
+  for (const l of m.lamps) {
+    if (l.state !== 'hang') continue;
+    const top = surf(l.floor) - 44;
+    const shadeTop = l.y - (l.disco ? 14 : 10);
+    const cord = rectsOverlap(xa, b.y - 1, xb, b.y + 1, l.x - 2, top, l.x + 2, shadeTop);
+    const shade = rectsOverlap(xa, b.y - 1, xb, b.y + 1, l.x - 7, shadeTop, l.x + 7, l.y);
+    if (cord || shade) {
+      l.state = 'fall';
+      l.vy = 0;
+      l.dir = b.vx > 0 ? 1 : -1;
+      sfx(g, 'lampfall');
+      return true;
+    }
+  }
   // Spies (and their one-volley dodge decision).
   for (const s of m.spies) {
     if (s.mode === 'dying' || s.mode === 'emerge') continue;
@@ -986,21 +1001,6 @@ function playerBulletHits(g: GameState, lvl: Level, b: Bullet, xa: number, xb: n
     }
     if (rectsOverlap(xa, b.y - 1, xb, b.y + 1, s.x - HALF_W, s.y - spyHeight(s), s.x + HALF_W, s.y)) {
       killSpy(g, lvl, s, POINTS.spyShot);
-      return true;
-    }
-  }
-  // Hanging lamps and disco balls (cord and shade).
-  for (const l of m.lamps) {
-    if (l.state !== 'hang') continue;
-    const top = surf(l.floor) - 44;
-    const shadeTop = l.y - (l.disco ? 14 : 10);
-    const cord = rectsOverlap(xa, b.y - 1, xb, b.y + 1, l.x - 2, top, l.x + 2, shadeTop);
-    const shade = rectsOverlap(xa, b.y - 1, xb, b.y + 1, l.x - 7, shadeTop, l.x + 7, l.y);
-    if (cord || shade) {
-      l.state = 'fall';
-      l.vy = 0;
-      l.dir = b.vx > 0 ? 1 : -1;
-      sfx(g, 'lampfall');
       return true;
     }
   }

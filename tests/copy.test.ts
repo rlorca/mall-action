@@ -44,7 +44,13 @@ describe('copy fits on screen', () => {
     for (const s of [...bubbles, ...FLOOR_ANNOUNCE.map(() => ''), BANNERS.youGot('PRE-OWNED STRATEGY GUIDE')]) {
       expect(textWidth(MAIN_FONT, s) + 12, s).toBeLessThanOrEqual(256);
     }
-    for (const s of FLOOR_ANNOUNCE) expect(textWidth(TINY_FONT, s) + 10).toBeLessThanOrEqual(256);
+    for (const s of FLOOR_ANNOUNCE) {
+      expect(canRender(TINY_FONT, s), s).toBe(true);
+      expect(textWidth(TINY_FONT, s) + 10).toBeLessThanOrEqual(256);
+    }
+    for (const s of [...Object.values(POWERUP_NAMES), BANNERS.photoStrip, 'YOU ARE HERE', '♪ MALL PA', 'CLOSING SALE', '70% OFF', 'WIND-UP TOYS!', 'WAIT! YOUR RECEIPT!', 'ALL FOUND! GO TO P', 'INVENTORY: PET ROCK, 1 SHARE (DOWN 99%)']) {
+      expect(canRender(TINY_FONT, s), s).toBe(true);
+    }
   });
   it('store signs fit their storefronts in the tiny font', () => {
     for (const s of STORES) {

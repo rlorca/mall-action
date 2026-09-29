@@ -137,7 +137,7 @@ function drawBand(gx: Gfx, f: number, t: number): void {
     }
     for (let x = 24; x < MALL_W; x += 40) gx.wrect(x, bottom - 1, 16, 1, C.YELLOW);
     gx.text('P', 20 - gx.ox, top + 10 - gx.oy, C.YELLOW);
-    gx.text('EXIT →', 600 - gx.ox, top + 8 - gx.oy, C.LGREEN, { font: TINY_FONT });
+    gx.text('EXIT →', 596 - gx.ox, top + 8 - gx.oy, C.LGREEN);
   } else {
     // Floor label painted on the wall at both ends.
     gx.text(FLOOR_NAMES[f], 14 - gx.ox, top + 7 - gx.oy, b.trim);

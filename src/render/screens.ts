@@ -414,7 +414,11 @@ export function drawPlayOverlays(gx: Gfx, g: GameState): void {
   if (g.scene === 'mall') {
     const p = m.player;
     if (p.mode === 'selfie') {
-      if (p.modeT < 6) gx.rect(0, HUD_H, SCREEN_W, SCREEN_H - HUD_H, C.WHITE);
+      if (p.modeT < 6) {
+        // Phone flash: a bright burst around the agent, never a blank screen.
+        gx.ctx.fillStyle = `rgba(252,252,252,${0.7 - p.modeT * 0.1})`;
+        gx.ctx.fillRect(0, HUD_H, SCREEN_W, SCREEN_H - HUD_H);
+      }
       else if (p.modeT > 12) drawSpygram(gx, lvl.arrivalPost, p.modeT - 12, SCREEN_W / 2, 120);
     }
     if (m.announce) {
