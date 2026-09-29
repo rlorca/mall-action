@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Cpath fill=%22%23ed4560%22 d=%22M4 2h8v12H4z%22/%3E%3C/svg%3E"
+    />
+    <title>MALL ACTION · FLICKERSOFT</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      body {
+        display: grid;
+        place-items: center;
+      }
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        display: block;
+      }
+      #error {
+        color: white;
+        font: 16px monospace;
+        max-width: 36em;
+        padding: 2em;
+        text-align: center;
+      }
+      #help {
+        position: fixed;
+        bottom: 3px;
+        color: #888;
+        font: 10px monospace;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="screen"
+      width="256"
+      height="240"
+      aria-label="Mall Action game. Arrow keys move, Z shoots, X jumps or searches, Enter starts, Shift opens map."
+    ></canvas>
+    <div id="error" hidden></div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
