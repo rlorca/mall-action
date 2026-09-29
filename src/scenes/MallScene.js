@@ -15,7 +15,7 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 function playerFrame(p, t) {
   switch (p.mode) {
-    case 'intro': return ['agentZip', 0];
+    case 'intro': return p.introPhase === 'slide' ? ['agentZip', 0] : p.introPhase === 'drop' ? ['agentJump', 0] : ['agentDuck', 0];
     case 'dying': return ['agentDie', p.dieT > 60 ? 0 : p.dieT > 30 ? 1 : 2];
     case 'air': return [p.kick ? 'agentKick' : 'agentJump', 0];
     case 'esc': return ['agentStand', 0];

@@ -77,9 +77,16 @@ describe('search usability', () => {
   it('walking away cancels the search', () => {
     const { state, w } = setup(); faceFixture(w, 0);
     run(w, state, pad([], ['b']), 1);
-    run(w, state, pad(['down']), 5);
+    run(w, state, pad(['down'], ['down']), 1);
+    run(w, state, pad(['down']), 4);
     run(w, state, NONE, 60);
     expect(w.fixtures[0].searched).toBe(false);
+  });
+  it('a stuck or diagonal direction key does not cancel a search', () => {
+    const { state, w } = setup(); faceFixture(w, 0);
+    run(w, state, pad([], ['b']), 1);
+    run(w, state, pad(['left']), 50);
+    expect(w.fixtures[0].searched).toBe(true);
   });
   it('tapping X beside a fixture turns you to face it', () => {
     const { state, w } = setup(); const f = w.room.fixtures[0];

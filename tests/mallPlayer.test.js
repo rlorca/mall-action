@@ -4,6 +4,7 @@ import { createGameState } from '../src/game/state.js';
 import { feetY } from '../src/world/constants.js';
 import { STORES, doorX, ESCALATORS, ESC_RUN } from '../src/world/mallLevel.js';
 import { CAR_H } from '../src/logic/elevator.js';
+import { ZIP, INTRO_FRAMES } from '../src/game/mallPlayer.js';
 
 const pad = (held = [], pressed = []) => ({ held: (b) => held.includes(b) || pressed.includes(b), pressed: (b) => pressed.includes(b) });
 const NONE = pad();
@@ -18,10 +19,22 @@ const place = (p, x, floor) => Object.assign(p, { x, floor, y: feetY(floor), mod
 const run = (w, s, pd, n) => { const ev = []; for (let i = 0; i < n; i++) ev.push(...stepMall(w, pd, s, s.rng)); return ev; };
 
 describe('mall player', () => {
-  it('intro zipline lands on the roof', () => {
+  it('intro: the agent slides down the zip line from the next building, drops onto the roof, then gets control', () => {
     const state = createGameState({ seed: 1 }); const world = createMallWorld(state);
-    run(world, state, NONE, 61);
-    expect(world.player).toMatchObject({ mode: 'ground', floor: 0, y: feetY(0) });
+    const p = world.player;
+    const ev = run(world, state, NONE, 1);
+    expect(ev).toContainEqual({ type: 'sfx', name: 'slide' });
+    expect(p.x).toBeCloseTo(ZIP.x0, 0);
+    // mid-slide: hands on the cable (feet = cable y + body height)
+    run(world, state, NONE, Math.floor(ZIP.slideFrames / 2));
+    const k = (p.x - ZIP.x0) / (ZIP.x1 - ZIP.x0);
+    expect(k).toBeGreaterThan(0.3); expect(k).toBeLessThan(0.7);
+    expect(p.y).toBeCloseTo(ZIP.y0 + (ZIP.y1 - ZIP.y0) * k + 24, 0);
+    expect(p.mode).toBe('intro');
+    // then the drop and landing crouch, then control on the roof
+    const rest = run(world, state, NONE, INTRO_FRAMES);
+    expect(rest).toContainEqual({ type: 'sfx', name: 'jump' });
+    expect(p).toMatchObject({ mode: 'ground', floor: 0, y: feetY(0) });
   });
   it('walks and is clamped by walls', () => {
     const { state, world, p } = setup(); place(p, 20, 1);

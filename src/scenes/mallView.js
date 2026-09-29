@@ -3,6 +3,7 @@ import { MALL_W, MALL_H, SKY, floorTop, feetY } from '../world/constants.js';
 import { SHAFTS, SHAFT_W, ESCALATORS, ESC_RUN, STORE_W, KIOSKS } from '../world/mallLevel.js';
 import { makeSprite, tex, textureFromGrid } from '../gfx/textures.js';
 import { tinyText } from '../gfx/sprites/tiny.js';
+import { ZIP } from '../game/mallPlayer.js';
 import { C } from '../gfx/palette.js';
 
 const SIGN_COLOR = { target: C.red, powerup: C.blue, closed: C.darkGrey };
@@ -24,6 +25,18 @@ export function buildMallBackground() {
   const c = new Container();
   // sky above the roof
   tileRect(c, 'sky', 0, 0, MALL_W, feetY(0));
+  // Elevator Action entrance: the neighbouring skyscraper, its zip line, and the anchor post on the roof
+  const tower = new Graphics().rect(0, 0, 44, feetY(0)).fill(C.black).rect(0, 0, 44, 2).fill(C.darkGrey);
+  for (let y = 6; y < feetY(0) - 4; y += 8) for (let x = 4; x < 40; x += 8) {
+    if ((x * 7 + y * 3) % 5 !== 0) tower.rect(x, y, 4, 4).fill((x + y) % 3 ? C.navy : C.yellow);
+  }
+  c.addChild(tower);
+  const postX = ZIP.x1 + 14;
+  const postY = ZIP.y0 + ((ZIP.y1 - ZIP.y0) * (postX - ZIP.x0)) / (ZIP.x1 - ZIP.x0);
+  c.addChild(new Graphics()
+    .moveTo(ZIP.x0, ZIP.y0).lineTo(postX, postY).stroke({ width: 1, color: C.lightGrey })
+    .rect(postX - 1, postY, 3, feetY(0) - postY).fill(C.darkGrey)
+    .rect(postX - 3, feetY(0) - 3, 7, 3).fill(C.darkGrey));
   // roof slab
   tileRow(c, 'roofTile', 0, MALL_W, feetY(0));
   // shopping floors

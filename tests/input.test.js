@@ -1,5 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { Pad, mapGamepad, KEYMAP, buttonForKey } from '../src/core/input.js';
+import { Pad, mapGamepad, KEYMAP, buttonForKey, createInput } from '../src/core/input.js';
+
+describe('createInput', () => {
+  const key = (type, code, k) => Object.assign(new Event(type), { code, key: k, repeat: false });
+  it('releases a key by its physical code even if the printed letter changed', () => {
+    const t = new EventTarget(); const inp = createInput(t);
+    t.dispatchEvent(key('keydown', 'KeyA', 'a'));
+    t.dispatchEvent(key('keyup', 'KeyA', 'q'));
+    inp.poll(); inp.poll();
+    expect(inp.pad.held('left')).toBe(false);
+  });
+  it('X works on non-Latin layouts via its physical position', () => {
+    const t = new EventTarget(); const inp = createInput(t);
+    t.dispatchEvent(key('keydown', 'KeyX', 'ч'));
+    inp.poll();
+    expect(inp.pad.pressed('b')).toBe(true);
+  });
+  it('Space also searches / jumps', () => expect(buttonForKey({ code: 'Space', key: ' ' })).toBe('b'));
+});
 
 describe('Pad', () => {
   it('tracks held / pressed / released edges', () => {

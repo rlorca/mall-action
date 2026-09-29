@@ -7,17 +7,21 @@ import { slideStep, onWet } from '../logic/npcs.js';
 
 export const STAND_H = 24;
 export const DUCK_H = 14;
-export const INTRO_FRAMES = 60;
-const ZIP_DX = 80;
+// Elevator Action entrance: a zip line from the neighbouring skyscraper down to a post on the roof.
+// (x0, y0) is where the cable leaves the tower, (x1, y1) where the agent lets go; the agent hangs by the hands,
+// so feet are 24 px below the cable.
+export const ZIP = { x0: 36, y0: 10, x1: ROOF_ENTRY_X, y1: feetY(0) - 40, slideFrames: 80, landFrames: 14 };
+export const INTRO_FRAMES = 120; // upper bound: slide + drop + landing crouch
+const HANG = 24;
 
 const clampX = (x) => Math.min(WALL_R - 6, Math.max(WALL_L + 6, x));
 export const carById = (world, id) => world.cars.find((c) => c.id === id);
 
 export function createPlayer() {
   return {
-    kind: 'player', x: ROOF_ENTRY_X - ZIP_DX, y: 0, w: 10, h: STAND_H, vx: 0, vy: 0, facing: 1,
+    kind: 'player', x: ZIP.x0, y: ZIP.y0 + HANG, w: 10, h: STAND_H, vx: 0, vy: 0, facing: 1,
     floor: null, grounded: false, riding: null, onRoof: null, fallFromY: null,
-    mode: 'intro', introT: INTRO_FRAMES, duck: false, kick: false, esc: null,
+    mode: 'intro', introPhase: 'slide', introT: 0, duck: false, kick: false, esc: null,
     frozenT: 0, invulnT: 0, hiddenT: 0, dieT: 0, deathCause: null, slideDir: 0, shootT: 0, poseT: 0,
     lastSafe: { x: ROOF_ENTRY_X, floor: 0 },
   };
@@ -175,18 +179,31 @@ function stepEscalator(p) {
   if (dir > 0 && p.x <= e.x) placeOnFloor(p, e.x, e.bottomFloor);
 }
 
+// slide down the cable (hanging by the hands) → let go and drop onto the roof → landing crouch → control
+function stepIntro(p, ev) {
+  if (p.introPhase === 'slide') {
+    if (p.introT === 0) ev.push({ type: 'sfx', name: 'slide' });
+    const k = p.introT / ZIP.slideFrames;
+    p.x = ZIP.x0 + (ZIP.x1 - ZIP.x0) * k;
+    p.y = ZIP.y0 + (ZIP.y1 - ZIP.y0) * k + HANG;
+    if (++p.introT > ZIP.slideFrames) Object.assign(p, { introPhase: 'drop', vy: 0, vx: 0.5 });
+  } else if (p.introPhase === 'drop') {
+    p.vy = Math.min(p.vy + 0.25, 4); p.y += p.vy; p.x += p.vx;
+    if (p.y >= feetY(0)) {
+      Object.assign(p, { y: feetY(0), introPhase: 'land', introT: ZIP.landFrames, duck: true, h: DUCK_H });
+      ev.push({ type: 'sfx', name: 'jump' });
+    }
+  } else if (--p.introT <= 0) {
+    placeOnFloor(p, Math.round(p.x), 0);
+    p.lastSafe = { x: p.x, floor: 0 };
+  }
+}
+
 export function stepPlayer(p, pad, world, state) {
   const ev = [];
   if (p.invulnT > 0) p.invulnT--;
   switch (p.mode) {
-    case 'intro': {
-      p.introT--;
-      const k = p.introT / INTRO_FRAMES;
-      p.x = ROOF_ENTRY_X - ZIP_DX * k;
-      p.y = feetY(0) * (1 - k);
-      if (p.introT <= 0) placeOnFloor(p, ROOF_ENTRY_X, 0);
-      break;
-    }
+    case 'intro': stepIntro(p, ev); break;
     case 'ground': stepGround(p, pad, world, state, ev); break;
     case 'air': stepAirMode(p, world, state, ev); break;
     case 'car': stepCar(p, pad, world, ev); break;

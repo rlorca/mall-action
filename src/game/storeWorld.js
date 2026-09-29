@@ -260,7 +260,7 @@ export function stepStore(world, pad, state, rng) {
   else if (!inputLocked) {
     if (!pad.held('b')) world.searchLock = false;
     // an active search runs on its own once started (a tap is enough); turning away or shooting cancels it
-    if (world.search && (DIR_NAMES.some((d) => d !== p.facing && pad.held(d)) || pad.pressed('a'))) world.search = null;
+    if (world.search && (DIR_NAMES.some((d) => d !== p.facing && pad.pressed(d)) || pad.pressed('a'))) world.search = null;
     if (world.search) {
       world.search.t++;
       if (world.search.t % 8 === 0) events.push({ type: 'sfx', name: 'searchTick' });

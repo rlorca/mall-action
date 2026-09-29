@@ -24,8 +24,9 @@ const letterOf = (e) => (e.key && e.key.length === 1 ? e.key.toLowerCase() : nul
 
 export function buttonForKey(e) {
   const letter = letterOf(e);
-  if (letter) return LETTERS[letter];
-  return KEYMAP[e.code];
+  if (letter && LETTERS[letter]) return LETTERS[letter];
+  if (e.code === 'Space') return 'b';
+  return KEYMAP[e.code]; // unmapped letters (non-Latin layouts, IMEs) fall back to the physical key
 }
 
 const GP_BUTTONS = { 0: 'a', 1: 'b', 8: 'select', 9: 'start', 12: 'up', 13: 'down', 14: 'left', 15: 'right' };
@@ -42,17 +43,19 @@ export function mapGamepad(gp) {
 
 export function createInput(target = window) {
   const pad = new Pad();
-  const keys = new Set();
+  // held keys, keyed by physical code: a release always clears exactly what its press set,
+  // even if the printed letter differs between keydown and keyup (modifiers, layout switches)
+  const keys = new Map();
   // queued keydowns: each poll delivers at most one press per button, so fast repeated taps are not merged
   const queue = [];
   const hotkeys = new Map();
   const down = (e) => {
     const b = buttonForKey(e);
-    if (b) { keys.add(b); if (!e.repeat) queue.push(b); e.preventDefault(); }
+    if (b) { keys.set(e.code, b); if (!e.repeat) queue.push(b); e.preventDefault(); }
     const hk = hotkeys.get(letterOf(e)) ?? hotkeys.get(e.code);
     if (!e.repeat && hk) hk();
   };
-  const up = (e) => { const b = buttonForKey(e); if (b) keys.delete(b); };
+  const up = (e) => { keys.delete(e.code); };
   const blur = () => keys.clear();
   target.addEventListener('keydown', down);
   target.addEventListener('keyup', up);
@@ -65,7 +68,7 @@ export function createInput(target = window) {
         if (taps.has(queue[i])) { i++; continue; }
         taps.add(queue.splice(i, 1)[0]);
       }
-      const held = new Set([...keys, ...taps]);
+      const held = new Set([...keys.values(), ...taps]);
       const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
       for (const gp of pads) if (gp) for (const b of mapGamepad(gp)) held.add(b);
       pad.step(held, taps);
