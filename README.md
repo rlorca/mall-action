@@ -15,6 +15,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | Claude Fable 5.1 | [`fable-5-1`](../../tree/fable-5-1) | https://rlorca.github.io/mall-action/fable-5.1/ |
 | Claude Haiku 4.5 | [`haiku-4-5`](../../tree/haiku-4-5) | https://rlorca.github.io/mall-action/haiku-4.5/ |
 | Gemini 3.6 Flash | [`gemini-3-6-flash`](../../tree/gemini-3-6-flash) | https://rlorca.github.io/mall-action/gemini-3.6-flash/ |
+| Claude Opus 4.6 | [`opus-4-6`](../../tree/opus-4-6) | https://rlorca.github.io/mall-action/opus-4.6/ |
 
 Each branch has its own README, tests and CI; pushing to a branch republishes its build.
 
