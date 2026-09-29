@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MALL ACTION - A FLICKERSOFT Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    #error-msg {
+      display: none;
+      color: #ff4444;
+      font-family: monospace;
+      font-size: 18px;
+      text-align: center;
+      padding: 40px;
+    }
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 8px 20px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="error-msg">
+    <p>Your browser does not support the Canvas API required to run this game.</p>
+    <p>Please use a modern browser like Chrome, Firefox, Safari, or Edge.</p>
+  </div>
+  <div id="toast"></div>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

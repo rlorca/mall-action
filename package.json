@@ -1,0 +1,28 @@
+{
+  "name": "mall-action",
+  "version": "1.0.0",
+  "description": "MALL ACTION - An 8-bit spy caper in an 80s shopping mall",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rlorca/mall-action.git"
+  },
+  "keywords": [],
+  "author": "FLICKERSOFT",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rlorca/mall-action/issues"
+  },
+  "homepage": "https://github.com/rlorca/mall-action#readme",
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  }
+}
