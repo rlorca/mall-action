@@ -60,3 +60,37 @@ describe('store world', () => {
     expect(ev.some((e) => e.type === 'playerDied')).toBe(true);
   });
 });
+
+describe('search usability', () => {
+  it('finds a fixture you touch even when your centre is over a gap', () => {
+    const { state, w } = setup('forever12');
+    // forever12 row 1: fitting rooms at cols 1,3,5 with floor gaps between; stand straddling cols 2/3 under the room at col 3
+    Object.assign(w.player, { x: 38, y: 32, facing: 'up' }); // spans x 38..49: centre over the gap (col 2), right edge under col 3
+    expect(fixtureInFront(w)).not.toBeNull();
+  });
+  it('a single tap of X runs the whole search', () => {
+    const { state, w } = setup(); faceFixture(w, 0);
+    run(w, state, pad([], ['b']), 1);
+    run(w, state, NONE, searchFrames(state.power));
+    expect(w.fixtures[0].searched).toBe(true);
+  });
+  it('walking away cancels the search', () => {
+    const { state, w } = setup(); faceFixture(w, 0);
+    run(w, state, pad([], ['b']), 1);
+    run(w, state, pad(['down']), 5);
+    run(w, state, NONE, 60);
+    expect(w.fixtures[0].searched).toBe(false);
+  });
+  it('tapping X beside a fixture turns you to face it', () => {
+    const { state, w } = setup(); const f = w.room.fixtures[0];
+    Object.assign(w.player, { x: (f.col + 1) * 16 + 1, y: f.row * 16 + 2, facing: 'down' }); // right of the fixture
+    run(w, state, pad([], ['b']), 1);
+    expect(w.player.facing).toBe('left');
+    expect(w.search).not.toBeNull();
+  });
+  it('every result is announced', () => {
+    const { state, w } = setup(); w.fixtures[0].type = 'empty'; faceFixture(w, 0);
+    const ev = run(w, state, pad(['b']), 45);
+    expect(ev).toContainEqual({ type: 'banner', text: 'NOTHING HERE' });
+  });
+});

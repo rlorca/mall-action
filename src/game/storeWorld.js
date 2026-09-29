@@ -1,7 +1,7 @@
 import { STORES } from '../world/mallLevel.js';
 import { roomFor, TILE } from '../world/storeRooms.js';
 import { aabb, moveInRoom } from '../logic/physics.js';
-import { walkSpeed, searchFrames, fireCooldown, maxBullets, resolveHit, applyPowerup, tickPowerups } from '../logic/powerups.js';
+import { walkSpeed, searchFrames, fireCooldown, maxBullets, resolveHit, applyPowerup, tickPowerups, POWERUPS } from '../logic/powerups.js';
 import { addScore, difficulty, TARGET_COUNT } from '../logic/rules.js';
 
 export const EXIT_Y = 10 * TILE + 4;
@@ -51,13 +51,33 @@ export function isSolidAt(world, px, py) {
 }
 const guardSolidAt = (world, px, py) => isSolidAt(world, px, py) || tileAt(world, px, py)?.kind === 'door';
 
-export function fixtureInFront(world) {
+// Points just beyond the player's edge in `dir`: centre first, then both ends, so a player
+// straddling two columns still finds the fixture they are pressed against.
+function frontPoints(p, dir) {
+  const xs = [p.x + p.w / 2, p.x + 1, p.x + p.w - 2], ys = [p.y + p.h / 2, p.y + 1, p.y + p.h - 2];
+  if (dir === 'up') return xs.map((x) => [x, p.y - 2]);
+  if (dir === 'down') return xs.map((x) => [x, p.y + p.h + 1]);
+  if (dir === 'left') return ys.map((y) => [p.x - 2, y]);
+  return ys.map((y) => [p.x + p.w + 1, y]);
+}
+
+export function fixtureInFront(world, dir = world.player.facing, { unsearched = false } = {}) {
+  for (const [fx, fy] of frontPoints(world.player, dir)) {
+    const col = Math.floor(fx / TILE), row = Math.floor(fy / TILE);
+    const i = world.room.fixtures.findIndex((f) => f.col === col && f.row === row);
+    if (i >= 0 && (!unsearched || !world.fixtures[i].searched)) return i;
+  }
+  return null;
+}
+
+// The unsearched fixture the player is touching: the one they face first, otherwise any side.
+function touchingFixture(world) {
   const p = world.player;
-  const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
-  const [fx, fy] = { up: [cx, p.y - 2], down: [cx, p.y + p.h + 1], left: [p.x - 2, cy], right: [p.x + p.w + 1, cy] }[p.facing];
-  const col = Math.floor(fx / TILE), row = Math.floor(fy / TILE);
-  const i = world.room.fixtures.findIndex((f) => f.col === col && f.row === row);
-  return i < 0 ? null : i;
+  for (const dir of [p.facing, ...DIR_NAMES.filter((d) => d !== p.facing)]) {
+    const idx = fixtureInFront(world, dir, { unsearched: true });
+    if (idx !== null) return { idx, dir };
+  }
+  return null;
 }
 
 function hurtPlayer(world, state, events) {
@@ -89,17 +109,17 @@ export function reveal(world, idx, state, rng, events) {
       if (extraLife) state.lives += extraLife;
       addScore(state, 'powerup');
       Object.assign(p, { holdT: 30, holdItem: f.id });
-      events.push({ type: 'sfx', name: 'powerup' });
+      events.push({ type: 'sfx', name: 'powerup' }, { type: 'banner', text: `${POWERUPS[f.id].label}!` });
       break;
     }
     case 'trap':
       p.stunT = 60;
       world.pops.push({ name: 'smoke', col: at.col, row: at.row, t: 36 });
-      events.push({ type: 'sfx', name: 'smoke' });
+      events.push({ type: 'sfx', name: 'smoke' }, { type: 'banner', text: "IT'S A TRAP!" });
       break;
     default:
       world.pops.push({ name: 'nothingPuff', col: at.col, row: at.row, t: 24 });
-      events.push({ type: 'sfx', name: 'searchTick' });
+      events.push({ type: 'sfx', name: 'searchTick' }, { type: 'banner', text: 'NOTHING HERE' });
   }
 }
 
@@ -238,16 +258,24 @@ export function stepStore(world, pad, state, rng) {
   if (p.holdT > 0) { if (--p.holdT === 0) p.holdItem = null; }
   else if (p.stunT > 0) p.stunT--;
   else if (!inputLocked) {
-    const idx = fixtureInFront(world);
-    if (pad.held('b') && idx !== null && !world.fixtures[idx].searched) {
-      if (world.search?.idx !== idx) world.search = { idx, t: 0 };
+    if (!pad.held('b')) world.searchLock = false;
+    // an active search runs on its own once started (a tap is enough); turning away or shooting cancels it
+    if (world.search && (DIR_NAMES.some((d) => d !== p.facing && pad.held(d)) || pad.pressed('a'))) world.search = null;
+    if (world.search) {
       world.search.t++;
       if (world.search.t % 8 === 0) events.push({ type: 'sfx', name: 'searchTick' });
-      if (world.search.t >= searchFrames(state.power)) { world.search = null; reveal(world, idx, state, rng, events); }
+      if (world.search.t >= searchFrames(state.power)) {
+        const idx = world.search.idx;
+        world.search = null; world.searchLock = true; // keep holding X ≠ auto-search the next fixture
+        reveal(world, idx, state, rng, events);
+      }
     } else {
-      world.search = null;
-      movePlayer(world, pad, state);
-      if (pad.pressed('a')) fire(world, state, events);
+      const hit = (pad.pressed('b') || (pad.held('b') && !world.searchLock)) ? touchingFixture(world) : null;
+      if (hit) { p.facing = hit.dir; world.search = { idx: hit.idx, t: 1 }; }
+      else {
+        movePlayer(world, pad, state);
+        if (pad.pressed('a')) fire(world, state, events);
+      }
     }
   }
 

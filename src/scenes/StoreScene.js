@@ -154,14 +154,14 @@ export class StoreScene {
     for (const b of world.enemyBullets) bg.rect(Math.round(b.x), Math.round(b.y), 3, 3).fill(C.yellow);
 
     // prompts
-    const idx = fixtureInFront(world);
+    const idx = fixtureInFront(world, world.player.facing, { unsearched: true });
     let prompt = '';
     this.bar.clear();
     if (world.search) {
       prompt = 'SEARCHING...';
       const frac = world.search.t / searchFrames(state.power);
       this.bar.rect(128, STRIP_Y + 18, 64, 8).stroke({ color: C.white, width: 1 }).rect(129, STRIP_Y + 19, Math.round(62 * frac), 6).fill(C.lime);
-    } else if (idx !== null && !world.fixtures[idx].searched && !world.egg) prompt = 'HOLD X TO SEARCH';
+    } else if (idx !== null && !world.fixtures[idx].searched && !world.egg) prompt = 'PRESS X TO SEARCH';
     if (prompt !== this.promptText) { setText(this.prompt, prompt, C.white); this.promptText = prompt; }
     this.prompt.visible = !world.egg;
     this.dialogue.visible = !!world.egg;
