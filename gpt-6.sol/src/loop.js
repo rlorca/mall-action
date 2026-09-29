@@ -1,0 +1,1 @@
+export function fixedStepper(update,paint){let last=null,carry=0;return function(now){if(last===null)last=now;carry+=Math.min(250,now-last);last=now;let steps=0;while(carry>=1000/60&&steps<5){update();carry-=1000/60;steps++}if(steps===5)carry=0;paint(carry/(1000/60));return steps}}
