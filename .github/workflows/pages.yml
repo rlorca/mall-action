@@ -5,7 +5,7 @@ on:
     branches: [haiku-4-5]
 
 concurrency:
-  group: mall-action-deploy
+  group: mall-action-pages-haiku
   cancel-in-progress: false
 
 jobs:
@@ -37,10 +37,15 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Prepare deployment
+        run: |
+          mkdir -p _site/haiku-4.5
+          cp -r dist/* _site/haiku-4.5/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
