@@ -5,24 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MALL ACTION - a FLICKERSOFT game</title>
 <style>
-  html, body { margin: 0; min-height: 100%; background: #000; color: #fff; font: 16px/1.5 ui-monospace, Menlo, monospace; }
-  main { max-width: 640px; margin: 0 auto; padding: 48px 20px; }
-  h1 { color: #fa9e00; letter-spacing: 4px; font-size: 32px; margin: 0 0 4px; }
-  p.sub { color: #9085ff; margin: 0 0 32px; }
-  a.card { display: block; border: 2px solid #fff; padding: 16px 20px; margin: 0 0 16px; color: #fff; text-decoration: none; }
-  a.card:hover, a.card:focus { background: #d21269; }
-  a.card b { display: block; font-size: 20px; }
-  small { color: #b8b8b8; }
+  :root { --bg:#000; --fg:#fff; --dim:#b8b8b8; --gold:#fa9e00; --violet:#9085ff; --hot:#d21269; --link:#53aeff; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--fg); font: 16px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { color: var(--gold); letter-spacing: 4px; font-size: 34px; margin: 0 0 4px; }
+  p.sub { color: var(--violet); margin: 0 0 28px; }
+  p.intro { color: var(--dim); margin: 0 0 32px; }
+  .card { border: 2px solid var(--fg); padding: 16px 20px; margin: 0 0 16px; }
+  .card h2 { margin: 0 0 4px; font-size: 20px; }
+  .card p { margin: 0 0 12px; color: var(--dim); font-size: 14px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-block; padding: 8px 16px; border: 2px solid var(--fg); color: var(--fg); text-decoration: none; }
+  .btn.play { background: var(--hot); border-color: var(--hot); }
+  .btn:hover, .btn:focus-visible { background: var(--fg); color: var(--bg); outline: none; }
+  footer { margin-top: 32px; color: var(--dim); font-size: 13px; }
+  footer a { color: var(--link); }
 </style>
 </head>
 <body>
 <main>
   <h1>MALL ACTION</h1>
-  <p class="sub">A SHOPPING MALL ESPIONAGE &middot; one prompt, several models</p>
-  <a class="card" href="opus-5.5/"><b>Claude Opus 5.5</b><small>play &rarr; /opus-5.5/</small></a>
-  <a class="card" href="sonnet-5.5/"><b>Claude Sonnet 5.5</b><small>play &rarr; /sonnet-5.5/</small></a>
-  <p><small>Source and the shared prompt: <a href="https://github.com/rlorca/mall-action" style="color:#53aeff">github.com/rlorca/mall-action</a>.
-  A FLICKERSOFT fan homage, not affiliated with Taito or any parodied brand.</small></p>
+  <p class="sub">A SHOPPING MALL ESPIONAGE</p>
+  <p class="intro">An 8-bit spy caper in an 80s shopping mall. The same one-shot prompt, built from scratch by different AI models. Pick an implementation:</p>
+
+  <section class="card">
+    <h2>Claude Opus 5.5</h2>
+    <p>PixiJS + vanilla JS. Branch <code>opus-5-5</code>.</p>
+    <div class="actions">
+      <a class="btn play" href="opus-5.5/">Play</a>
+      <a class="btn" href="https://github.com/rlorca/mall-action/tree/opus-5-5">Source code</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Claude Sonnet 5.5</h2>
+    <p>TypeScript + WebGL CRT shader. Branch <code>sonnet-5-5</code>.</p>
+    <div class="actions">
+      <a class="btn play" href="sonnet-5.5/">Play</a>
+      <a class="btn" href="https://github.com/rlorca/mall-action/tree/sonnet-5-5">Source code</a>
+    </div>
+  </section>
+
+  <footer>
+    <a href="https://github.com/rlorca/mall-action">github.com/rlorca/mall-action</a> &middot;
+    <a href="https://github.com/rlorca/mall-action/blob/main/one-shot-prompt.md">the prompt</a><br />
+    A FLICKERSOFT fan homage, not affiliated with Taito or any parodied brand.
+  </footer>
 </main>
 </body>
 </html>
