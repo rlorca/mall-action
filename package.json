@@ -1,0 +1,1 @@
+{"name":"mall-action-gpt-6-sol","version":"1.0.0","type":"module","private":true,"scripts":{"dev":"node scripts/dev.js","test":"node --test","build":"node scripts/build.js"}}

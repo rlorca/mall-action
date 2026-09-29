@@ -1,0 +1,10 @@
+export const BUTTONS=['up','down','left','right','a','b','select','start'];
+const codes={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Space:'b',Enter:'start',ShiftLeft:'select',ShiftRight:'select',Tab:'select'};
+const letters={w:'up',a:'left',s:'down',d:'right',z:'a',j:'a',x:'b',k:'b'};
+export function keyButton(key,code){const lower=key?.toLowerCase();if(letters[lower])return letters[lower];if(codes[code])return codes[code];if(code?.startsWith('Key'))return letters[code.slice(3).toLowerCase()]||null;return null}
+export class Input{
+ constructor(onSpecial=()=>{}){this.down=new Map();this.held={};this.queue=[];this.padHeld={};this.onSpecial=onSpecial;this.onKeyDown=e=>{if(e.repeat)return;const key=e.key?.toLowerCase();if(key==='c'||key==='m'){e.preventDefault();onSpecial(key);return}const b=keyButton(e.key,e.code);if(!b)return;e.preventDefault();if(this.down.has(e.code))return;this.down.set(e.code,b);this.held[b]=true;this.queue.push(b)};this.onKeyUp=e=>{const b=this.down.get(e.code);if(!b)return;e.preventDefault();this.down.delete(e.code);this.held[b]=[...this.down.values()].includes(b)};this.onBlur=()=>{this.down.clear();this.held={};this.padHeld={}};window.addEventListener('keydown',this.onKeyDown);window.addEventListener('keyup',this.onKeyUp);window.addEventListener('blur',this.onBlur)}
+ pollGamepads(){const pads=navigator.getGamepads?.()||[];const next={};for(const gp of pads)if(gp){const ax=gp.axes||[];const bt=i=>!!gp.buttons[i]?.pressed;for(const [name,value] of Object.entries({up:bt(12)||ax[1]<-.45,down:bt(13)||ax[1]>.45,left:bt(14)||ax[0]<-.45,right:bt(15)||ax[0]>.45,a:bt(0),b:bt(1),select:bt(8),start:bt(9)}))next[name] ||= value}for(const b of BUTTONS)if(next[b]&&!this.padHeld[b])this.queue.push(b);this.padHeld=next}
+ frame(){this.pollGamepads();const pressed={};for(const b of this.queue)pressed[b]=true;this.queue=[];const held={};for(const b of BUTTONS)held[b]=!!(this.held[b]||this.padHeld[b]);return {held,pressed}}
+ dispose(){window.removeEventListener('keydown',this.onKeyDown);window.removeEventListener('keyup',this.onKeyUp);window.removeEventListener('blur',this.onBlur)}
+}
