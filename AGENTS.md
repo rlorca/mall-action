@@ -1,6 +1,7 @@
 # AGENTS.md - read this first
 
-This repository is a **comparison of AI models on one prompt**, not a single codebase.
+This repository is a **benchmark: the same one-shot prompt given to different AI models**, not a single codebase.
+Each implementation branch is one model's attempt; the value is in comparing them, so keep the runs comparable.
 
 ## Repository structure
 
@@ -34,6 +35,19 @@ them or rebase one onto another.
 - Builds are served from a sub-path, so every implementation must build with relative asset URLs (`base: './'` in
   Vite) and must not assume it is served from `/`.
 
+## Running a benchmark for a new model
+
+1. Start from an EMPTY directory and a fresh session of the model. Give it `one-shot-prompt.md` verbatim as the
+   only task (no hints, no extra instructions, no reference to other branches or their code).
+2. Let it work autonomously to the brief's *Definition of done*. Human help is limited to what the harness needs
+   (e.g. approving tool calls); do not steer the design. Note anything you did have to intervene on.
+3. Record the run in the branch `README.md` under a "Benchmark notes" heading: model name and id, date, harness
+   (e.g. Claude Code version), reasoning/effort setting, roughly how long it took, and any interventions.
+4. Publish it as a new branch (below). Never overwrite or "improve" another model's branch to make it look better;
+   fixes after the one-shot run go in later commits so the original result stays in the history.
+5. Compare: does it build and pass its own tests, does it run without console errors, how much of the brief works,
+   how does it play, code and test quality.
+
 ## Adding a new implementation
 
 1. Create an orphan branch named `<model>-<version>` with dashes, e.g. `fable-5-1` (`git checkout --orphan ...`).
@@ -46,5 +60,6 @@ them or rebase one onto another.
 ## Conventions
 
 - Branch names use dashes (`sonnet-5-5`); published folders use dots (`sonnet-5.5`).
+- The prompt is the fixed variable. If it must change, treat it as a new benchmark version and say so in `README.md`.
 - Keep `main` tiny. If you are about to add a file to `main`, you are probably on the wrong branch.
 - Do not delete or force-push implementation branches: their history is part of the comparison.

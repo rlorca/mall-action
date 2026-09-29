@@ -1,6 +1,6 @@
 # MALL ACTION
 
-One prompt, several models: **MALL ACTION** is an 8-bit spy caper set in an 80s shopping mall, a spiritual
+**A benchmark for AI coding models.** One prompt, one shot, every model. **MALL ACTION** is an 8-bit spy caper set in an 80s shopping mall, a spiritual
 successor to *Elevator Action* by the fictional studio **FLICKERSOFT**. Ride elevators, shoot spies, search
 stores for hidden packages, and drive away in the wood-panelled getaway wagon.
 
@@ -13,5 +13,12 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | Claude Sonnet 5.5 | [`sonnet-5-5`](../../tree/sonnet-5-5) | https://rlorca.github.io/mall-action/sonnet-5.5/ |
 
 Each branch has its own README, tests and CI; pushing to a branch republishes its build.
+
+## Using it as a benchmark
+
+When a new model comes out, give it [`one-shot-prompt.md`](one-shot-prompt.md) in an empty directory, let it work
+autonomously, and publish the result as a new branch. Then compare the games side by side: does it run, does it
+feel good to play, how complete is it, how good are the tests, how much time and effort did it take. See
+[`AGENTS.md`](AGENTS.md) for the exact protocol.
 
 *A FLICKERSOFT fan homage. Not affiliated with Taito or any parodied brand.*
