@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+
+# Other benchmark runs keep their worktrees in here. Not ours to commit.
+.worktrees/
+
+# Leftover tool logs, not part of the game.
+.playwright-mcp/
