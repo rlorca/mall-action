@@ -44,6 +44,7 @@ export enum Floor {
 }
 
 export interface Player {
+  id?: string;
   x: number;
   y: number;
   floor: Floor;
