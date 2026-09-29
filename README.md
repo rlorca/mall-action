@@ -11,6 +11,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 |---|---|---|
 | Claude Opus 5.5 | [`opus-5-5`](../../tree/opus-5-5) | https://rlorca.github.io/mall-action/opus-5.5/ |
 | Claude Sonnet 5.5 | [`sonnet-5-5`](../../tree/sonnet-5-5) | https://rlorca.github.io/mall-action/sonnet-5.5/ |
+| GPT-6 Sol | [`gpt-6-sol`](../../tree/gpt-6-sol) | https://rlorca.github.io/mall-action/gpt-6.sol/ |
 
 Each branch has its own README, tests and CI; pushing to a branch republishes its build.
 
