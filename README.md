@@ -1,11 +1,11 @@
 # MALL ACTION
 
-*A shopping mall espionage.* An 8-bit spy caper set in an 80s shopping mall, by **FLICKERSOFT**.
+*A shopping mall espionage.* This is the **Claude Sonnet 5.5** implementation of the [one-shot prompt](https://github.com/rlorca/mall-action/blob/main/one-shot-prompt.md) in [rlorca/mall-action](https://github.com/rlorca/mall-action), which also has an Opus 5.5 build. An 8-bit spy caper set in an 80s shopping mall, by **FLICKERSOFT**.
 A spiritual successor to *Elevator Action*: ride elevators and escalators, shoot spies, duck into
 stores (top-down, Zelda-style) and search fixtures for the 6 hidden packages, then make it to the parking
 level and drive off in the wood-panelled getaway wagon. Then the next loop starts, harder.
 
-**[Play in your browser](https://rlorca.github.io/mall-action-sonnet/)** (deployed to GitHub Pages on every push to `main`)
+**[Play in your browser](https://rlorca.github.io/mall-action/sonnet-5.5/)** (published to GitHub Pages on every push to this branch)
 
 ![Title](docs/title.png)
 ![Mall](docs/mall.png)

@@ -1,5 +1,7 @@
 # AGENTS.md - guide for coding agents
 
+This is the `sonnet-5-5` branch of `rlorca/mall-action` (an independent history; `main` only holds the shared prompt and the repo guide). CI: `.github/workflows/pages.yml` tests, builds and publishes `dist/` to `gh-pages/sonnet-5.5/` on every push to this branch.
+
 MALL ACTION: TypeScript + Vite + Vitest, no runtime dependencies, no external assets.
 
 ## Architecture
