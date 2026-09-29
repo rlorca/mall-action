@@ -1,6 +1,8 @@
 # MALL ACTION
 
-**▶ [Play it in your browser](https://rlorca.github.io/mall-action/)** · a FLICKERSOFT game
+**▶ [Play it in your browser](https://rlorca.github.io/mall-action/opus-5.5/)** · a FLICKERSOFT game
+
+> This is the **Claude Opus 5.5** implementation of the [one-shot prompt](https://github.com/rlorca/mall-action/blob/main/one-shot-prompt.md) in [rlorca/mall-action](https://github.com/rlorca/mall-action), which also has a Sonnet 5.5 build.
 
 **An 8-bit spy caper in an 80s shopping mall.** A spiritual successor to Taito's *Elevator Action* (1983) that you can play in the browser. Zip-line onto the roof, ride the elevators, drop the lights on enemy spies, and search the stores for six secret packages. Then make it down to the parking garage before the alarm goes off.
 

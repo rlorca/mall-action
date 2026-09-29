@@ -2,6 +2,8 @@
 
 Guidance for AI coding agents (and humans) changing this repo. Read this before editing.
 
+This is the `opus-5-5` branch of `rlorca/mall-action` (an independent history; `main` only holds the shared prompt and the repo guide). CI: `.github/workflows/pages.yml` tests, builds and publishes `dist/` to `gh-pages/opus-5.5/` on every push to this branch.
+
 ## What this is
 
 A browser game by **FLICKERSOFT**: a spiritual successor to Taito's *Elevator Action*, set in an 80s shopping mall.

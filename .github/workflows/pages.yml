@@ -1,21 +1,25 @@
-name: Deploy to GitHub Pages
+name: Publish to GitHub Pages
 
+# Tests and builds this branch, then publishes dist/ into the `gh-pages` branch under $PUBLISH_DIR.
+# Every implementation branch has its own copy of this workflow; see AGENTS.md on `main`.
 on:
   push:
-    branches: [main]
+    branches: [opus-5-5]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
+# One publisher at a time: all implementations push to the same gh-pages branch.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-publish
+  cancel-in-progress: false
+
+env:
+  PUBLISH_DIR: opus-5.5
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,17 +30,16 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish dist/ to gh-pages/${{ env.PUBLISH_DIR }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone --depth 1 --branch gh-pages "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" site
+          rm -rf "site/$PUBLISH_DIR"
+          mkdir -p "site/$PUBLISH_DIR"
+          cp -r dist/. "site/$PUBLISH_DIR/"
+          cd site
+          git add -A
+          if git diff --cached --quiet; then echo "nothing to publish"; exit 0; fi
+          git commit -m "Publish $PUBLISH_DIR from ${{ github.sha }}"
+          git push origin gh-pages
