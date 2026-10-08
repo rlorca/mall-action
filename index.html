@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MALL ACTION</title>
+  <meta name="description" content="MALL ACTION: an 8-bit spy caper in an 80s shopping mall. A FLICKERSOFT game." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23000'/%3E%3Crect x='3' y='2' width='10' height='4' fill='%23d82800'/%3E%3Crect x='4' y='6' width='8' height='8' fill='%23fcfcfc'/%3E%3C/svg%3E" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    body { display: flex; align-items: center; justify-content: center; }
+    #screen { display: block; image-rendering: pixelated; image-rendering: crisp-edges; outline: none; }
+    #fallback { display: none; color: #fcfcfc; font: 16px/1.5 monospace; text-align: center; padding: 24px; max-width: 520px; }
+  </style>
+</head>
+<body>
+  <canvas id="screen" width="256" height="240" tabindex="0"></canvas>
+  <div id="fallback"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
