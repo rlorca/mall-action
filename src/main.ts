@@ -232,6 +232,7 @@ function start(presenter: Presenter): void {
       game,
       input,
       fb,
+      audio,
       get realtime() {
         return dbg.realtime;
       },
@@ -250,8 +251,8 @@ function start(presenter: Presenter): void {
       },
       /** Press and release one button (1 frame down, 1 frame up). */
       tap(buttons: string | number, frames = 1) {
-        api.step(frames, buttons);
-        return api.step(1, 0);
+        (this as { step(f: number, b: string | number): unknown }).step(frames, buttons);
+        return (this as { step(f: number, b: string | number): unknown }).step(1, 0);
       },
       render() {
         draw(performance.now());
@@ -270,6 +271,36 @@ function start(presenter: Presenter): void {
       },
       NO_PAD,
     };
+    // The scripted player used by the tests, runnable in the real page (renders every frame, so every view is exercised).
+    const botApi = {
+      immortal: true,
+      renderEvery: true,
+      lib: null as null | typeof import('./game/bot'),
+      rig: {
+        get w() {
+          return game.level!.mall;
+        },
+        get world() {
+          return game.level!.store!;
+        },
+        hold(mask: number, n = 1) {
+          for (let i = 0; i < n; i++) {
+            if (botApi.immortal && game.run) game.run.power.invincible = 1e6;
+            advance(padFromHeld(held, mask));
+            held = mask;
+            if (botApi.renderEvery) draw(performance.now());
+          }
+        },
+        tap(b: number) {
+          botApi.rig.hold(b, 1);
+          botApi.rig.hold(0, 1);
+        },
+      },
+    };
+    void import('./game/bot').then((m) => {
+      botApi.lib = m;
+    });
+    Object.assign(api, { bot: botApi });
     (window as unknown as { __mall: typeof api }).__mall = api;
   }
 }

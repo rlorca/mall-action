@@ -144,6 +144,43 @@ function wallRows(fb: Framebuffer, camX: number, camY: number, floor: number, da
   fb.popClip();
 }
 
+/** The parking level: bare grey concrete with a pipe run, expansion joints and a hazard stripe. */
+function parkingBackdrop(fb: Framebuffer, camX: number, camY: number, floor: number): void {
+  const y1 = floorY(floor);
+  const y0 = y1 - CEILING_GAP;
+  const top = sy(y0, camY);
+  fb.fillRect(0, top, 256, CEILING_GAP, C.GRAY);
+  fb.fillRect(0, top, 256, 3, C.BLACK);
+  fb.hLine(0, top + 3, 256, C.LTGRAY);
+  // pipe run along the ceiling
+  fb.hLine(0, top + 8, 256, C.LTGRAY);
+  fb.hLine(0, top + 9, 256, C.MDGRAY);
+  // expansion joints and a bay-number stripe
+  for (let x = Math.floor(camX / 48) * 48; x < camX + 256 + 48; x += 48) {
+    if (x < 0 || x >= LEVEL_W) continue;
+    fb.vLine(sx(x, camX), top + 4, CEILING_GAP - 4, C.BLACK);
+    fb.vLine(sx(x, camX) + 1, top + 4, CEILING_GAP - 4, C.MDGRAY);
+    fb.vLine(sx(x + 8, camX), top + 8, 4, C.LTGRAY); // pipe bracket
+    fb.setPixel(sx(x + 22, camX), top + 18, C.WHITE);
+  }
+  // hazard stripe at the foot of the wall
+  for (let x = Math.floor(camX / 8) * 8; x < camX + 264; x += 8) {
+    if (x < 0 || x >= LEVEL_W) continue;
+    fb.fillRect(sx(x, camX), top + CEILING_GAP - 4, 4, 4, C.YELLOW);
+    fb.fillRect(sx(x + 4, camX), top + CEILING_GAP - 4, 4, 4, C.BLACK);
+  }
+}
+
+function parkingSlab(fb: Framebuffer, camX: number, camY: number, floor: number): void {
+  const y = sy(floorY(floor), camY);
+  fb.fillRect(0, y, 256, SLAB_H, C.MDGRAY);
+  fb.hLine(0, y, 256, C.LTGRAY);
+  fb.hLine(0, y + SLAB_H - 1, 256, C.BLACK);
+  for (let x = Math.floor(camX / 24) * 24; x < camX + 256 + 24; x += 24) {
+    if (x >= 0 && x < LEVEL_W) fb.fillRect(sx(x, camX), y + 3, 10, 1, C.WHITE);
+  }
+}
+
 function slabRow(fb: Framebuffer, camX: number, camY: number, floor: number): void {
   const slab = getSprite('mall.slab');
   const y = sy(floorY(floor), camY);
@@ -154,9 +191,13 @@ function slabRow(fb: Framebuffer, camX: number, camY: number, floor: number): vo
 
 function drawStorefronts(fb: Framebuffer, level: Level, camX: number, camY: number, frame: number): void {
   for (let f = 1; f < NUM_FLOORS; f++) {
-    wallRows(fb, camX, camY, f, f === NUM_FLOORS - 1 ? 2 : 0);
+    if (f === NUM_FLOORS - 1) parkingBackdrop(fb, camX, camY, f);
+    else wallRows(fb, camX, camY, f, 0);
   }
-  for (let f = 0; f < NUM_FLOORS; f++) slabRow(fb, camX, camY, f);
+  for (let f = 0; f < NUM_FLOORS; f++) {
+    if (f === NUM_FLOORS - 1) parkingSlab(fb, camX, camY, f);
+    else slabRow(fb, camX, camY, f);
+  }
   // ground under the parking level
   fb.fillRect(0, sy(floorY(NUM_FLOORS - 1) + SLAB_H, camY), 256, 80, C.BLACK);
   for (const st of STORES) {

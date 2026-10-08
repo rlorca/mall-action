@@ -127,6 +127,9 @@ export class Synth {
     const amp = CHANNEL_GAIN[ev.ch] * song.vol * song.mix[ev.ch] * inst.vol * ev.vel;
 
     const env = ctx.createGain();
+    // Start silent: a source can begin one sample before its first automation event takes effect, and a GainNode's
+    // default gain of 1 would let that sample through as a full-scale click.
+    env.gain.value = 0;
     env.gain.setValueAtTime(0, when);
     for (let i = 1; i < frames.length; i++) {
       env.gain.linearRampToValueAtTime(amp * frames[i]![1], when + frames[i]![0]);
@@ -193,6 +196,7 @@ export class Synth {
     const amp = CHANNEL_GAIN[ch] * l.vol * SFX_LEVEL;
 
     const env = ctx.createGain();
+    env.gain.value = 0; // see playEvent: no full-scale one-sample clicks at the start
     env.gain.setValueAtTime(0, when);
     const frames = layerFrames(l);
     for (let i = 1; i < frames.length; i++) env.gain.linearRampToValueAtTime(amp * frames[i]![1], when + frames[i]![0]);

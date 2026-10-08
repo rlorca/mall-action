@@ -3,6 +3,7 @@ import { Btn } from '../../engine/pad';
 import { ESCALATORS, SHAFTS, floorY, WAGON } from '../../content/layout';
 import { DOOR_W, DOOR_X, STORES } from '../../content/stores';
 import { makeRig, place, type Rig } from './testutil';
+import { escalate, ride, walkTo } from '../bot';
 import { openingState } from './geometry';
 
 /**
@@ -16,72 +17,6 @@ function immortal(r: Rig): void {
 }
 
 /** Walk like a player: jump-kick over any open pit that is in the way. */
-function walkTo(r: Rig, x: number, max = 1500): void {
-  for (let i = 0; i < max; i++) {
-    const p = r.w.player;
-    const dx = x - p.x;
-    if (Math.abs(dx) <= 0.6) break;
-    const dir = dx > 0 ? 1 : -1;
-    const btn = dir > 0 ? Btn.RIGHT : Btn.LEFT;
-    if (p.mode === 'ground' && p.floor !== null) {
-      for (const sh of SHAFTS) {
-        if (p.floor < sh.top || p.floor > sh.bottom) continue;
-        const st = openingState(r.w.car(sh.id), p.floor);
-        if (st !== 'pit') continue;
-        const edge = dir > 0 ? sh.x + 4 : sh.x + sh.w - 4;
-        const gap = (edge - p.x) * dir;
-        // the target lies beyond the pit and the edge is right in front of us
-        const beyond = dir > 0 ? x > sh.x + sh.w : x < sh.x;
-        if (beyond && gap >= 0 && gap <= 7) {
-          r.hold(btn | Btn.B, 1);
-          for (let k = 0; k < 60 && r.w.player.mode === 'air'; k++) r.hold(btn, 1);
-        }
-      }
-    }
-    r.hold(btn, 1);
-  }
-  r.hold(0, 1);
-}
-
-/** Get from the current floor to `to` using shaft `id`. Returns frames used. */
-function ride(r: Rig, id: 'A' | 'B' | 'C', to: number): number {
-  const s = SHAFTS.find((k) => k.id === id)!;
-  const car = r.w.car(id);
-  const t0 = r.w.frame;
-  const from = r.w.player.floor!;
-  // like a player: stand beside the opening (not in it) and wait; standing still calls the car
-  const side = r.w.player.x < s.x ? s.x - 6 : s.x + s.w + 6;
-  walkTo(r, side);
-  for (let i = 0; i < 1500 && openingState(car, from) !== 'here'; i++) r.hold(0, 1);
-  expect(openingState(car, from), `${id} car never came to floor ${from}`).toBe('here');
-  walkTo(r, s.x + s.w / 2);
-  r.tap(to > from ? Btn.DOWN : Btn.UP);
-  expect(r.w.player.mode).toBe('ride');
-  const target = floorY(to);
-  // hold toward the target, release when close, let it glide
-  const dir = to > from ? Btn.DOWN : Btn.UP;
-  for (let i = 0; i < 1200; i++) {
-    if (Math.abs(car.y - target) < 24 && car.dir !== 0) break;
-    r.hold(dir, 1);
-  }
-  r.hold(0, 90);
-  expect(car.y).toBe(target);
-  expect(car.dir).toBe(0);
-  // step out
-  r.hold(Btn.RIGHT, 30);
-  expect(r.w.player.mode).toBe('ground');
-  expect(r.w.player.floor).toBe(to);
-  return r.w.frame - t0;
-}
-
-function escalate(r: Rig, e: (typeof ESCALATORS)[number], up: boolean): void {
-  walkTo(r, up ? e.xLow : e.xHigh);
-  r.tap(up ? Btn.UP : Btn.DOWN);
-  expect(r.w.player.mode).toBe('escalator');
-  r.hold(0, 60);
-  expect(r.w.player.floor).toBe(up ? e.upper : e.lower);
-}
-
 describe('routes through the mall (real controls)', () => {
   it('R -> 4F via A, 4F -> P via B, P -> 1F via B, 1F -> 2F via the escalator, 2F -> 3F via A, 3F -> 4F via the escalator', () => {
     const r = makeRig({ seed: 5 });

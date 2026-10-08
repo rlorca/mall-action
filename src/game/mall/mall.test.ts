@@ -254,6 +254,24 @@ describe('elevators', () => {
   });
 });
 
+describe('shaft walls exist only where the shaft does', () => {
+  it('a floor below / above a shaft has no invisible wall: 1F and P at A, R at B', () => {
+    const cases: Array<[number, number, number]> = [
+      [4, A.x - 30, A.x + A.w + 30], // 1F: shaft A ends at 2F
+      [5, A.x - 30, A.x + A.w + 30], // P: no A
+      [0, B.x - 30, B.x + B.w + 30], // R: shaft B starts at 4F
+      [5, C.x - 30, C.x + C.w + 30], // P: no C
+    ];
+    for (const [floor, x0, x1] of cases) {
+      const r = makeRig();
+      place(r, floor, x0);
+      r.hold(Btn.RIGHT, Math.ceil(x1 - x0) + 4);
+      expect(r.w.player.x, `floor ${floor}`).toBeGreaterThan(x1 - 2);
+      expect(r.w.player.floor).toBe(floor);
+    }
+  });
+});
+
 describe('escalators', () => {
   it('Up at the bottom landing rides to the upper floor; Down at the top landing rides down', () => {
     const e = ESCALATORS[0]!;

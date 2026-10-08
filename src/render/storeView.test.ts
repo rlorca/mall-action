@@ -12,7 +12,9 @@ import { STRIP_TOP, drawStoreView } from './storeView';
 /** The store sprites are drawn by another module; skip the pixel checks while they are missing. */
 const ready = (prefixes: string[]): boolean => REQUIRED_SPRITES.filter((r) => prefixes.some((p) => r.name.startsWith(p))).every((r) => hasSprite(r.name));
 const haveStoreArt = ready(['st.', 'td.']);
-const haveFx = ready(['fx.', 'item.', 'bullet.']);
+const has = (...names: string[]): boolean => names.every((n) => hasSprite(n));
+const haveItems = has('item.package', 'item.joke', 'item.radar', 'item.armor');
+const haveFx = has('fx.puff', 'fx.spark');
 const maybe = haveStoreArt ? describe : describe.skip;
 
 /** A palette index no art uses (renders as black but is not C.BLACK), so untouched pixels are detectable. */
@@ -117,19 +119,34 @@ maybe('drawStoreView', () => {
   });
 });
 
-(haveStoreArt && haveFx ? describe : describe.skip)('drawStoreView with effects and held items', () => {
-  it('draws puffs, bullets, held items and radar marks without throwing', () => {
+(haveStoreArt && haveItems ? describe : describe.skip)('drawStoreView with held items', () => {
+  it('draws the package held overhead, the banner, the popup and the radar mark', () => {
     const m = makeWorld('radioshock', { guards: true });
     m.run.givePower('radar');
     m.world.teleportAgent(2, 2);
     m.world.store.fixtures[0]!.content = { kind: 'package' };
+    const before = render(m, 0).hash();
     m.pilot.tap('B');
     for (let i = 0; i < 60; i++) {
       m.pilot.step();
       render(m, i);
     }
-    m.pilot.step('A');
-    render(m, 61);
     expect(m.world.agent.hold?.kind).toBe('package');
+    expect(render(m, 61).hash()).not.toBe(before);
+  });
+});
+
+(haveStoreArt && haveFx ? describe : describe.skip)('drawStoreView with puffs and sparks', () => {
+  it('draws smoke puffs (trap / nothing), sparks (bullets hitting walls) and toys without throwing', () => {
+    const m = makeWorld('kgbtoys', { guards: true });
+    m.world.teleportAgent(5, 2);
+    m.world.agent.facing = 'up';
+    m.pilot.step('A');
+    for (let i = 0; i < 40; i++) {
+      m.pilot.step();
+      render(m, i);
+    }
+    expect(m.world.toys.length).toBe(3);
+    expect(m.world.puffs.length + m.world.toys.length).toBeGreaterThan(0);
   });
 });

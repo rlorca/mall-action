@@ -11,9 +11,9 @@ import { drawLevelClear } from './levelClearView';
 import { drawContinue } from './continueView';
 import { drawGameOver } from './gameOverView';
 import { drawStoreView } from './storeView';
-import { drawMallActors, drawMallFurniture } from './mallActorsView';
+// TODO(integration): import { drawMallActors, drawMallFurniture } from './mallActorsView';
 
-const HOOKS: MallDrawHooks = { furniture: drawMallFurniture, actors: drawMallActors };
+const HOOKS: MallDrawHooks = {}; // TODO(integration): { furniture: drawMallFurniture, actors: drawMallActors }
 
 function drawLevel(fb: Framebuffer, lv: Level): void {
   if (lv.overlay === 'map') {

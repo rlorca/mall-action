@@ -65,6 +65,32 @@ function flip(rows: readonly string[]): string[] {
   return rows.map((r) => [...r].reverse().join(''));
 }
 
+/** A 1px Bresenham line as a char grid of the given size (for mop handles and the like). */
+function lineRows(w: number, h: number, x0: number, y0: number, x1: number, y1: number, ch: string): string[] {
+  const grid: string[][] = Array.from({ length: h }, () => Array<string>(w).fill('.'));
+  const dx = Math.abs(x1 - x0);
+  const dy = -Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+  let err = dx + dy;
+  let x = x0;
+  let y = y0;
+  for (;;) {
+    grid[y]![x] = ch;
+    if (x === x1 && y === y1) break;
+    const e2 = 2 * err;
+    if (e2 >= dy) {
+      err += dy;
+      x += sx;
+    }
+    if (e2 <= dx) {
+      err += dx;
+      y += sy;
+    }
+  }
+  return grid.map((r) => r.join(''));
+}
+
 // ------------------------------------------------------------------ AGENT (red trench coat)
 const AG = { K: C.BLACK, R: C.RED, P: C.PEACH };
 
@@ -123,14 +149,14 @@ const A_LEGS_PASS_B = [
 ];
 const A_LEGS_JUMP = [
   '.....KKKKKK.....',
-  '....KKKKKKKKK...',
-  '...KKK..KKKKKK..',
-  '..KKK.....KKK...',
-  '..KKKK....KKKK..',
+  '...KKKKKKKKKK...',
+  '..KKK..KKKKKKK..',
+  '.KKKK......KKK..',
+  '.KKK.......KKKK.',
 ];
 const A_ARM_FWD = ['RK...', 'RRK..', '.KRP.', '..KP.'];
 const A_ARM_BACK = ['...KR', '..KRR', '.PRK.', '.PK..'];
-const A_ARM_UP_FWD = ['..KP.', '.KRP.', 'RRK..'];
+const A_ARM_UP_FWD = ['..PP', '..PP', '..RK', '..RK', '..RK', '.RRK', 'RRK.'];
 const A_ARM_UP_BACK = ['PK..', 'KRK.', '.KRK'];
 
 function agentBody(dy: number, legs: readonly string[], behind: Stamp[] = [], front: Stamp[] = []): string[] {
@@ -214,12 +240,14 @@ const AF_FLAIL_R = flip(AF_FLAIL_L);
 
 // lying flat on the floor, head to the left (face up), feet to the right
 const A_LYING = [
-  '..KKKK..........',
-  '.KKKKKK.KKKKK...',
-  'KKPPPKRRRRRRRKKK',
-  'KKPKPKRRKRRRRKKK',
-  '.KPPPKRRKRRRRKK.',
-  '..KKKK.KKKKKK...',
+  '..KKK..KKKKKKK..',
+  '.KKKKKKRRRRRRRK.',
+  'KKPPPKRRRRRRRRKK',
+  'KPPKPKRRKRRRRRKK',
+  'KPKPPKRRKRRRRKKK',
+  'KPPPPKRRRRRRRKKK',
+  '.KKKKKKRRRRRRKK.',
+  '..KKK..KKKKKK...',
 ];
 
 const duckBody = (): string[] => compose(16, 24, at(A_DUCK_LEGS, 0, 21), at(A_DUCK_COAT, 0, 16), at(A_HEAD, 0, 10));
@@ -243,7 +271,7 @@ defineSprites([
     w: 16,
     h: 24,
     pal: AG,
-    rows: c16(at(A_LEGS_JUMP, 0, 18), at(A_ARM_BACK, 0, 11), at(A_COAT, 0, 7), at(A_HEAD, 0, 0), at(A_ARM_UP_FWD, 11, 7)),
+    rows: c16(at(A_LEGS_JUMP, 0, 17), at(A_ARM_BACK, 0, 11), at(A_COAT, 0, 7), at(A_HEAD, 0, 0), at(A_ARM_UP_FWD, 12, 1)),
   },
   {
     name: 'agent.kick',
@@ -272,7 +300,7 @@ defineSprites([
         at(A_ARM_UP_BACK, 0, 8),
         at(A_COAT, -1, 9),
         at(A_HEAD, -2, 3),
-        at(A_ARM_UP_FWD, 11, 5),
+        at(A_ARM_UP_FWD, 12, 0),
       ),
       c16(
         at(AF_LEGS_SPLAY, 0, 18),
@@ -281,7 +309,7 @@ defineSprites([
         at(AF_TORSO, 0, 8),
         at(AF_HEAD_O, 0, 1),
       ),
-      c16(at(A_LYING, 0, 17)),
+      c16(at(A_LYING, 0, 16)),
     ],
   },
   {
@@ -372,12 +400,14 @@ const SF_BODY = [
 const SF_FLAIL_L = ['PP...', 'PP...', 'WWW..', '.KKK.', '.KKK.', '..KKK', '..KKK', '...KK'];
 const SF_FLAIL_R = flip(SF_FLAIL_L);
 const S_LYING = [
-  '..KKKKKK........',
-  '.KKKKKKKKKK.....',
-  'KKKKPPKKKKKKKKKK',
-  'KKPPPKWWKKKKKKPP',
-  '.KKKPKKKKKKKKKK.',
-  '..KKKK.KKKKKK...',
+  '..KKKK..........',
+  '.KWWWWK.KKKKKKK.',
+  'KKKKKKKKKKKKKKKK',
+  'KKPPKKKKWWKKKKKK',
+  'KPPKKWKKKWKKKKKK',
+  'KPPPPPKKKKKKKKKK',
+  '.KKKKKKKKKKKKKK.',
+  '..KKK...KKKKK...',
 ];
 
 function spyBody(dy: number, legs: readonly string[], behind: Stamp[] = [], front: Stamp[] = [], dx = 0): string[] {
@@ -429,7 +459,7 @@ defineSprites([
         at(SF_BODY, 0, 9),
         at(SF_HEAD, 0, 1),
       ),
-      c16(at(S_LYING, 0, 17)),
+      c16(at(S_LYING, 0, 16)),
     ],
   },
 ] satisfies SpriteDef[]);
@@ -437,63 +467,45 @@ defineSprites([
 // ------------------------------------------------------------------ MALL COP (24x24, helmet on a Segway)
 const CP = { K: C.BLACK, U: C.SKY, P: C.PEACH };
 
-// Segway wheel, 9x9: black tyre with blue hub dots that rotate between two frames.
-const WHEEL_A = [
-  '..KKKKK..',
-  '.KKKKKKK.',
-  'KKKKUKKKK',
-  'KKKKKKKKK',
-  'KKUKUKUKK',
-  'KKKKKKKKK',
-  'KKKKUKKKK',
-  '.KKKKKKK.',
-  '..KKKKK..',
-];
-const WHEEL_B = [
-  '..KKKKK..',
-  '.KKKKKKK.',
-  'KKUKKKUKK',
-  'KKKKKKKKK',
-  'KKKKUKKKK',
-  'KKKKKKKKK',
-  'KKUKKKUKK',
-  '.KKKKKKK.',
-  '..KKKKK..',
-];
+// Segway wheel, 8x8: black tyre; blue hub dots swap between a '+' and an 'x' so it looks like it is turning.
+const WHEEL_A = ['..KKKK..', '.KKUKKK.', 'KKKKKKKU', 'KKKKKKKK', 'KUKKKKKK', 'KKKKKKKK', '.KKKUKK.', '..KKKK..'];
+const WHEEL_B = ['..KKKK..', '.KUKKUK.', 'KKKKKKKK', 'KKKKKKKK', 'KKKKKKKK', 'KKKKKKKK', '.KUKKUK.', '..KKKK..'];
 
 const CP_HEAD = [
-  '..........KKKKKK........',
-  '.........KUKUUKUK.......',
-  '........KUUUUUUUUK......',
-  '........KUKUUUUKUUK.....',
-  '........KKKKKKKKKKKKK...',
-  '.........KPPPPPPP.......',
-  '.........KPPPPPKPP......',
-  '.........KPPPPPPPPP.....',
-  '..........KPPKKKKP......',
+  '.........KKKKK..........',
+  '........KUUUUUUK........',
+  '.......KUUUUUUUUK.......',
+  '.......KUUKUUKUUUUK.....',
+  '.......KKKKKKKKKKKKKKK..',
+  '........KPPPPPPPP.......',
+  '........KPPPPPKPPP......',
+  '........KPPPPPPPPPP.....',
+  '.........KPPPPKKKK......',
 ];
 const CP_BODY = [
+  '......KUUUUUUUUUUK......',
+  '......KUUUUUUUPUUK......',
+  '......KKKKKKKKKKKK......',
   '.......KUUUUUUUUK.......',
-  '.......KUUUUUUUUK.......',
-  '.......KUUPUUUUUK.......',
-  '.......KKKKKKKKKK.......',
   '........KUUUUUUK........',
-  '........KUUUUUUK........',
-  '.....KKKKKKKKKKKKKKK....',
+  '........KKKKKKKKKK......',
+  '.....KKKKKKKKKKKKKKKK...',
 ];
-const CP_ARM = ['K....', 'UK...', 'UUK..', '.KUPK'];
-const CP_STEM = ['KKKKK', '..KK.', '..KK.', '..KK.'];
-const CP_WHISTLE_ARM = ['..UK.', '.UUPK', 'UUK.K', 'UK...'];
-const CP_TWEET = ['K.K', '.K.', 'KKK', '.K.', 'K.K'];
+const CP_ARM = ['KK.', 'UUK'];
+const CP_HAND = ['PP'];
+const CP_STEM = ['KKKKK', '.KK..', '.KK..', '.KK..'];
+const CP_WHISTLE_ARM = ['..PP.', '.UPKK', 'UU...'];
+const CP_TWEET = ['K..K', '.K.K', 'KKK.', '.K.K', 'K..K'];
 
 function copFrame(dy: number, wheelRows: readonly string[]): string[] {
   return c24(
-    at(wheelRows, 7, 15),
-    at(CP_BODY.slice(6), 0, 15),
-    at(CP_BODY.slice(0, 6), 0, 9 + dy),
+    at(wheelRows, 7, 16),
+    at(CP_BODY.slice(5), 0, 14),
+    at(CP_BODY.slice(0, 5), 0, 9 + dy),
     at(CP_HEAD, 0, 0 + dy),
-    at(CP_STEM, 17, 12),
-    at(CP_ARM, 16, 9 + dy),
+    at(CP_STEM, 17, 11),
+    at(CP_ARM, 17, 9 + dy),
+    at(CP_HAND, 19, 10 + dy),
   );
 }
 
@@ -505,13 +517,13 @@ defineSprites([
     h: 24,
     pal: CP,
     rows: c24(
-      at(WHEEL_A, 7, 15),
-      at(CP_BODY.slice(6), 0, 15),
-      at(CP_BODY.slice(0, 6), 0, 9),
+      at(WHEEL_A, 7, 16),
+      at(CP_BODY.slice(5), 0, 14),
+      at(CP_BODY.slice(0, 5), 0, 9),
       at(CP_HEAD, 0, 0),
-      at(CP_STEM, 17, 12),
-      at(CP_WHISTLE_ARM, 15, 6),
-      at(CP_TWEET, 20, 2),
+      at(CP_STEM, 17, 11),
+      at(CP_WHISTLE_ARM, 16, 7),
+      at(CP_TWEET, 20, 3),
     ),
   },
 ] satisfies SpriteDef[]);
@@ -551,14 +563,26 @@ const J_MOP_UP = [
   'P.PP',
 ];
 const J_ARM_HOLD = ['TTK..', '.TTP.', '..PP.'];
-const J_ARM_BEND = ['TTK...', '.TTK..', '..TPP.'];
-// mop pushed forward (diagonal handle)
-const J_MOP_FAR = ['K......', '.K.....', '..K....', '...K...', '....K..', '....K..', '.....K.', '....KKK', '...PPPP', '...PKPP'];
-const J_MOP_NEAR = ['K....', '.K...', '..K..', '..K..', '..K..', '..K..', '...K.', '..KKK', '.PPPP', '.PKPP'];
+// mopping: leaning into the stroke, both hands on a diagonal handle, strands on the floor
+const J_MOP_HEAD = ['KKKK', 'PPPP', 'PKPP'];
+const J_HANDS = ['TTK..', '.TPP.', '..PP.'];
 
-function janitorBody(dy: number, legs: readonly string[], front: Stamp[] = [], behind: Stamp[] = [], dx = 0, hdy = 0): string[] {
+function janitorBody(dy: number, legs: readonly string[], front: Stamp[] = [], behind: Stamp[] = []): string[] {
   const ly = 24 - legs.length;
-  return c16(at(legs, dx, ly), ...behind, at(J_BODY, dx, 9 + dy), at(J_HEAD, dx, 2 + dy + hdy), ...front);
+  return c16(at(legs, 0, ly), ...behind, at(J_BODY, 0, 9 + dy), at(J_HEAD, 0, 2 + dy), ...front);
+}
+function janitorMop(endX: number, legs: readonly string[]): string[] {
+  const ly = 24 - legs.length;
+  return c16(
+    at(legs, 1, ly),
+    at(J_BODY.slice(0, 4), 2, 9),
+    at(J_BODY.slice(4), 1, 13),
+    at(J_HEAD, 2, 3),
+    at(lineRows(16, 24, 12, 14, endX, 21, 'K'), 0, 0),
+    at(J_HANDS, 9, 11),
+    at(['P'], 12, 16),
+    at(J_MOP_HEAD, endX - 2, 21),
+  );
 }
 
 // ------------------------------------------------------------------ MALL WALKER (retiree in a tracksuit)
@@ -608,16 +632,7 @@ defineSprites([
       janitorBody(0, J_LEGS_STAND, [at(J_ARM_HOLD, 10, 10), at(J_MOP_UP, 12, 3)], [at(J_BUCKET, 0, 14)]),
     ],
   },
-  {
-    name: 'janitor.mop',
-    w: 16,
-    h: 24,
-    pal: JN,
-    frames: [
-      janitorBody(0, J_LEGS_STEP, [at(J_ARM_BEND, 9, 11), at(J_MOP_FAR, 9, 14)], [], 0, 1),
-      janitorBody(1, J_LEGS_STAND, [at(J_ARM_BEND, 9, 12), at(J_MOP_NEAR, 7, 14)], [], 0, 1),
-    ],
-  },
+  { name: 'janitor.mop', w: 16, h: 24, pal: JN, frames: [janitorMop(14, J_LEGS_STEP), janitorMop(10, J_LEGS_STEP)] },
   {
     name: 'walker.walk',
     w: 16,
@@ -638,16 +653,16 @@ defineSprites([
     rows: [
       '...KK...',
       '..KYYK..',
-      '..KKKK..',
+      '.KYYYYK.',
       '.KYKKYK.',
       '.KYKKYK.',
       '.KYKKYK.',
       'KYYYYYYK',
       'KYYKKYYK',
       'KYYYYYYK',
-      'KYYYYYYK',
       'KOOOOOOK',
-      'KKKKKKKK',
+      'KOO..OOK',
+      'KK....KK',
     ],
   },
 ] satisfies SpriteDef[]);

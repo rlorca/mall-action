@@ -891,6 +891,9 @@ export class StoreWorld {
     }
     g.x = nx;
     g.y = ny;
+    // keep the tile bookkeeping honest: spies reserve tiles by (col,row) and must see where a bot really is
+    g.col = Math.floor(g.x / TILE);
+    g.row = Math.floor(g.y / TILE);
     g.facing = g.dir;
     g.moving = true;
     g.anim++;

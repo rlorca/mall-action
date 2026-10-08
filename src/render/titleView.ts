@@ -126,10 +126,10 @@ export function drawTitle(fb: Framebuffer, t: TitleViewState): void {
   if (blinkOn(t.frame, 60, 38)) drawText(fb, UI.pressStart, W / 2, 119, C.WHITE, { scale: 2, align: 'center', shadow: C.MAROON });
 
   if (t.blackFriday) drawBlackFriday(fb, t);
-  drawText(fb, UI.copyright, W / 2, 136, C.LTGRAY, { align: 'center', shadow: C.BLACK });
+  drawText(fb, UI.copyright, W / 2, 148, C.LTGRAY, { align: 'center', shadow: C.BLACK });
 
   drawStoreRow(fb, t);
 
-  drawText(fb, UI.hint1, W / 2, H - 16, C.LTGRAY, { align: 'center' });
-  drawText(fb, UI.hint2, W / 2, H - 8, C.GRAY, { align: 'center' });
+  drawText(fb, UI.hint1, W / 2, H - 18, C.LTGRAY, { align: 'center' });
+  drawText(fb, UI.hint2, W / 2, H - 10, C.GRAY, { align: 'center' });
 }

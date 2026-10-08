@@ -445,6 +445,8 @@ export class MallWorld {
     let nx = x + dx;
     nx = Math.max(WALL_L + 4, Math.min(WALL_R - 4, nx));
     for (const s of SHAFTS) {
+      // A shaft only has walls where it exists: from its ceiling down to its lowest floor's surface.
+      if (y <= shaftCeilingY(s) || y > floorY(s.bottom) + 1) continue;
       const [lo, hi] = this.interiorOf(s);
       const was = x > lo && x < hi;
       const will = nx > lo && nx < hi;
