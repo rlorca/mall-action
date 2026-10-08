@@ -5,8 +5,8 @@ import type { Pad, StepInput } from './core/input';
 
 export interface DebugHandle {
   game: Game;
-  /** Runs `frames` simulation steps with `pads` held. Returns the game for chaining. */
-  step(frames: number, pads?: Pad[]): Game;
+  /** Runs `frames` steps with `held` down; `pressed` (default: none) are presses on the first step. */
+  step(frames: number, held?: Pad[], pressed?: Pad[]): Game;
   state(): Record<string, unknown>;
 }
 
@@ -15,10 +15,10 @@ export function installDebug(game: () => Game, runStep: (input: StepInput) => vo
     get game(): Game {
       return game();
     },
-    step(frames: number, pads: Pad[] = []): Game {
+    step(frames: number, pads: Pad[] = [], pressed: Pad[] = []): Game {
       const held = new Set(pads);
       for (let i = 0; i < frames; i++) {
-        runStep({ held, pressed: i === 0 ? [...pads] : [] });
+        runStep({ held, pressed: i === 0 ? [...pressed] : [] });
       }
       return game();
     },
@@ -26,12 +26,13 @@ export function installDebug(game: () => Game, runStep: (input: StepInput) => vo
       const g = game();
       return {
         screen: g.screen,
+        deathCause: g.lastDeathCause,
         loop: g.loop,
         lives: g.lives,
         continues: g.continues,
         score: g.score.points,
         packages: g.packagesFound,
-        player: { x: g.world?.player.x, floor: g.world?.player.floor, mode: g.world?.player.mode },
+        player: { x: g.world?.player.x, floor: g.world?.player.floor, mode: g.world?.player.mode, y: g.world?.player.y },
         room: g.room ? { store: g.room.store.id, x: g.room.x, y: g.room.y, mode: g.room.mode } : null,
         music: g.currentMusic,
       };

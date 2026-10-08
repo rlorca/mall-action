@@ -522,6 +522,7 @@ export class MallWorld {
     } else if (a.phase === 'selfie') {
       if (input.pressed.length > 0 || a.t >= 2.5 * SEC) this.endArrival();
     }
+    if (!this.arrival) return; // the arrival just ended: control already belongs to the player
     this.player.mode = a.phase === 'selfie' ? 'selfie' : 'frozen';
     this.player.frozenT = 0;
   }
@@ -1139,7 +1140,8 @@ export class MallWorld {
 
   private checkSpyTouch(spy: Spy): void {
     const p = this.player;
-    if (p.mode === 'dead' || p.mode === 'hidden' || p.mode === 'frozen') return;
+    // Riders are inside a car or on its roof, out of a spy's reach. A spy let out of that car lands on the same column.
+    if (p.mode === 'dead' || p.mode === 'hidden' || p.mode === 'frozen' || p.mode === 'car' || p.mode === 'roof') return;
     if (this.pf() !== spy.floor) return;
     const overlap = Math.abs(p.x - spy.x) < AGENT_W - 2;
     if (!overlap) return;

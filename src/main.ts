@@ -128,7 +128,8 @@ function boot(): void {
   function frame(now: number): void {
     const elapsed = now - last;
     last = now;
-    const steps = clock.advance(elapsed);
+    // In debug mode the scripted playtest steps the game itself (window.__mall.step), so real time is paused.
+    const steps = debug ? 0 : clock.advance(elapsed);
     pollGamepads(mapper, unlock);
     for (let i = 0; i < steps; i++) {
       const input = mapper.takeStep();

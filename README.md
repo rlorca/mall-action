@@ -13,7 +13,7 @@ Build and serve locally (see below), or open the published build once it is depl
 
 ## Screenshots
 
-_Not captured yet. The in-browser playtest was blocked (see Benchmark notes)._
+Not committed to the repo. The headless playtest (Chromium, scripted through `?debug=1`) checked the splash, the zip-line arrival, an elevator ride to 4F, walking to the FOREVER 12 door, entering the store, searching a fixture, the directory map and pause.
 
 ## Features
 
@@ -59,7 +59,7 @@ npm run preview    # serve dist/ locally
 Debug URL options:
 
 - `?seed=N` fixes the random seed (the same seed replays the same game).
-- `?debug=1` skips the splash and exposes `window.__mall`, with `step(frames, pads)` for scripted playtests.
+- `?debug=1` skips the splash, pauses real-time stepping, and exposes `window.__mall`: `step(frames, held, pressed)` runs exact frames, and `state()` reports screen, mode, position and the last death cause.
 - `?gallery=1` shows every sprite, animated.
 
 ## Project layout
@@ -83,8 +83,7 @@ Every line of copy lives in `src/core/copy.ts`. Add a SPYGRAM post, a headline, 
 
 This is a one-shot build. The following parts of the brief are only partly done, and the browser playtest was not run:
 
-- Not yet verified in a real browser: no screenshots and no console-error check. Only type-checking, unit tests,
-  a soak test and a production build have run.
+- Browser checks are scripted and headless. They cover the flow above, not every feature. Escalators, shooting spies and lamps, level clear, continues and game over are covered by unit tests only.
 - Store songs are generated from a style, key and seed per store, not hand-written melodies.
 - Some store and mall extras are simplified (for example, rolling disco balls stop at walls or pits without the full pit logic).
 - Curvature in the CRT effect is a row-by-row approximation, not a true barrel warp.
@@ -104,4 +103,5 @@ Spencer's or Elevator Action. All names are parodies.
 - **Prompt:** `one-shot-prompt.md` from `main`, given verbatim, in an empty orphan branch
 - **Time:** one long session (not timed)
 - **Interventions:** none on the design. The user asked to create the branch and implement the prompt.
-- **Not done:** no push; the in-browser playtest was blocked because the Claude-in-Chrome extension was not connected.
+- **Browser playtest:** the Claude-in-Chrome extension was not connected, so a headless Chromium run was used instead (scripted through `?debug=1`). It found and fixed a zip-line softlock, a car ride killed by a spy spawned on the agent's column, and a debug step that could not press buttons.
+- **Not done:** no push.

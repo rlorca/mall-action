@@ -94,6 +94,8 @@ export class Game {
   clearSeconds = 0;
   private lastDeathSpot: { x: number; floor: number } | null = null;
   private storeDeath = false;
+  /** Why the agent last died (for the debug state and for tests). */
+  lastDeathCause = '';
 
   constructor(opts: GameOptions) {
     this.seed = opts.seed >>> 0;
@@ -291,7 +293,7 @@ export class Game {
           this.addScore(e.points, e.x, e.y);
           break;
         case 'death':
-          this.onDeath(false);
+          this.onDeath(e.cause, false);
           return;
         case 'enterStore':
           this.enterStore(e.storeId);
@@ -354,7 +356,7 @@ export class Game {
           break;
         case 'death':
           this.storeDeath = true;
-          this.onDeath(true);
+          this.onDeath(e.cause, true);
           return;
         case 'exit':
           break;
@@ -481,7 +483,8 @@ export class Game {
 
   // ------------------------------------------------------------ death & continues
 
-  private onDeath(inStore: boolean): void {
+  private onDeath(cause: string, inStore: boolean): void {
+    this.lastDeathCause = cause;
     this.lastDeathSpot = { x: this.world.player.x, floor: this.world.player.floor };
     this.outbox.push({ type: 'sfx', name: 'death' });
     this.lives--;
