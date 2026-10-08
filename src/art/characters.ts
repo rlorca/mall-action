@@ -9,15 +9,15 @@ import { defineSprites } from './registry';
 // so animation frames share their pixels and never jitter. '.' in a stamp is transparent.
 // Pixel ruler (16 wide):  0123456789ABCDEF
 
-export interface Stamp {
+interface Stamp {
   rows: readonly string[];
   x: number;
   y: number;
 }
-export const at = (rows: readonly string[], x: number, y: number): Stamp => ({ rows, x, y });
+const at = (rows: readonly string[], x: number, y: number): Stamp => ({ rows, x, y });
 
 /** Stamp layers (later wins) onto a w x h transparent cell and return the rows. */
-export function compose(w: number, h: number, ...layers: Stamp[]): string[] {
+function compose(w: number, h: number, ...layers: Stamp[]): string[] {
   const grid: string[][] = Array.from({ length: h }, () => Array<string>(w).fill('.'));
   for (const l of layers) {
     l.rows.forEach((row, ry) => {
@@ -36,30 +36,6 @@ export function compose(w: number, h: number, ...layers: Stamp[]): string[] {
 const c16 = (...layers: Stamp[]): string[] => compose(16, 24, ...layers);
 const c24 = (...layers: Stamp[]): string[] => compose(24, 24, ...layers);
 
-/** Crop rows to the bounding box of their opaque pixels. */
-function crop(rows: readonly string[]): string[] {
-  let x0 = Infinity;
-  let x1 = -1;
-  let y0 = Infinity;
-  let y1 = -1;
-  rows.forEach((r, y) => {
-    for (let x = 0; x < r.length; x++) {
-      if (r[x] !== '.') {
-        x0 = Math.min(x0, x);
-        x1 = Math.max(x1, x);
-        y0 = Math.min(y0, y);
-        y1 = Math.max(y1, y);
-      }
-    }
-  });
-  return rows.slice(y0, y1 + 1).map((r) => r.slice(x0, x1 + 1));
-}
-/** Rotate a character grid 90 degrees counter-clockwise (lossless). */
-function rotCCW(rows: readonly string[]): string[] {
-  const h = rows.length;
-  const w = rows[0]!.length;
-  return Array.from({ length: w }, (_, ny) => Array.from({ length: h }, (_, nx) => rows[nx]![w - 1 - ny]!).join(''));
-}
 /** Mirror a grid left-right. */
 function flip(rows: readonly string[]): string[] {
   return rows.map((r) => [...r].reverse().join(''));
@@ -156,6 +132,7 @@ const A_LEGS_JUMP = [
 ];
 const A_ARM_FWD = ['RK...', 'RRK..', '.KRP.', '..KP.'];
 const A_ARM_BACK = ['...KR', '..KRR', '.PRK.', '.PK..'];
+const A_HAND_HIP = ['P', 'P'];
 const A_ARM_UP_FWD = ['..PP', '..PP', '..RK', '..RK', '..RK', '.RRK', 'RRK.'];
 const A_ARM_UP_BACK = ['PK..', 'KRK.', '.KRK'];
 
@@ -250,10 +227,10 @@ const A_LYING = [
   '..KKK..KKKKKK...',
 ];
 
-const duckBody = (): string[] => compose(16, 24, at(A_DUCK_LEGS, 0, 21), at(A_DUCK_COAT, 0, 16), at(A_HEAD, 0, 10));
+const duckBody = (): string[] => compose(16, 24, at(A_DUCK_LEGS, -1, 21), at(A_DUCK_COAT, -1, 16), at(A_HEAD, -1, 10));
 
 defineSprites([
-  { name: 'agent.stand', w: 16, h: 24, pal: AG, rows: agentBody(0, A_LEGS_STAND) },
+  { name: 'agent.stand', w: 16, h: 24, pal: AG, rows: agentBody(0, A_LEGS_STAND, [], [at(A_HAND_HIP, 13, 14)]) },
   {
     name: 'agent.walk',
     w: 16,
@@ -287,7 +264,7 @@ defineSprites([
     w: 16,
     h: 24,
     pal: AG,
-    rows: c16(at(A_DUCK_LEGS, 0, 21), at(A_DUCK_COAT, 0, 16), at(A_HEAD, 0, 10), at(A_SHOOT_ARM, 9, 17)),
+    rows: c16(at(A_DUCK_LEGS, -1, 21), at(A_DUCK_COAT, -1, 16), at(A_HEAD, -1, 10), at(A_SHOOT_ARM, 8, 17)),
   },
   {
     name: 'agent.die',
@@ -350,7 +327,7 @@ const S_HEAD = [
   '.....KKKKKK.....',
   '....KKKKKKKK....',
   '....KWWWWWWK....',
-  '..KKKKKKKKKKKKK.',
+  '..KKKKKKKKKKKK..',
   '....KKKKKKKWKK..',
   '....KKKKPPPPPP..',
   '....KKKKPPPPK...',
@@ -475,12 +452,12 @@ const CP_HEAD = [
   '.........KKKKK..........',
   '........KUUUUUUK........',
   '.......KUUUUUUUUK.......',
-  '.......KUUKUUKUUUUK.....',
-  '.......KKKKKKKKKKKKKKK..',
-  '........KPPPPPPPP.......',
-  '........KPPPPPKPPP......',
-  '........KPPPPPPPPPP.....',
-  '.........KPPPPKKKK......',
+  '.......KUUKUUKUUUK......',
+  '.......KKKKKKKKKKKKK....',
+  '........KPPPPPPP........',
+  '........KPPPPKPPP.......',
+  '........KPPPPPPPPP......',
+  '.........KPPPKKKP.......',
 ];
 const CP_BODY = [
   '......KUUUUUUUUUUK......',
@@ -499,7 +476,7 @@ const CP_TWEET = ['K..K', '.K.K', 'KKK.', '.K.K', 'K..K'];
 
 function copFrame(dy: number, wheelRows: readonly string[]): string[] {
   return c24(
-    at(wheelRows, 7, 16),
+    at(wheelRows, 8, 16),
     at(CP_BODY.slice(5), 0, 14),
     at(CP_BODY.slice(0, 5), 0, 9 + dy),
     at(CP_HEAD, 0, 0 + dy),
@@ -517,7 +494,7 @@ defineSprites([
     h: 24,
     pal: CP,
     rows: c24(
-      at(WHEEL_A, 7, 16),
+      at(WHEEL_A, 8, 16),
       at(CP_BODY.slice(5), 0, 14),
       at(CP_BODY.slice(0, 5), 0, 9),
       at(CP_HEAD, 0, 0),
@@ -667,5 +644,3 @@ defineSprites([
   },
 ] satisfies SpriteDef[]);
 
-void crop;
-void rotCCW;

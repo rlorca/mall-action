@@ -11,11 +11,13 @@ import {
   CHANNEL_GAIN,
   type Duty,
   DUTIES,
+  DUTY_GAIN,
   MASTER_GAIN,
   SFX_LEVEL,
   adsrFrames,
   lfsrSequence,
   pulseCoefficients,
+  softClipCurve,
 } from './mix';
 import { type SfxDef, type SfxLayer, layerFrames, sfxDurationMs } from './sfx';
 import type { CompiledSong, NoteEvent } from './song';
@@ -49,15 +51,12 @@ export class Synth {
     this.ctx = ctx;
     this.master = ctx.createGain();
     this.master.gain.value = MASTER_GAIN;
-    // A gentle safety limiter: only acts when music and several sfx pile up beyond about -3 dBFS.
-    const limiter = ctx.createDynamicsCompressor();
-    limiter.threshold.value = -3;
-    limiter.knee.value = 6;
-    limiter.ratio.value = 12;
-    limiter.attack.value = 0.003;
-    limiter.release.value = 0.15;
-    this.master.connect(limiter);
-    limiter.connect(ctx.destination);
+    // Safety net instead of a compressor (Chrome's DynamicsCompressor adds ~6 ms of delay and smears short
+    // sounds): a static soft clipper that only bends the signal above 0.7, so music + several sfx never hard-clip.
+    const shaper = ctx.createWaveShaper();
+    shaper.curve = softClipCurve();
+    this.master.connect(shaper);
+    shaper.connect(ctx.destination);
 
     this.musicBus = ctx.createGain();
     this.musicBus.connect(this.master);
@@ -124,7 +123,8 @@ export class Synth {
     const frames = adsrFrames(inst.attack, inst.decay, inst.sustain, ev.dur, inst.release);
     const total = frames[frames.length - 1]![0];
     const stopAt = when + total + 0.02;
-    const amp = CHANNEL_GAIN[ev.ch] * song.vol * song.mix[ev.ch] * inst.vol * ev.vel;
+    const amp =
+      CHANNEL_GAIN[ev.ch] * song.vol * song.mix[ev.ch] * inst.vol * ev.vel * (ev.ch === 'noise' || ev.ch === 'triangle' ? 1 : DUTY_GAIN[inst.duty]);
 
     const env = ctx.createGain();
     // Start silent: a source can begin one sample before its first automation event takes effect, and a GainNode's
@@ -193,7 +193,7 @@ export class Synth {
     const T = l.ms / 1000;
     const stopAt = when + T + 0.02;
     const ch = l.wave === 'pulse' ? 'pulse1' : l.wave === 'triangle' ? 'triangle' : 'noise';
-    const amp = CHANNEL_GAIN[ch] * l.vol * SFX_LEVEL;
+    const amp = CHANNEL_GAIN[ch] * l.vol * SFX_LEVEL * (l.wave === 'pulse' ? DUTY_GAIN[l.duty ?? 0.5] : 1);
 
     const env = ctx.createGain();
     env.gain.value = 0; // see playEvent: no full-scale one-sample clicks at the start

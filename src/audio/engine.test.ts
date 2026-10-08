@@ -109,14 +109,6 @@ class FakeBufferSource extends FakeSource {
     created.src++;
   }
 }
-class FakeCompressor extends FakeNode {
-  threshold = new FakeParam();
-  knee = new FakeParam();
-  ratio = new FakeParam();
-  attack = new FakeParam();
-  release = new FakeParam();
-}
-
 let instances: FakeContext[] = [];
 class FakeContext {
   currentTime = 0;
@@ -144,8 +136,8 @@ class FakeContext {
     expect(real.length).toBe(imag.length);
     return { real, imag };
   }
-  createDynamicsCompressor(): FakeCompressor {
-    return new FakeCompressor();
+  createWaveShaper(): FakeNode & { curve: Float32Array | null } {
+    return Object.assign(new FakeNode(), { curve: null as Float32Array | null });
   }
   resume(): Promise<void> {
     this.resumed++;

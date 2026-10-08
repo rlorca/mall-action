@@ -49,7 +49,7 @@ export const TOUCH_MARGIN = 3;
 export const BULLET_SPEED = 3.5;
 export const ENEMY_BULLET_SPEED = 2;
 /** Spies may not shoot before this many frames after the agent walks in. */
-export const GRACE_FRAMES = 90;
+export const GRACE_FRAMES = 150;
 /** Telegraph before a spy shot (the aim line blinks; stepping out of the line dodges it). */
 export const AIM_FRAMES = 30;
 export const BOT_HP = 3;

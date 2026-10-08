@@ -21,9 +21,6 @@ class Canvas {
   get(x: number, y: number): string {
     return x >= 0 && y >= 0 && x < this.w && y < this.h ? this.px[y]![x]! : '.';
   }
-  disc(cx: number, cy: number, r: number, ch: string): void {
-    for (let y = 0; y < this.h; y++) for (let x = 0; x < this.w; x++) if (Math.hypot(x - cx, y - cy) <= r) this.set(x, y, ch);
-  }
   /** Surround every opaque pixel with `ch` on the empty 4-neighbours. */
   outline(ch: string): void {
     const add: Array<[number, number]> = [];
@@ -67,8 +64,6 @@ class Canvas {
     return this.px.map((r) => r.join(''));
   }
 }
-
-const mirror = (rows: readonly string[]): string[] => rows.map((r) => [...r].reverse().join(''));
 
 // ------------------------------------------------------------------ power-up icons (12x12)
 const K = C.BLACK;
@@ -379,4 +374,3 @@ defineSprites([
   { name: 'hud.radar', w: 8, h: 8, pal: { K, W: C.WHITE, G: C.GREEN }, rows: HUD_RADAR },
 ] satisfies SpriteDef[]);
 
-void mirror;

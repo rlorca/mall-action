@@ -60,14 +60,15 @@ export class FountainsModule implements MallModule, ShotSource {
     const cx = f.x + f.w / 2;
     const fy = floorY(f.floor);
     for (let i = 0; i < n; i++) {
-      // fan the coins out evenly with a little jitter
+      // Fan the coins out evenly with a little jitter. The arc is low on purpose: the ceiling is only 40 px above the
+      // floor and the core's pickup physics would land a coin that rose past the slab on the floor above.
       const t = n === 1 ? 0 : i / (n - 1) - 0.5;
       w.spawnPickup({
         x: cx + t * 8,
-        y: fy - FOUNTAIN_H + 2,
+        y: fy - FOUNTAIN_H,
         kind: i === gold ? 'goldcoin' : 'coin',
         vx: t * 2.4 + this.rng.range(-0.3, 0.3),
-        vy: -this.rng.range(3.0, 4.2),
+        vy: -this.rng.range(1.7, 2.3),
         onGround: false,
         life: COIN_LIFE,
       });

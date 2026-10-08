@@ -12,7 +12,7 @@
  *  - `setMusic(id)` with the id that is already selected does nothing (safe to call every frame). A jingle that
  *    has finished stays finished until a different id (or null) is selected.
  */
-import type { MusicId, SfxId } from './ids';
+import { JINGLE_IDS, type MusicId, type SfxId } from './ids';
 import { MASTER_GAIN } from './mix';
 import { eventsBetween } from './sequencer';
 import { SFX, sfxPoly } from './sfx';
@@ -56,6 +56,8 @@ export class AudioEngine {
   private synth: Synth | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private failed = false;
+  /** Consecutive Web Audio exceptions; a transient one is ignored, a persistent run switches audio off. */
+  private errors = 0;
 
   private selected: MusicId | null = null;
   /** The selected track is a jingle that has played out (or was skipped before unlock). */
@@ -146,8 +148,9 @@ export class AudioEngine {
       while (this.voices.length >= MAX_SFX_VOICES) this.dropVoice(this.voices[0]!, now);
       this.voices.push(synth.playSfx(def, now + 0.005));
       this.lastSfxStart.set(id, now);
+      this.errors = 0;
     } catch {
-      this.fail();
+      this.noteError();
     }
   }
 
@@ -175,6 +178,10 @@ export class AudioEngine {
   private resume(): void {
     const p = this.ctx?.resume();
     if (p) p.catch(() => undefined);
+  }
+
+  private noteError(): void {
+    if (++this.errors >= 100) this.fail();
   }
 
   private fail(): void {
@@ -290,7 +297,12 @@ export class AudioEngine {
           for (const { event, time } of evs) {
             const when = p.startTime + time;
             if (when < now - 0.05) continue;
-            synth.playEvent(p.bus, p.song, event, Math.max(when, now));
+            try {
+              synth.playEvent(p.bus, p.song, event, Math.max(when, now));
+              this.errors = 0;
+            } catch {
+              this.noteError(); // one bad note must not silence the session
+            }
           }
         }
         p.cursor = upTo;
@@ -306,7 +318,7 @@ export class AudioEngine {
   }
 }
 
-const JINGLES = new Set<string>(['splash', 'levelclear', 'gameover', 'itemget', 'selfie']);
+const JINGLES = new Set<string>(JINGLE_IDS);
 function isJingle(id: MusicId): boolean {
   return JINGLES.has(id);
 }

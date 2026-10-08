@@ -6,11 +6,13 @@
  */
 import {
   CHANNEL_GAIN,
+  DUTY_GAIN,
   MASTER_GAIN,
   SFX_LEVEL,
   adsrFrames,
   evalFrames,
   lfsrSequence,
+  pulseLevels,
   vibratoCents,
 } from './mix';
 import { eventsBetween, playbackLength } from './sequencer';
@@ -33,7 +35,11 @@ function addEvent(buf: Float32Array, sr: number, song: CompiledSong, e: NoteEven
   const total = frames[frames.length - 1]![0];
   const i0 = Math.round(time * sr);
   const n = Math.ceil(total * sr);
-  const amp = CHANNEL_GAIN[e.ch] * song.vol * song.mix[e.ch] * inst.vol * e.vel * MASTER_GAIN;
+  const duty = inst.duty;
+  const amp =
+    CHANNEL_GAIN[e.ch] * song.vol * song.mix[e.ch] * inst.vol * e.vel * MASTER_GAIN *
+    (e.ch === 'pulse1' || e.ch === 'pulse2' ? DUTY_GAIN[duty] : 1);
+  const [hi, lo] = pulseLevels(duty);
   let phase = 0;
 
   if (e.ch === 'noise') {
@@ -51,7 +57,6 @@ function addEvent(buf: Float32Array, sr: number, song: CompiledSong, e: NoteEven
     return;
   }
 
-  const duty = inst.duty;
   for (let i = 0; i < n; i++) {
     const j = i0 + i;
     if (j < 0 || j >= buf.length) continue;
@@ -59,7 +64,7 @@ function addEvent(buf: Float32Array, sr: number, song: CompiledSong, e: NoteEven
     const f = e.freq * Math.pow(2, vibratoCents(inst.vibrato, t) / 1200);
     phase += f / sr;
     const ph = phase - Math.floor(phase);
-    const v = e.ch === 'triangle' ? 4 * Math.abs(ph - 0.5) - 1 : ph < duty ? 1 : -1;
+    const v = e.ch === 'triangle' ? 4 * Math.abs(ph - 0.5) - 1 : ph < duty ? hi : lo;
     buf[j]! += amp * evalFrames(frames, t) * v;
   }
 }
@@ -86,8 +91,9 @@ export function renderSfx(def: SfxDef, opts: { sampleRate?: number } = {}): Floa
     const i0 = Math.round(((l.at ?? 0) / 1000) * sr);
     const n = Math.ceil((l.ms / 1000) * sr);
     const ch = l.wave === 'pulse' ? 'pulse1' : l.wave === 'triangle' ? 'triangle' : 'noise';
-    const amp = CHANNEL_GAIN[ch] * l.vol * SFX_LEVEL * MASTER_GAIN;
     const duty = l.duty ?? 0.5;
+    const amp = CHANNEL_GAIN[ch] * l.vol * SFX_LEVEL * MASTER_GAIN * (l.wave === 'pulse' ? DUTY_GAIN[l.duty ?? 0.5] : 1);
+    const [hi, lo] = pulseLevels(duty);
     const seq = l.wave === 'noise' ? lfsrSequence(l.short ?? false) : null;
     let phase = 0;
     for (let i = 0; i < n; i++) {
@@ -102,7 +108,7 @@ export function renderSfx(def: SfxDef, opts: { sampleRate?: number } = {}): Floa
       } else {
         phase += f / sr;
         const ph = phase - Math.floor(phase);
-        v = l.wave === 'triangle' ? 4 * Math.abs(ph - 0.5) - 1 : ph < duty ? 1 : -1;
+        v = l.wave === 'triangle' ? 4 * Math.abs(ph - 0.5) - 1 : ph < duty ? hi : lo;
       }
       buf[j]! += amp * evalFrames(frames, t) * v;
     }

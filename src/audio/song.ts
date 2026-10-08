@@ -4,7 +4,8 @@
  * A song is written as one pattern string per channel (plus a chord lane). Time is counted in "steps" (a grid
  * of `stepsPerBeat` per beat; 4 = sixteenth notes in x/4). Tokens are whitespace separated:
  *
- *   C4  F#3:2  Bb4:8!        note: pitch[:length-in-steps][!|?]   (! = accent, ? = soft; default length 1)
+ *   C4  F#3:2  Bb4:8!        note: pitch[:length-in-steps][!|?]   (! = accent, ? = soft, written after the pitch or the
+ *                            length: `C4:2!` or `C4!:2`; default length 1 step)
  *   -  -:3                   rest of 1 / 3 steps
  *   =  =:4                   tie: extend the previous note (or rest) by 1 / 4 steps (use it across bar lines)
  *   C4+E4+G4:8               arpeggio: the pitches are cycled quickly (the NES "chord trick") for the length

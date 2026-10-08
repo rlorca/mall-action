@@ -12,10 +12,21 @@ export type Duty = 0.125 | 0.25 | 0.5 | 0.75;
 export const DUTIES: readonly Duty[] = [0.125, 0.25, 0.5, 0.75];
 
 /**
- * Linear gain of a full-scale voice on each channel. The worst case (all four at full velocity) sums to 0.8, and the
- * master gain brings it to 0.72, so a single song can never clip even before the safety limiter.
+ * Linear gain of a full-scale voice on each channel. With the duty compensation below, the worst case (all four
+ * at full velocity, thinnest pulses) sums to about 0.94 and the master gain brings it to about 0.85, so a single
+ * song can never clip even before the soft clipper.
  */
-export const CHANNEL_GAIN: Record<ChannelId, number> = { pulse1: 0.2, pulse2: 0.2, triangle: 0.26, noise: 0.14 };
+export const CHANNEL_GAIN: Record<ChannelId, number> = { pulse1: 0.18, pulse2: 0.18, triangle: 0.26, noise: 0.14 };
+/**
+ * A PeriodicWave pulse is mean-removed and peak-normalised, so thin duty cycles (12.5 %) carry far less energy
+ * than a 50 % square. This partly (not fully: thin pulses are also brighter) makes up for it.
+ */
+export const DUTY_GAIN: Record<Duty, number> = { 0.125: 1.5, 0.25: 1.2, 0.5: 1, 0.75: 1.2 };
+
+/** [high, low] output levels of a mean-removed pulse wave normalised to a peak of 1 (matches the PeriodicWave). */
+export function pulseLevels(duty: number): readonly [number, number] {
+  return duty <= 0.5 ? [1, -duty / (1 - duty)] : [(1 - duty) / duty, -1];
+}
 export const MASTER_GAIN = 0.9;
 /** Sfx are a little hotter than the music so they cut through. */
 export const SFX_LEVEL = 1.5;
@@ -118,4 +129,20 @@ export function lfsrSequence(short: boolean): Float32Array {
   const seq = Float32Array.from(out);
   lfsrCache.set(short, seq);
   return seq;
+}
+
+/**
+ * Transfer curve for a WaveShaperNode acting as a soft clipper: identity up to 0.7, then a smooth tanh knee towards
+ * ~0.93 at full scale. Static (no attack / release / delay), so short sounds are never smeared.
+ */
+export function softClipCurve(points = 2049): Float32Array<ArrayBuffer> {
+  const curve = new Float32Array(points);
+  const knee = 0.7;
+  for (let i = 0; i < points; i++) {
+    const x = (i / (points - 1)) * 2 - 1;
+    const a = Math.abs(x);
+    const y = a <= knee ? a : knee + (1 - knee) * Math.tanh((a - knee) / (1 - knee));
+    curve[i] = x < 0 ? -y : y;
+  }
+  return curve;
 }

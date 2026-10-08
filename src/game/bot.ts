@@ -27,8 +27,10 @@ function must(cond: boolean, msg: string): asserts cond {
   if (!cond) throw new BotError(msg);
 }
 
-/** Walk like a player: jump-kick over any open pit that is in the way. */
-export function walkTo(r: BotRig, x: number, max = 2500): void {
+/** Walk like a player: jump-kick over any open pit that is in the way, and over a mall walker that blocks the corridor. */
+export function walkTo(r: BotRig, x: number, max = 3500): void {
+  let stall = 0;
+  let lastX = r.w.player.x;
   for (let i = 0; i < max; i++) {
     const p = r.w.player;
     const dx = x - p.x;
@@ -47,10 +49,26 @@ export function walkTo(r: BotRig, x: number, max = 2500): void {
           for (let k = 0; k < 60 && r.w.player.mode === 'air'; k++) r.hold(btn, 1);
         }
       }
+      // Not getting anywhere (a mall walker is shoving us back): a jump-kick carries us past his centre.
+      stall = (p.x - lastX) * dir > 0.2 ? 0 : stall + 1;
+      lastX = p.x;
+      if (stall >= 12 && !nearOpenPit(r, p.x, p.floor, 40)) {
+        r.hold(btn | Btn.B, 1);
+        for (let k = 0; k < 60 && r.w.player.mode === 'air'; k++) r.hold(btn, 1);
+        stall = 0;
+      }
     }
     r.hold(btn, 1);
   }
   r.hold(0, 1);
+}
+
+function nearOpenPit(r: BotRig, x: number, floor: number, margin: number): boolean {
+  for (const sh of SHAFTS) {
+    if (floor < sh.top || floor > sh.bottom) continue;
+    if (x > sh.x - margin && x < sh.x + sh.w + margin && openingState(r.w.car(sh.id), floor) === 'pit') return true;
+  }
+  return false;
 }
 
 /** Ride shaft `id` from the current floor to floor `to` and step out. */
@@ -234,4 +252,119 @@ export function leaveStore(b: StoreBot): void {
   if (path) walkPath(b, path);
   for (let i = 0; i < 120 && !w.exited; i++) b.hold(Btn.DOWN, 1);
   must(w.exited, 'could not leave the store');
+}
+
+// ---------------------------------------------------------------- a bot that plays stores like a sensible human
+const DIR_BTN = { up: Btn.UP, down: Btn.DOWN, left: Btn.LEFT, right: Btn.RIGHT } as const;
+type Dir4 = keyof typeof DIR_BTN;
+
+function lineClear(room: Room, ax: number, ay: number, bx: number, by: number): boolean {
+  const steps = Math.ceil(Math.hypot(bx - ax, by - ay) / 4);
+  for (let i = 1; i < steps; i++) {
+    const x = ax + ((bx - ax) * i) / steps;
+    const y = ay + ((by - ay) * i) / steps;
+    if (isSolidKind(tileAt(room, Math.floor(x / TILE), Math.floor(y / TILE)))) return false;
+  }
+  return true;
+}
+
+/**
+ * One frame of reflexes: sidestep out of a guard's aim line / an incoming bullet, and shoot a guard that is lined up.
+ * Returns the buttons to hold this frame, or null when nothing needs doing.
+ */
+function reflexes(b: StoreBot): number | null {
+  const w = b.world;
+  const a = w.agent;
+  const room = w.room;
+  // danger: an aiming spy whose line passes through us, or an enemy bullet heading at us
+  for (const g of w.guards) {
+    if (g.dead || g.kind !== 'spy' || g.aim <= 0) continue;
+    const horiz = g.aimDir === 'left' || g.aimDir === 'right';
+    const onLine = horiz ? Math.abs(g.y - a.y) < 11 : Math.abs(g.x - a.x) < 11;
+    const ahead = horiz ? (g.aimDir === 'right' ? a.x > g.x : a.x < g.x) : g.aimDir === 'down' ? a.y > g.y : a.y < g.y;
+    if (onLine && ahead) {
+      const sides: Dir4[] = horiz ? ['up', 'down'] : ['left', 'right'];
+      for (const s of sides) {
+        const v = s === 'up' ? [0, -1] : s === 'down' ? [0, 1] : s === 'left' ? [-1, 0] : [1, 0];
+        const tx = a.x + v[0]! * 12;
+        const ty = a.y + v[1]! * 12;
+        if (!isSolidKind(tileAt(room, Math.floor(tx / TILE), Math.floor(ty / TILE)))) return DIR_BTN[s];
+      }
+    }
+  }
+  for (const bl of w.bullets) {
+    if (bl.kind !== 'enemy') continue;
+    const horiz = Math.abs(bl.vx) > Math.abs(bl.vy);
+    const onLine = horiz ? Math.abs(bl.y - a.y) < 9 : Math.abs(bl.x - a.x) < 9;
+    const toward = horiz ? (bl.x - a.x) * bl.vx < 0 && Math.abs(bl.x - a.x) < 56 : (bl.y - a.y) * bl.vy < 0 && Math.abs(bl.y - a.y) < 56;
+    if (onLine && toward) return horiz ? (a.y > room.rows * TILE / 2 ? Btn.UP : Btn.DOWN) : Btn.LEFT;
+  }
+  // offence: a guard lined up within range and in the clear: face it and fire
+  for (const g of w.guards) {
+    if (g.dead) continue;
+    const dx = g.x - a.x;
+    const dy = g.y - a.y;
+    const horiz = Math.abs(dy) < 7 && Math.abs(dx) < 150;
+    const vert = Math.abs(dx) < 7 && Math.abs(dy) < 120;
+    if (!(horiz || vert) || !lineClear(room, a.x, a.y, g.x, g.y)) continue;
+    const want: Dir4 = horiz ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+    if (a.facing !== want) return DIR_BTN[want]; // turn toward him (a step, then we fire)
+    return Btn.A;
+  }
+  return null;
+}
+
+/**
+ * Play a store with reflexes: go for the nearest unsearched fixture, tap B beside it, react to danger every frame.
+ * Returns true when the package was taken. Gives up after `maxFrames`.
+ */
+export function playStoreSmart(b: StoreBot, maxFrames = 4000): boolean {
+  const w = b.world;
+  const room = w.room;
+  let t = 0;
+  while (t < maxFrames && !w.exited && !w.died && !w.store.packageTaken) {
+    const a = w.agent;
+    if (a.stun > 0 || a.hold || w.typewriter || w.search !== null || a.dying > 0) {
+      b.hold(0, 1);
+      t++;
+      continue;
+    }
+    const r = reflexes(b);
+    if (r !== null) {
+      b.hold(r, 1);
+      t++;
+      continue;
+    }
+    const here = cellOf(a.x, a.y);
+    const targets = room.fixtures.filter((f) => !w.store.fixtures[f.index]!.opened);
+    let best: { path: Cell[]; f: (typeof targets)[number] } | null = null;
+    for (const f of targets) {
+      const path = tilePath(room, here, (c) => Math.abs(c.col - f.col) + Math.abs(c.row - f.row) === 1 && walkable(room, c.col, c.row));
+      if (path && (!best || path.length < best.path.length)) best = { path, f };
+    }
+    if (!best) break;
+    const { path, f } = best;
+    if (path.length === 1 || (path.length === 2 && Math.hypot(a.x - (path[1]!.col * TILE + 8), a.y - (path[1]!.row * TILE + 8)) < 2)) {
+      // beside the fixture: face it, tap B, wait for the search
+      const toward: Dir4 = f.col > here.col ? 'right' : f.col < here.col ? 'left' : f.row > here.row ? 'down' : 'up';
+      b.hold(DIR_BTN[toward], 2);
+      b.hold(0, 1);
+      b.tap(Btn.B);
+      for (let i = 0; i < 90 && w.search !== null; i++) {
+        const rr = reflexes(b);
+        b.hold(rr !== null && rr !== Btn.A ? rr : 0, 1);
+      }
+      t += 100;
+      continue;
+    }
+    const next = path[1]!;
+    const tx = next.col * TILE + TILE / 2;
+    const ty = next.row * TILE + TILE / 2;
+    const dx = tx - a.x;
+    const dy = ty - a.y;
+    if (Math.abs(dx) > 1.2 && (Math.abs(dy) <= 3 || Math.abs(dx) > Math.abs(dy))) b.hold(dx > 0 ? Btn.RIGHT : Btn.LEFT, 1);
+    else b.hold(dy > 0 ? Btn.DOWN : Btn.UP, 1);
+    t++;
+  }
+  return w.store.packageTaken;
 }
