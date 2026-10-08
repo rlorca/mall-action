@@ -368,3 +368,21 @@ export function playStoreSmart(b: StoreBot, maxFrames = 4000): boolean {
   }
   return w.store.packageTaken;
 }
+
+// ---------------------------------------------------------------- mall reflexes (a sensible new player)
+/**
+ * Adds the reflexes of a sensible human to the buttons the route script wants to press: shoot a spy that is in front of
+ * us on our floor within 150 px, and duck while a spy nearby aims high (when we are not walking).
+ */
+export function mallReflexes(w: MallWorld, mask: number): number {
+  const p = w.player;
+  if (p.mode !== 'ground' || p.floor === null) return mask;
+  let m = mask;
+  for (const s of w.spies) {
+    if (s.mode === 'dying' || s.floor !== p.floor) continue;
+    const dx = s.x - p.x;
+    if (Math.abs(dx) < 150 && p.face === (dx > 0 ? 1 : -1)) m |= Btn.A;
+    if (s.mode === 'aim' && s.aimHigh && Math.abs(dx) < 170 && !(mask & (Btn.LEFT | Btn.RIGHT))) m |= Btn.DOWN;
+  }
+  return m;
+}

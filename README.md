@@ -148,9 +148,16 @@ names are puns and no logos or trade dress are used.
   a simulated gamepad plugged and unplugged mid-walk, the no-WebGL message, audio unlocking and per-scene music. The console stayed
   free of errors and warnings over a full playthrough of roughly 9,000 rendered frames. The build was served from a **sub-path**
   (`/mall-action/play/`) to prove the relative URLs.
-* **Fairness on loop 1**: a vulnerable bot that never shoots or dodges reaches the 4F store door without dying in 40 of 40 seeds; a
-  reflex bot (sidesteps aim lines, shoots lined-up guards) finds the package in 77 to 100 percent of visits to each target store, and
-  `fairness.test.ts` keeps it above 60 percent per store and 80 percent overall.
+* **Fairness on loop 1**, measured with scripted players over 40 seeds (`scripts/fairness-route.ts`, `scripts/fairness-store.ts`; the sensible-player
+  bars are locked in by `src/game/mall/fairness.test.ts` and `src/game/store/fairness.test.ts`):
+  * A *passive* agent that never shoots, ducks or dodges reaches the first 4F store door without dying in 40 of 40 seeds, but then loses a
+    life in 33 of 40 searches of that store, and dies 2.4 times per ~45 s tour of all six floors (touched by spies 56 times, shot 42).
+    Passive play is punished, by design.
+  * A *sensible* agent (shoots spies that are in front of him, ducks aimed-high shots) dies 1.0 times per full tour of the mall (32 of 40 tours
+    completed on the first try of that script) and reaches the 4F stores untouched in at least 90% of runs. A reflex player (sidesteps aim
+    lines, shoots lined-up guards) finds the package in 77 to 100 percent of visits to each of the six target stores.
+  * These are bots, not people: the "new player can find a package without dying on the first try" bar is met by a simple reflex player,
+    but nobody has play-tested it with a human first-timer.
 
 **Honest gaps**
 
