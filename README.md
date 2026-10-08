@@ -1,5 +1,7 @@
 # MALL ACTION
 
+> **Play it:** https://rlorca.github.io/mall-action/haiku-5.5/
+
 *Mall Action* is an 8-bit spy caper in an 80s shopping mall, a spiritual successor to Taito's *Elevator
 Action*, published by the fictional studio FLICKERSOFT. Spies have hidden six packages in six stores. Collect
 them all, reach the parking level, and drive away. Then the next loop starts, harder.
@@ -8,8 +10,9 @@ them all, reach the parking level, and drive away. Then the next loop starts, ha
 
 ## Play in your browser
 
-Build and serve locally (see below), or open the published build once it is deployed:
-`https://rlorca.github.io/mall-action/haiku-5.5/`
+**https://rlorca.github.io/mall-action/haiku-5.5/**
+
+The build is published by this branch's CI on every push. To run it locally instead, see *Run, test and build* below.
 
 ## Screenshots
 

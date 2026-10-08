@@ -36,6 +36,7 @@ jobs:
           cd ../gh-pages-tree
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          node "$GITHUB_WORKSPACE/scripts/add-landing-card.mjs" "$PUBLISH_DIR" "Claude Haiku 5.5"
           git add -A
           git commit -m "Publish haiku-5.5 build" || echo "nothing to publish"
           git push origin HEAD:gh-pages
