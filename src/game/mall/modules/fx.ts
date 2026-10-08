@@ -1,6 +1,5 @@
-import type { MallModule } from '../world';
 import type { Bullet } from '../types';
-import type { MallWorld } from '../world';
+import type { MallModule, MallWorld } from '../world';
 
 /** Short cosmetic effects the renderer draws (bullet sparks, glass bursts). Deterministic frame counters only. */
 export interface Fx {

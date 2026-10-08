@@ -44,25 +44,37 @@ describe('the mall cop', () => {
     expect(SHOUTS.cop).toBe('HEY! STOP RIGHT THERE!');
   });
 
-  it('a shot behind him, out of range or on another floor does not bother him', () => {
+  it('a shot behind him, out of range or on another floor does not bother him (the bullets fly away from him)', () => {
+    const calm = (r: XRig): void => {
+      r.w.player.face = -1; // shooting AWAY from the cop so no bullet ever reaches his helmet
+      r.hold(Btn.A, 1);
+      r.hold(0, 60);
+      expect(r.x.cop.cop.mode).toBe('patrol');
+      expect(r.sfx).not.toContain('whistle');
+    };
     // he faces away from the agent
-    const a = rig(250, 300, 1);
-    a.hold(Btn.A, 1);
-    expect(a.x.cop.cop.mode).toBe('patrol');
+    calm(rig(250, 300, 1));
     // too far (> 128 px)
-    const b = rig(215, 360, -1);
     expect(360 - 215).toBeGreaterThan(COP_SIGHT);
-    b.hold(Btn.A, 1);
-    expect(b.x.cop.cop.mode).toBe('patrol');
+    calm(rig(215, 360, -1));
     // another floor
     const c = makeXRig({ floor: 2, x: 250 });
     parkCop(c, F, 300, -1);
-    c.hold(Btn.A, 1);
-    expect(c.x.cop.cop.mode).toBe('patrol');
+    calm(c);
     // right at the edge of his sight it works
     const d = rig(300 - COP_SIGHT + 2, 300, -1);
     d.hold(Btn.A, 1);
     expect(d.x.cop.cop.mode).toBe('chase');
+  });
+
+  it('a bullet that actually hits his helmet makes him angry, even from behind', () => {
+    const r = rig(250, 300, 1); // facing away, the agent shoots straight at his back
+    r.hold(Btn.A, 1);
+    expect(r.x.cop.cop.mode).toBe('patrol'); // not yet: the bullet is still in the air
+    r.hold(0, 14);
+    expect(r.x.cop.cop.mode).toBe('chase');
+    expect(r.sfx).toContain('helmetPing');
+    expect(r.sfx).toContain('whistle');
   });
 
   it('he chases for about 10 s, then calms down and wanders off (agent out of reach)', () => {

@@ -1,4 +1,4 @@
-import { Btn, hasBtn, type Pad } from '../../engine/pad';
+import { Btn, NO_PAD, hasBtn, type Pad } from '../../engine/pad';
 import { Rng } from '../../engine/rng';
 import {
   ARRIVAL,
@@ -112,6 +112,8 @@ export class MallWorld {
   diff: Difficulty;
 
   frame = 0;
+  /** The pad of the step in progress (modules such as the photo booth read it while the agent is hidden). */
+  pad: Pad = NO_PAD;
   /** Frame at which the agent got control (spy clocks start here). */
   controlFrame = 0;
   player: PlayerState;
@@ -294,6 +296,7 @@ export class MallWorld {
 
   // ------------------------------------------------------------------ main step
   step(pad: Pad): void {
+    this.pad = pad;
     this.frame++;
     const p = this.player;
 

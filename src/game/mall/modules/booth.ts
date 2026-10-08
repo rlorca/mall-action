@@ -1,5 +1,4 @@
 import { Btn } from '../../../engine/pad';
-import type { Pad } from '../../../engine/pad';
 import { FEATURES } from '../../../content/layout';
 import type { MallModule, MallWorld } from '../world';
 
@@ -30,7 +29,6 @@ export class BoothModule implements MallModule {
   inside = 0;
   strip: PhotoStrip | null = null;
   /** The input of the current step (the core's hidden state never shows it to modules, see installExtras). */
-  pad: Pad | null = null;
 
   constructor() {
     const f = FEATURES.find((k) => k.kind === 'booth')!;
@@ -60,8 +58,7 @@ export class BoothModule implements MallModule {
     const p = w.player;
     if (p.mode === 'hidden') {
       this.inside++;
-      const pad = this.pad;
-      if (this.inside > MIN_INSIDE && pad && pad.held & (Btn.DOWN | Btn.LEFT | Btn.RIGHT)) w.unhidePlayer();
+      if (this.inside > MIN_INSIDE && w.pad.held & (Btn.DOWN | Btn.LEFT | Btn.RIGHT)) w.unhidePlayer();
       if (p.mode === 'hidden') return;
     }
     // He is out (pressed a key, the 5 s ran out, or the world took him out of the booth)

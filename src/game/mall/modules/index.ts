@@ -1,4 +1,3 @@
-import type { Pad } from '../../../engine/pad';
 import type { MallWorld } from '../world';
 import { BoothModule } from './booth';
 import { CopModule } from './cop';
@@ -46,15 +45,6 @@ export function installExtras(w: MallWorld): MallExtras {
   const booth = new BoothModule();
   const fountains = new FountainsModule(w);
   const router = new ShotRouter([lamps, walkers, cop, fountains]);
-
-  // Modules are not handed the pad, and while the agent is hidden the core does not look at input either, so the booth
-  // needs it to know when Down/Left/Right is pressed. (A public `MallWorld.pad` set at the top of `step` would make
-  // this wrapper unnecessary.)
-  const coreStep = w.step.bind(w);
-  w.step = (pad: Pad): void => {
-    booth.pad = pad;
-    coreStep(pad);
-  };
 
   // Order matters only for state that reads the same frame's results: shots are routed first, then the world's NPCs.
   w.modules.push(fx, router, lamps, janitor, walkers, cop, kiosks, booth, fountains);

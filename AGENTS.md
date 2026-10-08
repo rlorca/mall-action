@@ -109,6 +109,24 @@ Each screen is a small state machine (`step(pad)`) plus a draw function. See eac
 `sfx(id)`, `setMuted(b)`, `isMuted()`. Song data and the sequencer are pure and unit-tested; only `synth.ts`/`audio.ts`
 touch Web Audio. If audio cannot start the game must run fine.
 
+## How this was built and how to test it end to end
+
+* **`src/game/bot.ts`** is a scripted PLAYER (buttons only): `walkTo` (jumps pits, shoulders past mall walkers), `ride`, `escalate`,
+  `goToFloor`, `enterStoreDoor`, `searchStoreForPackage`, `playStoreSmart` (dodges aim lines, shoots lined-up guards), `leaveStore`.
+  `src/game/playthrough.test.ts` plays the whole game with it, `src/game/mall/route.test.ts` proves every floor is reachable and no
+  elevator can be stranded, `src/game/store/fairness.test.ts` guards loop-1 fairness. If you change geometry, elevators, doors or
+  store layouts, these tell you whether the game is still winnable.
+* **Real-browser playtests** (not in CI): `npm run build`, `node scripts/serve-dist.mjs 4173 /mall-action/play/ &` then
+  `npx tsx scripts/playtest-full.ts` (whole level), `playtest-flow.ts` (real keyboard), `playtest-misc.ts` (CRT/mute/resize/gamepad/no-WebGL),
+  `playtest-audio.ts`, `playtest-flows2.ts` (Konami, Black Friday, continue, game over), `playtest-splash.ts`, `screenshots.ts`.
+  They drive Chrome through `playwright-core` (`scripts/playtest-lib.ts`) and write PNGs to `playtest-out/` (git-ignored).
+  **Use the built `dist/`, not `npm run dev`:** the dev server hot-reloads the page whenever a source file changes, which silently resets a test run.
+* In `?debug=1` the page exposes `window.__mall`: `step(n, 'RIGHT+A')` (synthetic pad), `pump(n)` (advances using the REAL keyboard/gamepad
+  input, as the rAF loop does), `tap`, `state()`, `shot()`, `realtime = false`, `audio`, and `bot` (the scripted player, lazily loaded).
+* `?debug=1&start=1&skipintro=1` jumps straight into the mall.
+* Headless frame dumps without a browser: `npx tsx scripts/mall-frames.ts`, `scripts/screens-preview.ts`, `scripts/store-preview.ts`,
+  `scripts/mall-actors-preview.ts` (all write PNGs).
+
 ## Verification checklist for any change
 
 1. `npm run typecheck && npm test && npm run build`.
@@ -155,4 +173,11 @@ touch Web Audio. If audio cannot start the game must run fine.
 * **`player.cause` resets on respawn**: tests record causes through the rig (`rig.causes`) instead of reading the player after the fact.
 * **CRT shader**: curvature is zoom-compensated so the corners land exactly on the screen corners; do not increase `k` without checking
   that the HUD text (top rows) is not clipped at the centre of the top edge.
+* **Shaft walls only exist where the shaft does** (ceiling of its top floor down to its lowest floor's surface). Applying them to every shaft
+  on every floor puts an invisible wall at shaft A's x on 1F and P. The playthrough bot found this.
+* **Mall walkers are moving obstacles that push the agent** and patrol the whole corridor stretch between shafts on 2F; passing one takes a
+  jump-kick over his centre or patience. Tests/bots need a stall breaker (`walkTo` has one).
+* **Jingles end by themselves**: after a jingle `AudioEngine.musicPlaying()` is null, and setting the same id again never restarts it. The
+  Game returns the jingle id only while that scene is up, then the next loop id, so this just works.
+* **`hum` must be retriggered no more often than every 10-15 frames** (the mall emits it every 24 while a car moves with the agent inside).
 * **Integer scale is computed in device pixels** (`engine/scale.ts`): on Retina a 1280x800 window gives the same crisp scale as 2560x1600.

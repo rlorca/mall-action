@@ -1,4 +1,3 @@
-import { floorY } from '../../../content/layout';
 import type { Rng } from '../../../engine/rng';
 import type { Spy } from '../types';
 import type { MallModule, MallWorld } from '../world';
@@ -218,10 +217,5 @@ export class JanitorModule implements MallModule {
     this.agentBlocked = false;
     this.agentKick = false;
     w.player.slide = 0;
-  }
-
-  /** World y of the floor he walks on (for the view). */
-  get y(): number {
-    return floorY(JANITOR_FLOOR);
   }
 }

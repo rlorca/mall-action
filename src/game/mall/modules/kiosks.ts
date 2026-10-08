@@ -1,4 +1,4 @@
-import { FEATURES, floorY } from '../../../content/layout';
+import { FEATURES } from '../../../content/layout';
 import { STORES, DOOR_X, DOOR_W, type StoreId } from '../../../content/stores';
 import { storeStatus } from '../../levelstate';
 import type { MallModule, MallWorld } from '../world';
@@ -77,10 +77,5 @@ export class KiosksModule implements MallModule {
 
   onRespawn(): void {
     this.panel = null;
-  }
-
-  /** World y of the kiosk's floor (for the view). */
-  y(index: number): number {
-    return floorY(this.kiosks[index]!.floor);
   }
 }

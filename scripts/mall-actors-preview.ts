@@ -11,11 +11,10 @@ import { Framebuffer } from '../src/engine/framebuffer';
 import { C } from '../src/engine/palette';
 import { Btn } from '../src/engine/pad';
 import { floorY } from '../src/content/layout';
-import { FEATURES } from '../src/content/layout';
 import { writeFramebufferPng } from './png';
 import '../src/art/index';
 import { getSprite } from '../src/art/registry';
-import { makeRig, place, setCar, type Rig } from '../src/game/mall/testutil';
+import { makeRig, place, type Rig } from '../src/game/mall/testutil';
 import { newSpy } from '../src/game/mall/spies';
 import { installExtras, type MallExtras } from '../src/game/mall/modules';
 import { drawMallActors, drawMallFurniture } from '../src/render/mallActorsView';
@@ -248,6 +247,3 @@ function until(s: Scene, what: string, cond: () => boolean, max = 600): void {
   run(s, 11);
   render('7-1F-fountain', s, 270, 4);
 }
-
-setCar; // (kept for ad-hoc experiments: setCar(r, 'B', 5) opens a pit for the disco balls)
-FEATURES;

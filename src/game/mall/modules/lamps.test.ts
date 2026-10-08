@@ -133,6 +133,7 @@ describe('hanging lamps and disco balls', () => {
     r.hold(0, 40);
     expect(s.mode).toBe('dying');
     expect(s.killedBy).toBe('lamp');
+    expect(r.x.lamps.lamps.find((l) => l.homeX === 374 && l.floor === 1)!.mode).toBe('broken');
     expect(r.run.score).toBe(300);
   });
 
@@ -155,9 +156,11 @@ describe('hanging lamps and disco balls', () => {
     r.run.givePower('armor');
     place(r, 1, 374);
     r.x.lamps.release(r.w, lampAt(r, 1, 374), 1);
-    r.hold(0, 1);
+    r.hold(0, 3);
+    expect(r.causes).toEqual([]); // he is not hit the instant the cord is cut: the lamp has to come down first
+    r.hold(0, 9);
     expect(r.w.shake).toBeGreaterThan(0); // falling lamps shake the screen
-    r.hold(0, 24);
+    r.hold(0, 12);
     expect(r.causes).toEqual(['lamp']);
     expect(r.run.power.armor).toBe('armor');
     expect(r.w.player.mode).toBe('dying');

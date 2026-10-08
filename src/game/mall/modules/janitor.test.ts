@@ -43,7 +43,6 @@ describe('the janitor (1F)', () => {
     for (const seed of [1, 2, 3]) {
       const r = makeXRig({ seed, floor: 0, x: 100 });
       parkCop(r, 1, 60);
-      r.run.invincible; // nothing to see here
       let patches = 0;
       let lastPatch: object | null = null;
       for (let f = 0; f < 12000; f++) {

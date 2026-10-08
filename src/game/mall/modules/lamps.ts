@@ -19,6 +19,8 @@ export const DARK_FRAMES = 120;
 export const DISCO_SPEED = 1.6;
 /** Height of the fixture body that crushes (lamp shade 10, disco ball 12). */
 const BODY_H = 10;
+/** A falling fixture only crushes once its lowest point has dropped to chest height (this far above the floor). */
+const CRUSH_FROM = 14;
 
 export type LampKind = 'lamp' | 'disco';
 /** hung -> falling -> (lamp) broken | (disco) rolling -> broken (hit a wall) | fell (rolled into a pit). */
@@ -176,6 +178,7 @@ export class LampsModule implements MallModule, ShotSource {
 
   /** Kill whatever the falling lamp / rolling ball is on top of. */
   private crush(w: MallWorld, l: Lamp): void {
+    if (l.mode === 'falling' && l.y < floorY(l.floor) - CRUSH_FROM) return; // still on its way down from the ceiling
     const half = LAMP_HALF_W + SPY_HALF_W - 1;
     const top = l.y - BODY_H;
     for (const s of w.spies) {

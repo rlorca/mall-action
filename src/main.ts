@@ -254,6 +254,12 @@ function start(presenter: Presenter): void {
         (this as { step(f: number, b: string | number): unknown }).step(frames, buttons);
         return (this as { step(f: number, b: string | number): unknown }).step(1, 0);
       },
+      /** Advance N frames consuming the REAL input (keyboard / gamepad events), exactly as the rAF loop does. */
+      pump(frames = 1) {
+        for (let i = 0; i < frames; i++) advance(input.sampleStep());
+        draw(performance.now());
+        return summary();
+      },
       render() {
         draw(performance.now());
       },
