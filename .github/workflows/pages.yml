@@ -1,0 +1,41 @@
+name: Test, build and publish haiku-5.5
+
+on:
+  push:
+    branches: [haiku-5-5]
+
+concurrency:
+  group: gh-pages-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PUBLISH_DIR: haiku-5.5
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Copy dist to gh-pages
+        run: |
+          git fetch origin gh-pages || true
+          git worktree add ../gh-pages-tree origin/gh-pages 2>/dev/null || git worktree add --orphan -b gh-pages ../gh-pages-tree
+          mkdir -p ../gh-pages-tree/$PUBLISH_DIR
+          rm -rf ../gh-pages-tree/$PUBLISH_DIR/*
+          cp -R dist/. ../gh-pages-tree/$PUBLISH_DIR/
+          cd ../gh-pages-tree
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish haiku-5.5 build" || echo "nothing to publish"
+          git push origin HEAD:gh-pages

@@ -1,0 +1,33 @@
+// NES-like master palette (approximate hex values). Sprites use at most 3 colours plus transparent.
+export const NES = {
+  black: '#000000',
+  ink: '#1c1c2e',
+  dkgrey: '#5c5c5c',
+  grey: '#9c9c9c',
+  silver: '#bcbcbc',
+  white: '#fcfcfc',
+  skin: '#f8b878',
+  skinDk: '#c87c40',
+  red: '#d8281a',
+  redDk: '#8c1010',
+  pink: '#f87858',
+  orange: '#f8a028',
+  yellow: '#f8d878',
+  gold: '#e8b020',
+  green: '#00a844',
+  greenDk: '#005800',
+  lime: '#78f878',
+  teal: '#00a8a8',
+  cyan: '#58d8f8',
+  blue: '#0058f8',
+  navy: '#1c2a6c',
+  purple: '#6844fc',
+  magenta: '#d800cc',
+  brown: '#7c4c20',
+  wood: '#b07838',
+  nightA: '#0c0c24',
+  nightB: '#2c1c54',
+  nightC: '#4c2c74',
+} as const;
+
+export type NesName = keyof typeof NES;
