@@ -18,6 +18,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | Gemini 3.6 Flash | [`gemini-3-6-flash`](../../tree/gemini-3-6-flash) | https://rlorca.github.io/mall-action/gemini-3.6-flash/ |
 | Claude Opus 4.6 | [`opus-4-6`](../../tree/opus-4-6) | https://rlorca.github.io/mall-action/opus-4.6/ |
 | Claude Opus 5 | [`opus-5`](../../tree/opus-5) | https://rlorca.github.io/mall-action/opus-5/ |
+| Claude Haiku 5.5 | [`haiku-5-5`](../../tree/haiku-5-5) | https://rlorca.github.io/mall-action/haiku-5.5/ |
 
 Each branch has its own README, tests and CI; pushing to a branch republishes its build.
 
