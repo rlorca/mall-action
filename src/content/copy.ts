@@ -185,6 +185,7 @@ export const UI = {
   closedLine1: 'ATTENTION SHOPPERS:',
   closedLine2: 'THE MALL IS NOW CLOSED',
   alarmBanner: 'ALARM! SECURITY ALERTED',
+  mission: 'FIND 6 PACKAGES. LOOK FOR RED DOORS!',
   alarmHud: 'ALARM',
   trap: "IT'S A TRAP!",
   nothing: 'NOTHING HERE',
@@ -213,3 +214,57 @@ export function continuesLeft(n: number): string {
 export function youGot(item: string): string {
   return `${EASTER_EGG.youGot}${item}`;
 }
+
+// ------------------------------------------------------------------ small UI labels of the screens
+// Map legend, bonus tally, newspaper furniture, game-over labels. Plain labels, all UPPERCASE and drawable with
+// the main font (checked by screens/screentext.test.ts).
+export const SCREEN_TEXT = {
+  map: {
+    legendPackage: 'PACKAGE',
+    legendCleared: 'CLEARED',
+    legendPowerup: 'POWER-UP',
+    legendClosed: 'CLOSED',
+    legendYou: 'YOU',
+    legendRadar: 'PACKAGE HERE',
+    legendCar: 'ELEVATOR',
+    legendGetaway: 'GETAWAY CAR',
+    legendEscalator: 'ESCALATOR',
+    items: 'ITEMS:',
+    close: 'SELECT: CLOSE',
+  },
+  tally: {
+    packages: 'PACKAGES',
+    time: 'TIME BONUS',
+    clear: 'CLEAR BONUS',
+    score: 'SCORE',
+    thanks: 'THANK YOU, COME AGAIN',
+  },
+  /** The spy chasing the getaway car (<= 28 chars, a speech bubble). */
+  chase: 'SIR! YOUR RECEIPT!',
+  news: {
+    edition: 'LATE EDITION',
+    price: '25 CENTS',
+    tagline: 'ALL THE NEWS THAT FITS IN A MALL',
+  },
+  gameOver: {
+    score: 'SCORE',
+    hiScore: 'HI-SCORE',
+    newRecord: 'NEW HIGH SCORE!',
+  },
+  title: {
+    hiScore: 'HI-SCORE',
+  },
+  garage: {
+    exit: 'EXIT',
+    level: 'P',
+  },
+  spygram: {
+    user: 'AGENT 7',
+    likes: 'LIKES',
+  },
+} as const;
+
+export function loopLabel(n: number): string {
+  return `LOOP ${n}`;
+}
+

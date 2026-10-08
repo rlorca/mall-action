@@ -316,6 +316,7 @@ export class MallWorld {
       return;
     }
 
+    this.run.tickPowers();
     this.stepPlayer(pad);
     this.stepCarsAndCrush(pad, false);
     this.stepBullets();
@@ -382,6 +383,7 @@ export class MallWorld {
           this.intro = null;
           this.controlFrame = this.frame;
           this.run.sfx('select');
+          this.showBanner(UI.mission, 220);
           p.safe = { x: p.x, floor: 0 };
         }
         break;

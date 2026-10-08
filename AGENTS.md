@@ -117,6 +117,42 @@ touch Web Audio. If audio cannot start the game must run fine.
 3. Gameplay change? Add or extend a rules test (pure, no browser). Then play it in a real browser at
    `http://localhost:5173/?debug=1&seed=1` with the CRT on and check the console for errors.
 
+## Where things live (quick map)
+
+| I want to... | Go to |
+|---|---|
+| add or change a joke / label | `src/content/copy.ts` (tests check it fits on screen) |
+| change the mall layout, shafts, escalators, lamp positions | `src/content/layout.ts` (test checks overlaps) |
+| add / retune a store | `src/content/stores.ts` + its room in `src/game/store/room.ts` + its song in `src/audio/songs/` |
+| tune spy fairness (first-shot delay, telegraph, dodge) | `src/game/mall/spies.ts` constants (`FIRST_SHOT_DELAY`, `AIM_FRAMES`, `DODGE_CHANCE`) + `src/game/difficulty.ts` |
+| tune elevators | `src/game/mall/cars.ts` (`DRIVE_SPEED`, `TRAVEL_SPEED`, `AUTO_WAIT`) |
+| change how a screen looks | `src/render/*View.ts`; its state machine is in `src/game/screens/` |
+| redraw a sprite | `src/art/*.ts` (look at it with `npx tsx scripts/sheet.ts <prefix> playtest-out/x.png 4`) |
+| step the game from a browser console | `?debug=1` then `__mall.step(60, 'RIGHT+A')`, `__mall.tap('START')`, `__mall.state()` |
+
+## Mall rules cheat-sheet (the tricky bits, all covered by tests in `src/game/mall/`)
+
+* **Shaft openings** (per car and floor): `here` (car level: walk in), `above` (grate: you can stand on it, a descending car crushes you
+  unless it was called for you), `blocked` (car body passing the doorway: solid), `pit` (roof at/below the floor: you fall; roof within
+  one floor = safe, further = fatal). Spies never enter pits; the automatic car never leaves while someone is inside.
+* **Shaft walls**: you can only cross a shaft wall at a floor's "door window" (feet within 30 px above that floor's surface). That is
+  what lets you jump out of a car roof, and what stops you walking through a moving car.
+* **Driving**: Up/Down while riding moves the car 1 px/frame (it passes floors without stopping); releasing between floors glides to the
+  next floor in that direction and stops exactly level with ONE `ding` (the ding is emitted on the moving->stopped transition only).
+* **Calling**: Up/Down beside or in an empty opening, or standing still there for 30 frames. A called car carries `protectFloor` so it
+  picks the caller up instead of crushing him.
+* **Death flow**: `hurtPlayer(cause, armourable)` -> dying animation (70 frames) -> `run.loseLife()` -> respawn at the last safe spot with
+  120 frames of blinking invulnerability, or `outcome = 'continue' | 'gameover'` for the Game.
+
 ## Gotchas
 
-(Filled in as they are discovered; see the end of this file.)
+* **Vitest/TypeScript versions**: this repo uses TypeScript 7, Vite 8, Vitest 5. `vite.config.ts` imports `defineConfig` from
+  `vitest/config` so the `test` block typechecks.
+* **Bot-style tests must behave like a player**: a scripted agent that walks straight over an open shaft falls in. `route.test.ts` waits
+  beside the opening and jump-kicks over pits.
+* **Boarding presses also drive**: the frame you press Down to board a car, the car already starts moving 1 px; tests should drive until
+  the car reaches a floor rather than assuming it starts at a floor.
+* **`player.cause` resets on respawn**: tests record causes through the rig (`rig.causes`) instead of reading the player after the fact.
+* **CRT shader**: curvature is zoom-compensated so the corners land exactly on the screen corners; do not increase `k` without checking
+  that the HUD text (top rows) is not clipped at the centre of the top edge.
+* **Integer scale is computed in device pixels** (`engine/scale.ts`): on Retina a 1280x800 window gives the same crisp scale as 2560x1600.
