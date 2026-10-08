@@ -134,11 +134,11 @@ names are puns and no logos or trade dress are used.
 | **Harness** | Claude Code 2.1.294 (CLI), default reasoning effort (not overridden) |
 | **Parallelism** | After the foundation (engine, content contracts, `Run`, architecture doc) was written and committed, the self-contained modules were delegated to 8 `general-purpose` subagents with strict file ownership, all inheriting Sonnet 5.5 (no model override): audio, characters/items art, mall-props art, storefront art, store-theme art, store rules + renderer, screens/HUD/splash, and mall NPCs/lights. The mall core, spies, level orchestration, Game scene machine, mall renderer, WebGL/CRT presenter, browser shell, CI and docs were written by the main session. |
 | **Human interventions** | None beyond the one instruction (follow the brief, create a dedicated branch). No design steering. |
-| **Size** | about 20k lines of source and 9k lines of tests; 751 tests in 45 files; production bundle about 286 kB (94 kB gzip) |
+| **Size** | about 20k lines of source and 9k lines of tests; 754 tests in 46 files; production bundle about 286 kB (94 kB gzip) |
 
 **What was verified, and how**
 
-* `npm test` (751 tests, Node only), `npm run typecheck`, `npm run build`.
+* `npm test` (754 tests, Node only), `npm run typecheck`, `npm run build`.
 * A **scripted player** (`src/game/bot.ts`, presses buttons only) completes the game in the test suite: title, zip-line arrival, all six
   stores, parking, level clear, loop 2. It found a real bug (an invisible shaft wall on floors a shaft does not serve) that unit tests had missed.
   The same bot runs in the real page (`__mall.bot`).
@@ -164,7 +164,7 @@ names are puns and no logos or trade dress are used.
 * **Nobody has listened to the music.** The audio was verified numerically (every track renders, does not clip, the ambient mall bed is
   clearly quieter) and through the real synth in headless Chrome, but taste is untested. `npx tsx scripts/render-song.ts <id>` writes a WAV.
 * The Chrome extension was not connected in this session, so the browser playtests used `playwright-core` against the locally
-  installed Chrome (a dev-only dependency; CI does not use it).
+  installed Chrome (a dev-only dependency; CI does not use it). CI uses Node 22: vitest needs >= 22.12 and `setup-node` 22 resolves to the latest 22.x, but the local runs were on Node 26.
 * The gamepad path was tested with a faked `navigator.getGamepads`, not hardware.
 * The GitHub Pages deployment itself was not exercised (nothing was pushed from this session); the workflow follows the repo's
   convention and the build was verified under a sub-path locally.
