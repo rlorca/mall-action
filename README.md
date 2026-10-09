@@ -12,6 +12,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | Claude Opus 5.5 | [`opus-5-5`](../../tree/opus-5-5) | https://rlorca.github.io/mall-action/opus-5.5/ |
 | Claude Sonnet 5.5 | [`sonnet-5-5`](../../tree/sonnet-5-5) | https://rlorca.github.io/mall-action/sonnet-5.5/ |
 | GPT-6 Sol | [`gpt-6-sol`](../../tree/gpt-6-sol) | https://rlorca.github.io/mall-action/gpt-6.sol/ |
+| GPT-6 Astra | [`gpt-6-astra`](../../tree/gpt-6-astra) | https://rlorca.github.io/mall-action/gpt-6.astra/ |
 | GPT-6.1 Sol | [`gpt-6-1-sol`](../../tree/gpt-6-1-sol) | https://rlorca.github.io/mall-action/gpt-6.1-sol/ |
 | Claude Fable 5.1 | [`fable-5-1`](../../tree/fable-5-1) | https://rlorca.github.io/mall-action/fable-5.1/ |
 | Claude Haiku 4.5 | [`haiku-4-5`](../../tree/haiku-4-5) | https://rlorca.github.io/mall-action/haiku-4.5/ |
