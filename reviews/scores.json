@@ -15,7 +15,7 @@
       "written": "2026-09-29",
       "commit": "c15cebfb129a3bbf3f9fa75764a70f0c68a7b6e0",
       "scores": { "gameDesign": 9.0, "architecture": 9.2, "codeDesign": 8.8, "cleanliness": 8.8, "completeness": 9.5 },
-      "note": "The most convincing mall: rich art, fair encounters, and broad coverage. Strong rule boundaries; the store module is oversized.",
+      "note": "A convincing mall: rich art, fair encounters, and broad coverage. Strong rule boundaries; the store module is oversized.",
       "assessment": {
         "gameDesign": "Detailed storefronts, lively characters, themed rooms, and clear search feedback make the caper feel coherent. Entry protection and guard delays improve fairness. Busy patterns and a dense HUD sometimes compete with the action.",
         "architecture": "A frame-driven Session owns the game flow; seeded rules and typed events are separated from browser, audio, and drawing. The boundaries are consistently exercised in Node. Some presentation state lives in the overlay rather than the simulation.",
@@ -216,6 +216,28 @@
         { "path": "src/mall/world.ts", "label": "Wet-floor check without a floor", "line": 663 },
         { "path": "src/core/powerups.ts", "label": "Power-up tick never called", "line": 66 },
         { "path": "src/render/screens.ts", "label": "Game Over shutters", "line": 232 }
+      ]
+    },
+    {
+      "name": "Claude Sonnet 5.5 + Fable 5.1 advisor", "branch": "sonnet-5-5-fable-5-1", "folder": "sonnet-5.5-fable-5.1",
+      "technology": "TypeScript + Vite, software framebuffer with a WebGL CRT presenter, Web Audio synth",
+      "written": "2026-10-08",
+      "commit": "94755064ac8172c81a4f21610becfef39d7411b4",
+      "scores": { "gameDesign": 9.2, "architecture": 9.3, "codeDesign": 9.0, "cleanliness": 9.0, "completeness": 9.6 },
+      "note": "The most legible mall and the first full route replayed in the live build. Plug-in mall modules; two 1,200-line worlds remain.",
+      "assessment": {
+        "gameDesign": "Clean, readable storefronts with a wide corridor palette, a legible HUD with an LED floor panel and scrolling store marquee, and well-staged screens: a SPYGRAM card, a receipt-style tally, THE DAILY MALL, a vector-grid continue countdown and typewriter shutters at game over. Elevators glide, floor banners announce, the directory map is clear and shows the current store from inside a room. Fairness was tuned with scripted players over 40 seeds, not with a human. A cleared or closed store door gives no feedback on Up, and the Black Friday flash overlaps the copyright line on the title. Survivability by a human was not tested here.",
+        "architecture": "A scene machine (Game) owns a Level that holds the mall, the current store, the overlays and the fades, so the map and pause work identically in both views. Rules are pure and frame-based, emit sound requests through the Run and expose music through state; a grep test keeps the rule layers free of the DOM, Math.random and timers. Mall extras (lamps, janitor, walkers, cop, kiosks, booth, fountains) are plug-in modules with typed state the renderer reads, which keeps the core world smaller than its siblings. The mall and store worlds are still about 1,200 lines each.",
+        "codeDesign": "The elevator model (drive, glide, call protection, occupancy, grate and pit states), shaft-wall door windows, tile collision with corner assist, a tap queue that preserves fast taps across catch-up steps, and a store room system that already supports any size with a camera are all well modelled and tested. A scripted player that only presses buttons doubles as a routing proof and a fairness probe. Spy AI is deliberately simple, the cop ignores escalators, and a few interactions fall through silently.",
+        "cleanliness": "Strict TypeScript with no escape hatches, no stray TODOs or console calls, every line of copy in one module with fit tests, named constants for all timings, and comments that explain gameplay decisions. The README and AGENTS.md are precise about what was and was not verified. There is no lint or format configuration and unused locals are not flagged, and the two world modules are long.",
+        "completeness": "Every screen, mall fixture, store extra, power-up, song slot and debug option from the brief is present, and 754 tests cover rules, art contracts, music theory and seeded playthroughs. This review drove the branch's own scripted player, kept invulnerable, through the whole route in the published sub-path build, which proves routing and screen flow rather than survivability: splash, title, arrival, walking, an elevator ride and escalator, a lamp shot, all six package stores, the refused re-entry of a cleared store, the exit firing once, the tally, newspaper and post, a harder loop 2, continue, game over, the Konami code and the GameStonk easter egg, with an empty console. Music was checked numerically by the author and not listened to here."
+      },
+      "verification": { "tests": 754, "build": "Pass; strict typecheck included", "browser": "Real-time splash, title, arrival, walking, elevator ride, floor banner, CRT and mute toggles, map and pause passed on the published build; stepped checks with the scripted player kept invulnerable completed the full six-package route to level clear, loop 2, continue, game over, Konami, easter egg, map inside a store, escalator and lamp shot with no console messages" },
+      "evidence": [
+        { "path": "src/game/level.ts", "label": "Level owns overlays, fades and store transitions" },
+        { "path": "src/game/mall/modules/index.ts", "label": "Plug-in mall modules" },
+        { "path": "src/game/mall/world.ts", "label": "Silent cleared-store door", "line": 920 },
+        { "path": "src/game/playthrough.test.ts", "label": "Scripted full playthrough" }
       ]
     }
   ]
