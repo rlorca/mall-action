@@ -8,5 +8,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // The soak tests are CPU-heavy; shared CI runners run them several times slower than a laptop.
+    testTimeout: 60000,
   },
 });
