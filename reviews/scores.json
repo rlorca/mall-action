@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-09-30",
+  "reviewedAt": "2026-10-09",
   "scale": 10,
   "criteria": [
     { "key": "gameDesign", "label": "Game design", "description": "Playability, fairness, feedback, pacing, visual readability, and how the mall and store mechanics work together." },
@@ -185,6 +185,27 @@
         { "path": "src/main.ts", "label": "Broken browser timing loop" },
         { "path": "src/rules.ts", "label": "Rule integration" },
         { "path": "src/store.ts", "label": "Store interactions" }
+      ]
+    },
+    {
+      "name": "Claude Haiku 5.5", "branch": "haiku-5-5", "folder": "haiku-5.5",
+      "technology": "TypeScript + Vite, Canvas 2D with a row-based CRT effect, Web Audio synth",
+      "commit": "1ec98345999f5393af9fe5369fb5d351518f3c1a",
+      "scores": { "gameDesign": 6.2, "architecture": 7.4, "codeDesign": 6.5, "cleanliness": 7.4, "completeness": 7.5 },
+      "note": "A complete, playable caper with clean rule boundaries. Power-ups never expire, the map breaks stores, and Game Over hides behind shutters.",
+      "assessment": {
+        "gameDesign": "The whole loop plays: zip-line arrival, elevators and escalators, timed searches with a progress bar, banners and popups, first-visit lines, level clear and harder loops, with telegraphed shots, store grace and respawn invulnerability for fairness. Opening the map inside a store leaves the room frozen on screen while the mall rules keep moving the agent, the wet-floor slide applies on every floor and can block the getaway wagon, timed power-ups never run out, and the Game Over screen ends fully covered by its shutters. Dark backdrops, abstract window displays and overflowing two-line signs make the mall less readable than the strongest entries.",
+        "architecture": "Pure, seeded rules in core, mall and store modules emit typed events that a state-reading renderer and an audio layer consume; the input mapper and the splash are standalone and the browser shell is thin. The roughly 1,450-line mall module concentrates most behaviour, the game never ticks the power-up timers it owns, the map screen ignores which screen opened it, and banners persist across scene changes. Debug mode pauses real time, so the hooks cannot observe live play.",
+        "codeDesign": "The elevator state machine, printed-letter input with exact key release and a tap queue, tile collision with corner assist, and once-per-volley dodge rolls are well modelled. The wet-floor check ignores floors, closing the map inside a store returns to the mall with the room still attached, timed power-ups last until death, the shutter animation covers the Game Over text, and the room system is fixed at 16 by 11 tiles without a camera.",
+        "cleanliness": "Strict TypeScript with no escape hatches, short focused modules outside the mall world, readable names, and comments that explain gameplay decisions. Copy is duplicated inside rule modules despite the stated single-source rule, several sound effects, the shake output and some copy constants are defined but never used, and the README contradicts itself about the browser playtest.",
+        "completeness": "Nearly every screen, mall fixture, store extra, power-up, song slot and debug option from the brief is present, with 115 tests across the listed rule areas; the strict build and the published sub-path deployment work, and browser checks logged no console errors. Real-time play covered splash, title, arrival, walking, elevator boarding, the map, pause and the CRT and mute toggles; stepped checks covered store entry, a package search, an elevator ride to the parking level, level clear, continue and game over. The unticked power-up timers, the map inside stores, the floor-blind wet patch and the hidden Game Over text are working-coverage gaps; the room camera, photo strip and automatic-car ride are simplified."
+      },
+      "verification": { "tests": 115, "build": "Pass; strict typecheck included", "browser": "Real-time splash, title, arrival, walking, elevator boarding, map, pause and toggles passed; prepared store entry, package search, an elevator ride to the parking level, level clear, continue and game over stepped; map-in-store, wet-floor and shutter defects reproduced" },
+      "evidence": [
+        { "path": "src/core/game.ts", "label": "Map screen returns to the mall", "line": 125 },
+        { "path": "src/mall/world.ts", "label": "Wet-floor check without a floor", "line": 663 },
+        { "path": "src/core/powerups.ts", "label": "Power-up tick never called", "line": 66 },
+        { "path": "src/render/screens.ts", "label": "Game Over shutters", "line": 232 }
       ]
     }
   ]
