@@ -239,6 +239,29 @@
         { "path": "src/game/mall/world.ts", "label": "Silent cleared-store door", "line": 920 },
         { "path": "src/game/playthrough.test.ts", "label": "Scripted full playthrough" }
       ]
+    },
+    {
+      "name": "Claude Sonnet 5.5 + Opus 5.5 advisor", "branch": "sonnet-5-5-opus-5-5", "folder": "sonnet-5.5-opus-5.5",
+      "technology": "TypeScript + Vite, Canvas 2D with a WebGL CRT presenter, Web Audio synth",
+      "written": "2026-10-09",
+      "commit": "aca8cc817c2e54ff78387953c0457df6e183a231",
+      "scores": { "gameDesign": 9.1, "architecture": 9.1, "codeDesign": 8.9, "cleanliness": 8.6, "completeness": 9.6 },
+      "note": "A legible mall whose own bot finished the live route without dying. Untyped events, unused-import hacks, and car deaths respawn far away.",
+      "assessment": {
+        "gameDesign": "Clean pastel storefronts whose windows read at a glance, a wide corridor palette, a 16 px HUD with an LED floor panel and a store marquee, a floor banner on every stop, and well-staged screens: the SPYGRAM card, a MISSION COMPLETE drive-off with the receipt-waving spy, a receipt-style tally, THE DAILY MALL and a typewriter message that stays readable over the game-over shutters. Searching is forgiving, with a progress bar under the store name. Fairness was tuned with a non-dodging bot over 24 seeds, and the same bot finished loop 1 on seed 5 in the live build without a death. The safe spot is never updated while riding, so a death inside an elevator car respawns the agent where it boarded; in real-time play a death at 2F sent the agent back to the roof. Checkerboard store floors are busier than the mall.",
+        "architecture": "A Game state machine owns a RunState shared by the mall and the stores, a Mall and a StoreRoom; the map and pause remember which view is underneath, power-up timers tick in both views and stop on the overlays. The rules layer has no DOM, timers or Math.random, by inspection rather than a guard test, and emits plain events through one queue; the renderer keeps its own door, popup and toast state clocked by simulation frames, so visuals do not depend on the display refresh rate. Spies and NPCs are split out of the 1,300-line mall module and the store room system takes any size with a camera. Event payloads are untyped and consumers cast them.",
+        "codeDesign": "The elevator model (glide, one ding per stop, call protection, grate, pit and roof states), the input mapper with printed-letter bindings, exact release and a tap queue, tile collision with corner assist, once-per-volley spy dodges, lamps placed by computing the corridor gaps from the geometry, and a goal-based BFS bot that doubles as a softlock detector are all well modelled and tested. The safe-spot rule ignores elevator rides, spy AI is simple, the cop ignores escalators, and one hazard check carries an empty branch.",
+        "cleanliness": "Strict TypeScript, every line of copy in one module with fit tests, named frame constants, comments that explain decisions, and a README and AGENTS.md that record the advisor consultations and the gotchas. Unused locals are not flagged, so a dozen void statements silence unused imports; event data is typed as any, there is a placeholder draw call and an empty if block, and there is no lint or format configuration.",
+        "completeness": "Every screen, mall fixture, store extra, power-up, song slot and debug option from the brief is present, and 240 tests cover rules, input layouts, art contracts, songs, copy fit, refresh-rate timing, a 24-seed fairness run and a scripted full level on 8 seeds. This review played the published sub-path build in real time through splash, title, arrival, walking, an elevator ride, the map, pause and the CRT and mute toggles, then drove the branch's own scripted bot, left vulnerable, through the full six-package route on seed 5 to level clear, THE DAILY MALL, the post and loop 2 with no deaths, matching the Node trajectory frame for frame; continue, game over, the Konami code, the GameStonk cave, the map inside a store, an escalator ride and a lamp shot were stepped, with an empty console. Music was not listened to."
+      },
+      "verification": { "tests": 240, "build": "Pass; strict typecheck included", "browser": "Real-time splash, title, arrival, walking, elevator ride, floor banner, map, pause, CRT and mute toggles passed on the published build; the branch's scripted bot, left vulnerable, completed the full six-package route to level clear and loop 2 with no deaths; continue, game over, Konami, GameStonk cave, map inside a store, escalator and lamp shot stepped with no console messages; the roof respawn after a death inside a car was seen live and reproduced in Node" },
+      "evidence": [
+        { "path": "src/core/game.ts", "label": "Screen machine and shared run state" },
+        { "path": "src/core/mall.ts", "label": "Safe spot not updated while riding", "line": 622 },
+        { "path": "src/core/input.ts", "label": "Printed-letter bindings and tap queue" },
+        { "path": "src/render/clock.ts", "label": "Refresh-rate independent visuals" },
+        { "path": "tests/route.test.ts", "label": "Scripted full level on 8 seeds" }
+      ]
     }
   ]
 }
