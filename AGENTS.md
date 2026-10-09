@@ -61,6 +61,7 @@ benchmark; never merge branches; do not edit `one-shot-prompt.md`) are in `AGENT
 npm test          # 230+ tests: rules, copy, art, layout, a scripted bot that plays the WHOLE level on 8 seeds
 npm run build     # tsc --noEmit (tests included) + vite build
 npm run dev       # then open /?debug=1&seed=5   (window.__game.step(n, held) / .pause() / .render())
+npx vite-node scripts/dump-sprites.ts sheet.png agent. 4   # PNG sheet of the sprites whose name starts with 'agent.'
 ```
 
 A change to rules is not done until you have looked at it in a real browser (CRT on, the default): splash -> title ->

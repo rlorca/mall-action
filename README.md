@@ -87,6 +87,7 @@ URL options (also handy for automated playtests):
 | `?debug=1` | skips the studio splash and exposes `window.__game` (`step(n, held)`, `pause()`, `render()`, the `game` object ...) |
 | `?gallery=1` | shows every sprite, animated (Left/Right to change page) |
 | `?crt=0` / `?crt=1` | force the CRT effect off / on for this visit |
+| `?webgl=0` | pretend WebGL is missing, to see the fallback message (the game still runs, without the CRT effect) |
 
 Example: `window.__game.pause(true); __game.step(60, { right: true });` steps the simulation 60 frames holding Right.
 

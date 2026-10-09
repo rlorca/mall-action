@@ -77,9 +77,12 @@ export class Crt {
     readonly canvas: HTMLCanvasElement,
     readonly w = 256,
     readonly h = 240,
+    /** Pretend WebGL is missing (`?webgl=0`) to test the fallback message. */
+    forceNoGl = false,
   ) {
     let gl: WebGLRenderingContext | null = null;
     try {
+      if (forceNoGl) throw new Error('webgl disabled by ?webgl=0');
       gl = (canvas.getContext('webgl', { alpha: false, antialias: false, preserveDrawingBuffer: false }) as WebGLRenderingContext | null) ?? null;
     } catch {
       gl = null;

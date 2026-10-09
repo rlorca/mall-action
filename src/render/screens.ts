@@ -84,13 +84,14 @@ export function drawTitle(g: Gfx, game: Game, f: number): void {
   // Konami: BLACK FRIDAY!
   if (t.bfFlash > 0) {
     const flash = (f >> 2) % 2 === 0;
-    g.rect(0, 60, 256, 54, flash ? 0x16 : 0x28);
-    g.rect(0, 60, 256, 2, 0x30);
-    g.rect(0, 112, 256, 2, 0x30);
-    g.text(MISC.blackFriday1, 128, 66, flash ? 0x28 : 0x16, { align: 'center', scale: 3, shadow: 0x0f });
-    g.text(MISC.blackFriday2, 128, 96, 0x30, { align: 'center', scale: 1, shadow: 0x0f });
-    g.text('%', 20, 94, 0x30, { scale: 2 });
-    g.text('%', 232, 94, 0x30, { scale: 2 });
+    const y0 = 88;
+    g.rect(0, y0, 256, 54, flash ? 0x16 : 0x28);
+    g.rect(0, y0, 256, 2, 0x30);
+    g.rect(0, y0 + 52, 256, 2, 0x30);
+    g.text(MISC.blackFriday1, 128, y0 + 6, flash ? 0x28 : 0x16, { align: 'center', scale: 3, shadow: 0x0f });
+    g.text(MISC.blackFriday2, 128, y0 + 36, 0x30, { align: 'center', scale: 1, shadow: 0x0f });
+    g.text('%', 20, y0 + 34, 0x30, { scale: 2 });
+    g.text('%', 232, y0 + 34, 0x30, { scale: 2 });
   }
 }
 

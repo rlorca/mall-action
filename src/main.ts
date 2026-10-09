@@ -36,7 +36,7 @@ function boot(): void {
   let crt: Crt;
   try {
     gfx = new Gfx();
-    crt = new Crt(canvas);
+    crt = new Crt(canvas, 256, 240, params.get('webgl') === '0');
   } catch (e) {
     nogl.style.display = 'block';
     nogl.textContent = 'MALL ACTION needs a browser with HTML canvas support. Please use a recent desktop Chrome, Firefox, Edge or Safari.';
@@ -44,7 +44,7 @@ function boot(): void {
   }
   if (!crt.ok) {
     nogl.style.display = 'block';
-    nogl.textContent = 'WebGL is not available in this browser, so the CRT screen effect is disabled. The game runs in plain mode. Enable hardware acceleration / WebGL for the full arcade look.';
+    nogl.textContent = 'WebGL is not available in this browser, so the CRT screen effect is disabled and the game runs in plain mode. Turn on hardware acceleration / WebGL (or try a recent Chrome, Firefox, Edge or Safari) for the full arcade look.';
   }
   const stored = safeGet('mallaction.crt');
   crt.enabled = stored === null ? true : stored === '1';
@@ -73,9 +73,11 @@ function boot(): void {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (isCrtKey(e)) {
       if (!e.repeat) {
-        crt.enabled = !crt.enabled;
-        safeSet('mallaction.crt', crt.enabled ? '1' : '0');
-        renderer.showToast(crt.enabled ? 'CRT ON' : 'CRT OFF');
+        if (crt.ok) {
+          crt.enabled = !crt.enabled;
+          safeSet('mallaction.crt', crt.enabled ? '1' : '0');
+          renderer.showToast(crt.enabled ? 'CRT ON' : 'CRT OFF');
+        } else renderer.showToast('CRT NEEDS WEBGL');
         audio.unlock();
       }
       e.preventDefault();
