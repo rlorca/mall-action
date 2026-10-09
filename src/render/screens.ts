@@ -153,7 +153,7 @@ export function drawSpygram(g: Gfx, post: SpygramPost, t: number, photo: 'roof' 
   // one comment
   g.rect(x + 6, py + 146, w - 12, 1, 0x10);
   g.text(post.comment, x + 8, py + 154, 0x13);
-  g.text(UI.agoStamp, x + w - 8, py + 172, 0x10, { align: 'right', font: 3 });
+  g.text(UI.agoStamp, x + w - 8, py + 164, 0x10, { align: 'right', font: 3 });
 }
 
 // ================================================================ map overlay (MALL DIRECTORY)
