@@ -134,14 +134,15 @@ own branch, so the workflow triggers on this branch instead - see `AGENTS.md` on
 | Effort | high |
 | Harness | Claude Code 2.1.295 |
 | Date | 2026-10-09 |
-| Duration | started 07:18 UTC, finished 08:29 UTC: about **1 h 11 min** of wall-clock time, including two advisor reviews, the real-browser playtests and the review fixes |
+| Duration | started 07:18 UTC, finished 08:29 UTC: about **1 h 11 min** of wall-clock time, including three advisor consultations, the real-browser playtests and the review fixes |
 | Prompt | `one-shot-prompt.md` from `main`, given as the only task, from an empty directory |
 | Interventions | none beyond approving tool calls. The user asked for a dedicated branch with the advisor in its name. |
 
 Notes from the run: the advisor was consulted before the architecture was fixed (build a vertical slice first, keep the
-rules/rendering split) and again at the end (it caught state that must persist across loops, a session-only high score,
-copy living outside `copy.ts`, and the need for an end-to-end run). A scripted bot plays the whole level (6 packages,
-the parking level, level clear, loop 2) on 8 seeds in the test suite.
+rules/rendering split), at a mid-way checkpoint (it caught state that must persist across loops, a session-only high
+score, copy living outside `copy.ts`, and the need for an end-to-end run) and at the end (it caught visuals that ran at
+the display's refresh rate instead of simulation time, and the unmapped-letter key fallback). A scripted bot plays the
+whole level (6 packages, the parking level, level clear, loop 2) on 8 seeds in the test suite.
 
 ## Disclaimer
 
