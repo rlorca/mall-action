@@ -30,6 +30,18 @@ const join = (...s: string[]) => s.join(' ');
 /** Cycle `notes` for `count` tokens of `len` steps each. */
 const cyc = (notes: string[], count: number, len = 1) => Array.from({ length: count }, (_, i) => `${notes[i % notes.length]}:${len}`).join(' ');
 
+/** The heroic title melody (8 bars, 128 steps): the elevator muzak plays the same tune, slower and softer. */
+export const TITLE_MELODY = [
+  'G4:4 C5:4 E5:4 G5:2 E5:2',
+  'D5:4 B4:4 D5:4 G5:4',
+  'E5:4 A4:4 C5:4 E5:4',
+  'F5:4 C5:4 A4:4 C5:4',
+  'G4:2 C5:2 E5:4 G5:4 C6:4',
+  'B5:4 G5:4 D5:4 B4:4',
+  'A5:4 F5:4 C5:4 A4:4',
+  'G4:2 B4:2 D5:2 G5:2 B5:6 r:2',
+].join(' ');
+
 export const SONGS: Record<string, Song> = {
   // ------------------------------------------------------------------ title: a heroic theme (C major / A minor), 8 bars
   title: {
@@ -41,16 +53,7 @@ export const SONGS: Record<string, Song> = {
       duty: 0.5,
       vol: 0.5,
       unit: 2,
-      notes: join(
-        'G4:4 C5:4 E5:4 G5:2 E5:2',
-        'D5:4 B4:4 D5:4 G5:4',
-        'E5:4 A4:4 C5:4 E5:4',
-        'F5:4 C5:4 A4:4 C5:4',
-        'G4:2 C5:2 E5:4 G5:4 C6:4',
-        'B5:4 G5:4 D5:4 B4:4',
-        'A5:4 F5:4 C5:4 A4:4',
-        'G4:2 B4:2 D5:2 G5:2 B5:6 r:2',
-      ),
+      notes: TITLE_MELODY,
     },
     p2: {
       duty: 0.25,
@@ -115,30 +118,35 @@ export const SONGS: Record<string, Song> = {
     noise: { vol: 0.32, unit: 1, notes: rep('k h h h s h h h k h k h s h h h', 4) },
   },
 
-  // ------------------------------------------------------------------ elevator muzak
+  // ------------------------------------------------------------------ elevator muzak: the TITLE theme, slowed down,
+  // on a soft 12.5% pulse over maj7 / min7 arpeggios and a walking bass
   elevator: {
     name: 'elevator',
-    bpm: 92,
+    bpm: 84,
     loop: true,
     vol: 0.5,
-    p1: {
-      duty: 0.5,
-      vol: 0.26,
-      unit: 2,
-      notes: join('A4:4 C5:4 E5:6 C5:2', 'F5:4 E5:4 D5:4 C5:4', 'D5:4 F5:4 A5:6 F5:2', 'G5:4 F5:4 E5:4 r:4', 'C5:4 E5:4 A5:6 G5:2', 'F5:4 A5:4 C6:4 A5:4', 'G5:4 Bb5:4 A5:4 F5:4', 'E5:6 D5:2 C5:8'),
-    },
+    p1: { duty: 0.125, vol: 0.22, unit: 2, notes: TITLE_MELODY },
     p2: {
-      duty: 0.125,
-      vol: 0.16,
+      duty: 0.5,
+      vol: 0.1,
       unit: 2,
-      notes: join(cyc(['F4', 'A4', 'C5', 'E5'], 8, 2), cyc(['D4', 'F4', 'A4', 'C5'], 8, 2), cyc(['G4', 'Bb4', 'D5', 'F5'], 8, 2), cyc(['C4', 'E4', 'G4', 'Bb4'], 8, 2), cyc(['F4', 'A4', 'C5', 'E5'], 8, 2), cyc(['A3', 'C4', 'E4', 'G4'], 8, 2), cyc(['Bb3', 'D4', 'F4', 'A4'], 8, 2), cyc(['C4', 'E4', 'G4', 'Bb4'], 8, 2)),
+      notes: join(
+        cyc(['C4', 'E4', 'G4', 'B4'], 8, 2), // Cmaj7
+        cyc(['G3', 'B3', 'D4', 'F#4'], 8, 2), // Gmaj7
+        cyc(['A3', 'C4', 'E4', 'G4'], 8, 2), // Am7
+        cyc(['F3', 'A3', 'C4', 'E4'], 8, 2), // Fmaj7
+        cyc(['C4', 'E4', 'G4', 'B4'], 8, 2),
+        cyc(['G3', 'B3', 'D4', 'F#4'], 8, 2),
+        cyc(['F3', 'A3', 'C4', 'E4'], 8, 2),
+        cyc(['G3', 'B3', 'D4', 'F4'], 8, 2), // G7
+      ),
     },
     tri: {
-      vol: 0.55,
+      vol: 0.5,
       unit: 4,
-      notes: join('F2 C3 F2 C3', 'D2 A2 D2 A2', 'G2 D3 G2 D3', 'C2 G2 C2 G2', 'F2 C3 F2 C3', 'A2 E3 A2 E3', 'Bb2 F3 Bb2 F3', 'C2 G2 C2 G2'),
+      notes: join('C3 E3 G3 E3', 'G2 B2 D3 B2', 'A2 C3 E3 C3', 'F2 A2 C3 A2', 'C3 E3 G3 E3', 'G2 B2 D3 B2', 'F2 A2 C3 A2', 'G2 B2 D3 G2'),
     },
-    noise: { vol: 0.08, unit: 4, notes: rep('r h r h', 8) },
+    noise: { vol: 0.06, unit: 4, notes: rep('r h r h', 8) },
   },
 
   // ------------------------------------------------------------------ stores (one distinct song per open store)

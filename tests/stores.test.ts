@@ -321,21 +321,23 @@ describe('guards', () => {
   it('guards give a short grace period before shooting someone who just walked in', () => {
     const { store, d, run } = makeStore('hotspy', 1);
     store.introLines = [];
-    for (const g of store.guards) g.frozen = 0;
-    // line a spy up with the agent in a clear corridor
+    store.guards.forEach((g) => (g.frozen = 0));
+    // line a spy up with the agent along a clear corridor on the bottom row
     const g = store.guards[0];
-    g.x = store.p.x;
-    g.y = store.p.y - 80;
+    store.guards = [g];
+    g.x = 48;
+    g.y = store.p.y;
     g.cd = 0;
-    const shotFrames: number[] = [];
-    for (let i = 0; i < 300; i++) {
+    g.state = 'think';
+    expect(store.lineTo(g, store.hitbox().x + 5, store.hitbox().y + 4)).toBe('right');
+    run.powers.invincible = { kind: 'cinnabomb', frames: 99999, total: 99999 }; // keep the test agent alive
+    let first = -1;
+    for (let i = 0; i < 400 && first < 0; i++) {
       store.step(d.frame({}));
-      for (const e of run.events.drain()) if (e.kind === 'enemyShot') shotFrames.push(i);
-      store.p.state = 'walk';
-      run.powers.invincible = { kind: 'cinnabomb', frames: 9999, total: 9999 };
+      if (run.events.drain().some((e) => e.kind === 'enemyShot')) first = i;
     }
-    // (the agent is invincible here only to keep the test running)
-    if (shotFrames.length) expect(shotFrames[0]).toBeGreaterThanOrEqual(GRACE_FRAMES - 2);
+    expect(first).toBeGreaterThan(-1); // he DOES shoot ...
+    expect(first).toBeGreaterThanOrEqual(GRACE_FRAMES); // ... but only after the grace period
   });
   it('security bots kill on contact and take 3 hits; spies take 1', () => {
     const { store, d, run } = makeStore('radioshock', 1);

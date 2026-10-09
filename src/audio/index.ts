@@ -57,7 +57,7 @@ export class GameAudio {
         else if (game.mall) {
           const m = game.mall;
           const started = m.controlGiven;
-          if (started) want = m.alarm ? 'alarm' : m.inElevator() && m.ridingCar ? 'elevator' : 'mall';
+          if (started) want = m.alarm ? 'alarm' : m.inElevator() ? 'elevator' : 'mall';
         }
         if (game.screen !== 'mall') duck = 0.25;
         break;
@@ -326,11 +326,9 @@ export class GameAudio {
         this.playJingle('clear');
         break;
       case 'gameOver':
-        this.playJingle('gameover');
-        E.tone({ dur: 0.5, f0: 523, vol: 0.1, wave: 'tri' });
-        break;
+        break; // the 'pa' chime that follows opens the closing announcement
       case 'gameOverFinal':
-        E.tone({ dur: 0.3, f0: 180, f1: 90, vol: 0.2, wave: 'p25' });
+        this.playJingle('gameover');
         break;
       case 'blackFriday':
         this.arp([523, 659, 784, 1047, 784, 1047, 1319, 1568], 0.07, 0.08, 0.2);

@@ -13,7 +13,7 @@ export const LIMITS = {
   headline: 26,
   /** PA announcements are wrapped into banner lines of this width. */
   paLine: 30,
-  banner: 36,
+  banner: 40,
 } as const;
 
 // ---------------------------------------------------------------- SPYGRAM
@@ -227,6 +227,76 @@ export const POWERUP_NAMES = {
   pretzel: 'SOFT PRETZEL',
 } as const;
 
+
+// ---------------------------------------------------------------- UI labels (every on-screen word lives here)
+export const UI = {
+  titleWord1: 'MALL',
+  titleWord2: 'ACTION',
+  hint1: 'ARROWS:MOVE  Z:SHOOT  X:JUMP/SEARCH',
+  hint2: 'SHIFT:MAP  ENTER:PAUSE  C:CRT  M:MUTE',
+  hiScore: 'HI-SCORE',
+  score: 'SCORE',
+  blackFridayMode: 'BLACK FRIDAY MODE',
+  spygram: 'SPYGRAM',
+  spygramHandle: '@AGENT_RED',
+  likes: 'LIKES',
+  agoStamp: '2M AGO',
+  youAreHere: 'YOU ARE HERE',
+  legendPackage: 'PACKAGE',
+  legendCleared: 'CLEARED',
+  legendPowerup: 'POWER-UP',
+  legendClosed: 'CLOSED',
+  legendCar: 'CAR',
+  legendYou: 'YOU',
+  legendRadar: 'RADAR',
+  exit: 'EXIT',
+  items: 'ITEMS: ',
+  itemsNone: 'ITEMS: NONE YET',
+  pause: 'PAUSE',
+  missionComplete: 'MISSION COMPLETE!',
+  levelClear: 'LEVEL CLEAR!',
+  packages: 'PACKAGES',
+  time: 'TIME',
+  timeBonus: 'TIME BONUS',
+  clearBonus: 'CLEAR BONUS',
+  loop: 'LOOP',
+  go: 'GO!',
+  filePhoto: 'FILE PHOTO',
+  lateEdition: 'LATE EDITION  *  25 CENTS',
+  newsFiller: 'MALL WALKERS CLUB MEETS',
+  continuesLeft: 'CONTINUES LEFT: ',
+  thanks: 'THANKS FOR SHOPPING',
+  pressAnyButton: 'PRESS ANY BUTTON',
+  directory: 'DIRECTORY',
+  kioskNearest: 'NEAREST PACKAGE: FLASHING',
+  kioskAllFound: 'ALL PACKAGES FOUND - GO TO P!',
+  photoStrip: 'PHOTO STRIP',
+  extraLife: 'EXTRA LIFE!',
+  armorBroke: 'ARMOR BROKE!',
+  pressToSearch: 'PRESS X TO SEARCH',
+  searching: 'SEARCHING...',
+  alarmHud: 'ALARM',
+  pkgHud: 'PKG',
+} as const;
+
+/** Short names for the 16 px HUD strip (tiny font). */
+export const POWERUP_HUD_NAMES = {
+  rapid: 'RAPID FIRE',
+  spread: 'SPREAD SHOT',
+  armor: 'ARMOR',
+  sneakers: 'SNEAKERS',
+  radar: 'RADAR',
+  oneup: '1-UP',
+  cinnabomb: 'CINNABOMB',
+  juice: 'JULI-OOZE',
+  pretzel: 'PRETZEL',
+} as const;
+
+export const packagesLeftText = (n: number) => `PACKAGES LEFT: ${n}`;
+export const packageNText = (n: number) => `PACKAGE ${n}/6`;
+export const youGotText = (item: string) => `YOU GOT: ${item}`;
+export const nextLoopText = (n: number) => `NEXT: LOOP ${n} - HARDER`;
+
 /** Every line that must respect a length limit, labelled; used by tests. */
 export function allCopyChecks(): { label: string; text: string; max: number }[] {
   const out: { label: string; text: string; max: number }[] = [];
@@ -245,12 +315,17 @@ export function allCopyChecks(): { label: string; text: string; max: number }[] 
   }
   HEADLINES.forEach((h, i) => wrapLines(h, LIMITS.headline).forEach((l, j) => out.push({ label: `headline#${i} line${j}`, text: l, max: LIMITS.headline })));
   PA_LINES.forEach((h, i) => wrapLines(h, LIMITS.paLine).forEach((l, j) => out.push({ label: `pa#${i} line${j}`, text: l, max: LIMITS.paLine })));
-  JOKE_ITEMS.forEach((t, i) => out.push({ label: `jokeItem#${i}`, text: `YOU GOT: ${t}`, max: LIMITS.banner }));
+  JOKE_ITEMS.forEach((t, i) => out.push({ label: `jokeItem#${i}`, text: youGotText(t), max: LIMITS.banner }));
   FLOOR_BANNERS.forEach((t, i) => out.push({ label: `floorBanner#${i}`, text: t, max: LIMITS.banner }));
   for (const [k, v] of Object.entries(MISC)) {
     if (k === 'gamestonkClerk') continue; // typewriter box wraps it
     out.push({ label: `misc.${k}`, text: v, max: LIMITS.banner });
   }
+  for (const [k, v] of Object.entries(UI)) out.push({ label: `ui.${k}`, text: v, max: LIMITS.banner });
+  for (const [k, v] of Object.entries(POWERUP_HUD_NAMES)) out.push({ label: `hudName.${k}`, text: v, max: 11 });
+  for (const n of [0, 1, 6]) out.push({ label: `packagesLeft(${n})`, text: packagesLeftText(n), max: LIMITS.banner }, { label: `packageN(${n})`, text: packageNText(n), max: LIMITS.banner });
+  out.push({ label: 'nextLoop', text: nextLoopText(99), max: LIMITS.banner });
+  out.push({ label: 'continuesLeft', text: UI.continuesLeft + '3', max: LIMITS.banner });
   return out;
 }
 

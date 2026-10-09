@@ -9,7 +9,7 @@ function startBot(seed: number, store: 'forever12' | 'radioshock') {
   const d = new Driver();
   g.step(d.frame({ start: true }));
   for (let i = 0; i < 40; i++) g.step(d.frame({}));
-  return new Bot(g, store);
+  return new Bot(g, [store]);
 }
 
 describe('loop 1 fairness (scripted new player)', () => {

@@ -22,7 +22,7 @@ import {
   LAMPS,
 } from '../core/level';
 import { carRoofY, doorsOpen, openingState } from '../core/elevator';
-import { STORES, StoreId, storeInfo } from '../core/copy';
+import { STORES, StoreId, storeInfo, UI } from '../core/copy';
 import { C } from '../art/palette';
 import { hudSlot } from '../core/powerups';
 import { SPY_DEATH_FRAMES } from '../core/mall-spies';
@@ -308,7 +308,7 @@ function drawWagon(g: Gfx, mall: Mall, X: (x: number) => number, Y: (y: number) 
   const left = 6 - mall.run.packages.length;
   g.sprite('wagon', (f >> 4) & 1, X(GETAWAY.x), Y(floorY(FLOOR_P) - 22));
   if (left === 0 && (f >> 3) % 2 === 0) {
-    g.text('GO!', X(GETAWAY.x + 28), Y(floorY(FLOOR_P) - 32), 0x28, { font: 5, align: 'center', shadow: 0x0f });
+    g.text(UI.go, X(GETAWAY.x + 28), Y(floorY(FLOOR_P) - 32), 0x28, { font: 5, align: 'center', shadow: 0x0f });
   }
 }
 

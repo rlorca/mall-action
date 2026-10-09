@@ -60,7 +60,7 @@ import {
   Walker,
   WetPatch,
 } from './mall-types';
-import { FLOOR_BANNERS, HEADLINES, MISC, PA_LINES, SPYGRAM_ARRIVAL, SpygramPost, SPY_ELEVATOR_LINES, SPY_LAST_WORDS, StoreId, storeInfo, wrapLines, LIMITS } from './copy';
+import { UI, packagesLeftText, FLOOR_BANNERS, HEADLINES, MISC, PA_LINES, SPYGRAM_ARRIVAL, SpygramPost, SPY_ELEVATOR_LINES, SPY_LAST_WORDS, StoreId, storeInfo, wrapLines, LIMITS } from './copy';
 import { FOOD_POWERS, PowerKind, SHOP_POWERS, applyPower, fireProfile, powerName, resetPowersOnDeath, sneakerBoost, speedMul } from './powerups';
 import { POINTS } from './scoring';
 import { remainingPackageStores } from './levelsetup';
@@ -874,7 +874,7 @@ export class Mall {
       this.events.emit('boothOut');
       if (!this.run.photoStripGiven) {
         this.run.photoStripGiven = true;
-        this.run.inventory.push('PHOTO STRIP');
+        this.run.inventory.push(UI.photoStrip);
         this.events.emit('photoStrip');
         this.showBanner([MISC.photoStrip], 150, 'info');
       }
@@ -974,7 +974,7 @@ export class Mall {
   private useGetaway(): void {
     const left = 6 - this.run.packages.length;
     if (left > 0) {
-      this.showBanner([`PACKAGES LEFT: ${left}`], 120, 'warn');
+      this.showBanner([packagesLeftText(left)], 120, 'warn');
       this.events.emit('buzzer');
       return;
     }
@@ -1188,7 +1188,7 @@ export class Mall {
       this.events.emit('coin');
     } else if (k.kind === 'gold') {
       addLife(this.run);
-      this.showBanner(['EXTRA LIFE!'], 100, 'info');
+      this.showBanner([UI.extraLife], 100, 'info');
       this.events.emit('powerup', { kind: 'oneup' });
     } else {
       this.grantPower(k.kind);

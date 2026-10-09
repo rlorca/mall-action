@@ -39,11 +39,7 @@ void main() {
     float k = 0.075;
     // mild barrel distortion anchored so the corners map to the corners (nothing is cut off at the corners)
     vec2 w = 0.5 + d * (1.0 + k * r2) / (1.0 + k * 0.5);
-    vec2 px = 1.0 / u_size;
-    vec3 c0 = texture2D(u_tex, w).rgb;
-    vec3 cl = texture2D(u_tex, w - vec2(px.x, 0.0)).rgb;
-    vec3 cr = texture2D(u_tex, w + vec2(px.x, 0.0)).rgb;
-    col = c0 * 0.84 + (cl + cr) * 0.08;               // soft horizontal glow
+    col = texture2D(u_tex, w).rgb;                     // nearest-neighbour: no blur
     // scanlines: one dark line per source row, strength fades at tiny scales
     float row = fract(w.y * u_size.y);
     float line = 0.5 + 0.5 * cos((row - 0.5) * 6.2831853);

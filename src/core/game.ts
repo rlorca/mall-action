@@ -389,6 +389,7 @@ export class Game {
     this.screen = 'gameover';
     this.over = { phase: 'pa', t: 0, shutters: 0 };
     this.events.emit('gameOver');
+    this.events.emit('pa'); // the PA chime that opens the closing announcement
   }
 
   private stepGameOver(pad: PadFrame): void {
@@ -396,6 +397,9 @@ export class Game {
     o.t++;
     if (o.phase === 'pa') {
       o.shutters = Math.max(0, Math.min(1, (o.t - 100) / 140));
+      // typewriter blips while the message prints (1 char / 3 frames, starting at t = 90)
+      const total = MISC.closed1.length + MISC.closed2.length;
+      if (o.t >= 90 && (o.t - 90) % 3 === 0 && (o.t - 90) / 3 < total) this.events.emit('blip');
       if (pad.pressed.start || o.t > 330) {
         o.phase = 'final';
         o.t = 0;

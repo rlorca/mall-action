@@ -4,7 +4,7 @@ import { MallView, drawMall, drawBanner, makeCam } from './mall-render';
 import { drawStore } from './store-render';
 import { drawHud } from './hud';
 import { floorAt, HUD_H } from '../core/level';
-import { FLOOR_NAMES, MISC } from '../core/copy';
+import { FLOOR_NAMES, MISC, UI } from '../core/copy';
 import { drawClear, drawClosingMessage, drawContinue, drawGameOverFinal, drawMap, drawPauseOverlay, drawSpygram, drawSplash, drawTitle, drawSchematic } from './screens';
 import { FADE_FRAMES } from '../core/game';
 import { GameEvent } from '../core/events';
@@ -121,7 +121,7 @@ export class FrameRenderer {
       if (p.timer < 12) g.dim(0, 0, 256, 240, 0); // placeholder to keep calls simple
       if (p.timer < 14) g.veil(0x30, 1 - p.timer / 14);
       else drawSpygram(g, mall.post, p.timer - 14, 'roof', f);
-      if (p.timer > 40 && (f >> 4) % 2 === 0) g.text('PRESS ANY BUTTON', 128, 226, 0x30, { align: 'center', font: 3 });
+      if (p.timer > 40 && (f >> 4) % 2 === 0) g.text(UI.pressAnyButton, 128, 226, 0x30, { align: 'center', font: 3 });
     }
     // kiosk map panel
     if (mall.kioskPanel) {
@@ -129,9 +129,9 @@ export class FrameRenderer {
       g.rect(36, 70, 184, 108, 0x0f);
       g.box(36, 70, 184, 108, 0x30);
       g.rect(37, 71, 182, 10, 0x02);
-      g.text('DIRECTORY', 128, 73, 0x30, { align: 'center', font: 3 });
+      g.text(UI.directory, 128, 73, 0x30, { align: 'center', font: 3 });
       drawSchematic(g, mall, { x0: 56, y0: 88, w: 150, rowH: 14, labels: false, highlight: kp.store, blink: (f >> 3) % 2 === 0, radar: false });
-      g.text(kp.store ? 'NEAREST PACKAGE: FLASHING' : 'ALL PACKAGES FOUND - GO TO P!', 128, 170, 0x28, { align: 'center', font: 3 });
+      g.text(kp.store ? UI.kioskNearest : UI.kioskAllFound, 128, 170, 0x28, { align: 'center', font: 3 });
     }
     // camera helpers for popups
     void makeCam;
@@ -163,7 +163,7 @@ export class FrameRenderer {
       g.rect(x + 3, y + 3 + i * 25, 26, 22, 0x02);
       g.sprite(p, 0, x + 8, y + 2 + i * 25);
     });
-    if (s.t > 14) g.text('PHOTO STRIP', x + 16, y + 106, 0x28, { font: 3, align: 'center' });
+    if (s.t > 14) g.text(UI.photoStrip, x + 16, y + 106, 0x28, { font: 3, align: 'center' });
   }
 
   private drawPopups(game: Game): void {

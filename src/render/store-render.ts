@@ -2,7 +2,7 @@ import { Gfx } from './gfx';
 import { StoreRoom } from '../core/store';
 import { TILE, ROOM_W, ROOM_H } from '../core/stores-data';
 import { HUD_H } from '../core/level';
-import { MISC, wrapLines } from '../core/copy';
+import { MISC, UI, wrapLines } from '../core/copy';
 import { SEARCH_FRAMES } from '../core/store';
 import { placeBubble } from './mall-render';
 
@@ -63,7 +63,7 @@ export function drawStore(g: Gfx, s: StoreRoom, f: number): void {
   }
   // door arrow
   const dc = room.doorCols[0];
-  if ((f >> 4) % 2 === 0) g.text('EXIT', X(dc * TILE + 16), Y((room.h - 1) * TILE) - 8, 0x28, { font: 3, align: 'center' });
+  if ((f >> 4) % 2 === 0) g.text(UI.exit, X(dc * TILE + 16), Y((room.h - 1) * TILE) - 8, 0x28, { font: 3, align: 'center' });
 
   // toys, smoke
   for (const t of s.toys) g.sprite('td.toy', (t.anim >> 4) % 2, X(t.x), Y(t.y));
@@ -153,9 +153,9 @@ function drawStoreStrip(g: Gfx, s: StoreRoom, f: number): void {
   g.text(s.info.longName, 128, y0 + 8, 0x28, { align: 'center' });
   let msg = '';
   let col = 0x30;
-  if (s.search) msg = 'SEARCHING...';
+  if (s.search) msg = UI.searching;
   else if (s.canSearch()) {
-    msg = 'PRESS X TO SEARCH';
+    msg = UI.pressToSearch;
     col = (f >> 4) % 2 ? 0x30 : 0x2a;
   } else if (s.onBooth) {
     msg = MISC.nowPlaying;

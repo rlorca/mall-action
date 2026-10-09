@@ -166,10 +166,23 @@ export function padFromGamepads(pads: ReadonlyArray<{ buttons: ReadonlyArray<{ p
   return out;
 }
 
-/** Keys that are handled outside the pad. */
+/**
+ * The letter a key stands for: the PRINTED letter on latin layouts; for any other script (Cyrillic, Greek ...)
+ * the physical key position. Same rule as the pad bindings.
+ */
+export function letterOf(e: KeyLike): string | null {
+  if (e.key.length === 1) {
+    const k = e.key.toLowerCase();
+    if (/^[a-z]$/.test(k)) return k;
+    if (/\p{L}/u.test(k)) return codeLetter(e.code);
+  }
+  return null;
+}
+
+/** Keys that are handled outside the pad (screen effect and sound toggles). */
 export function isCrtKey(e: KeyLike): boolean {
-  return e.key.toLowerCase() === 'c' || (e.key.length > 1 && !/^[a-z]$/i.test(e.key) && e.code === 'KeyC');
+  return letterOf(e) === 'c';
 }
 export function isMuteKey(e: KeyLike): boolean {
-  return e.key.toLowerCase() === 'm' || (e.key.length > 1 && !/^[a-z]$/i.test(e.key) && e.code === 'KeyM');
+  return letterOf(e) === 'm';
 }

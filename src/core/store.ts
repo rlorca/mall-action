@@ -3,7 +3,7 @@ import { PadFrame } from './pad';
 import { RunState, award, collectPower } from './run';
 import { FixtureState, StoreSetup } from './levelsetup';
 import { Room, ROOM_H, ROOM_W, TILE, isSolidChar, roomFor } from './stores-data';
-import { FIRST_VISIT_LINES, JOKE_ITEMS, MISC, StoreId, storeInfo } from './copy';
+import { FIRST_VISIT_LINES, JOKE_ITEMS, MISC, StoreId, UI, packageNText, storeInfo, youGotText } from './copy';
 import { POINTS } from './scoring';
 import { PACKAGE_COUNT } from './level';
 import { fireProfile, sneakerBoost, speedMul } from './powerups';
@@ -350,7 +350,7 @@ export class StoreRoom {
         e.t = 0;
         this.run.inventory.push(e.item);
         award(this.run, POINTS.jokeItem, { x: this.p.x + 8, y: this.p.y - 8, space: 'screen' });
-        this.beginHold({ kind: 'joke', label: `YOU GOT: ${e.item}` });
+        this.beginHold({ kind: 'joke', label: youGotText(e.item) });
         this.run.events.emit('itemGet');
         this.smoke.push({ x: this.room.clerk!.col * TILE + 8, y: this.room.clerk!.row * TILE + 8, t: 30 });
         this.clerkGone = true;
@@ -497,7 +497,7 @@ export class StoreRoom {
         this.setup.cleared = true;
         award(this.run, POINTS.package, { x: this.p.x + 8, y: this.p.y - 12, space: 'screen' });
         const n = this.run.packages.length;
-        this.beginHold({ kind: 'package', label: `PACKAGE ${n}/${PACKAGE_COUNT}` });
+        this.beginHold({ kind: 'package', label: packageNText(n) });
         ev.emit('package', { n });
         break;
       }
@@ -723,7 +723,7 @@ export class StoreRoom {
     if (pw.armor) {
       pw.armor = false;
       this.run.events.emit('armorBreak');
-      this.setBanner('ARMOR BROKE!', 40);
+      this.setBanner(UI.armorBroke, 40);
       return;
     }
     p.state = 'dead';

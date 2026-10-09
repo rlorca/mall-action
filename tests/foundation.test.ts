@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng, hashSeed } from '../src/core/rng';
 import { FixedStepLoop, MAX_CATCHUP_STEPS, STEP_MS } from '../src/core/loop';
-import { InputMapper, resolveButton, padFromGamepads } from '../src/core/input';
+import { InputMapper, resolveButton, padFromGamepads, isCrtKey, isMuteKey } from '../src/core/input';
 import { KonamiDetector, KONAMI } from '../src/core/konami';
 import { FlickersoftSplash, SPLASH, SPLASH_TEXT, letterVisible } from '../src/flickersoft/splash';
 import { LIMITS, allCopyChecks, wrapLines, HEADLINES, PA_LINES, SPYGRAM_ARRIVAL, SPYGRAM_CLEAR, SPY_LAST_WORDS, FIRST_VISIT_LINES, SPY_ELEVATOR_LINES, STORES } from '../src/core/copy';
@@ -87,6 +87,16 @@ describe('input mapping', () => {
     expect(resolveButton({ key: 'ц', code: 'KeyW' })).toBe('up'); // Cyrillic layout
     expect(resolveButton({ key: 'ф', code: 'KeyA' })).toBe('left');
     expect(resolveButton({ key: 'q', code: 'KeyQ' })).toBeNull(); // latin letter without a binding
+  });
+  it('C (CRT) and M (mute) also work on non-latin layouts and with shift held', () => {
+    expect(isCrtKey({ key: 'c', code: 'KeyC' })).toBe(true);
+    expect(isCrtKey({ key: 'C', code: 'KeyC' })).toBe(true);
+    expect(isCrtKey({ key: 'с', code: 'KeyC' })).toBe(true); // Cyrillic es on the C position
+    expect(isMuteKey({ key: 'ь', code: 'KeyM' })).toBe(true); // Cyrillic soft sign on the M position
+    expect(isMuteKey({ key: 'm', code: 'KeyM' })).toBe(true);
+    expect(isCrtKey({ key: 'x', code: 'KeyX' })).toBe(false);
+    expect(isCrtKey({ key: 'ArrowUp', code: 'ArrowUp' })).toBe(false);
+    expect(isMuteKey({ key: 'c', code: 'KeyC' })).toBe(false);
   });
   it('a key release clears exactly the key that was pressed (no stuck keys)', () => {
     const m = new InputMapper();

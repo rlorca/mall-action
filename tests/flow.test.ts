@@ -305,6 +305,46 @@ describe('level clear and the next loop', () => {
   });
 });
 
+describe('per-game state survives the next loop', () => {
+  it('the GameStonk scene, the photo strip, joke items and first-visit lines happen once per GAME, not once per loop', async () => {
+    const { nextLoop, newRun } = await import('../src/core/run');
+    const { StoreRoom } = await import('../src/core/store');
+    const run = newRun(3);
+    // loop 1: see the GameStonk cave and every store, take the photo strip, pick up a joke item
+    for (const id of Object.keys(run.setup)) new StoreRoom(run, id as never);
+    expect(run.gamestonkSeen).toBe(true);
+    expect(Object.values(run.setup).every((s) => s.visited)).toBe(true);
+    run.photoStripGiven = true;
+    run.inventory.push('PHOTO STRIP', 'PET ROCK');
+    run.powers.radar = true;
+    run.packages.push('forever12');
+    nextLoop(run);
+    expect(run.loop).toBe(2);
+    // per level things reset ...
+    expect(run.packages.length).toBe(0);
+    expect(run.powers.radar).toBe(false);
+    expect(Object.values(run.setup).every((s) => !s.cleared && s.fixtures.every((f) => !f.opened))).toBe(true);
+    // ... per game things do not
+    expect(run.gamestonkSeen).toBe(true);
+    expect(run.photoStripGiven).toBe(true);
+    expect(run.inventory).toEqual(['PHOTO STRIP', 'PET ROCK']);
+    expect(Object.values(run.setup).every((s) => s.visited)).toBe(true);
+    const cave = new StoreRoom(run, 'gamestonk');
+    expect(cave.egg).toBeNull();
+    const toys = new StoreRoom(run, 'kgbtoys');
+    expect(toys.introLines.length).toBe(0);
+    expect(toys.guards.every((g) => g.frozen === 0)).toBe(true);
+  });
+  it('the hi-score is kept in memory across games in a session, never in localStorage', async () => {
+    const g = newGame(1);
+    g.hiScore = 4242;
+    g.startGame();
+    expect(g.run!.hiScore).toBe(4242);
+    const src = await import('node:fs').then((fs) => fs.readFileSync('src/main.ts', 'utf8'));
+    expect(src).not.toMatch(/mallaction\.hi/);
+  });
+});
+
 describe('score and HUD data', () => {
   it('the extra life at 20,000 shows up through the game', () => {
     const { g, d } = started();

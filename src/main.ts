@@ -61,7 +61,8 @@ function boot(): void {
     return;
   }
 
-  const game = new Game({ seed, skipSplash: debug, hiScore: Number(safeGet('mallaction.hi') ?? 0) || 0 });
+  // The high score lives only as long as the page ("per session"); only the CRT / mute choices persist.
+  const game = new Game({ seed, skipSplash: debug });
   const renderer = new FrameRenderer(gfx);
   const input = new InputMapper();
   input.onAnyPress = () => audio.unlock();
@@ -156,7 +157,6 @@ function boot(): void {
     renderer.onEvents(evs);
     audio.handle(evs);
     audio.update(game);
-    if (game.hiScore > 0 && game.frame % 120 === 0) safeSet('mallaction.hi', String(game.hiScore));
     renderer.draw(game);
     crt.present(gfx.canvas, now / 1000);
     requestAnimationFrame(frame);

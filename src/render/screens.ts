@@ -1,7 +1,7 @@
 import { Gfx } from './gfx';
 import { Game } from '../core/game';
 import { Mall } from '../core/mall';
-import { SpygramPost, MISC, STORES, StoreId, FLOOR_NAMES, storeInfo, wrapLines, LIMITS, JOKE_ITEMS } from '../core/copy';
+import { SpygramPost, MISC, STORES, StoreId, FLOOR_NAMES, storeInfo, wrapLines, LIMITS, JOKE_ITEMS, UI, nextLoopText } from '../core/copy';
 import { ESCALATORS, FLOOR_COUNT, FLOOR_P, GETAWAY, MALL_W, SHAFTS, STOREFRONTS, STORE_W, floorAt, floorY } from '../core/level';
 import { drawStorefrontAt, storeColour } from './mall-render';
 import { drawFlickersoft } from '../flickersoft/splash';
@@ -52,8 +52,8 @@ export function drawTitle(g: Gfx, game: Game, f: number): void {
   }
   // logo
   const bob = Math.round(Math.sin(f / 30) * 1);
-  g.textTwoTone('MALL', 128, 18 + bob, 0x28, 0x16, 4, 0x03);
-  g.textTwoTone('ACTION', 128, 50 + bob, 0x30, 0x21, 4, 0x03);
+  g.textTwoTone(UI.titleWord1, 128, 18 + bob, 0x28, 0x16, 4, 0x03);
+  g.textTwoTone(UI.titleWord2, 128, 50 + bob, 0x30, 0x21, 4, 0x03);
   g.rect(40, 84, 176, 1, 0x30);
   g.text(MISC.subtitle, 128, 90, 0x28, { align: 'center', shadow: 0x0f });
   // storefronts scrolling along the bottom
@@ -74,13 +74,13 @@ export function drawTitle(g: Gfx, game: Game, f: number): void {
   }
   g.rect(0, rowY + 48, 256, 240 - rowY - 48, 0x0f);
   // hi-score and copyright
-  g.text(`HI-SCORE ${fmtScore(game.hiScore)}`, 128, 102, 0x30, { align: 'center' });
+  g.text(`${UI.hiScore} ${fmtScore(game.hiScore)}`, 128, 102, 0x30, { align: 'center' });
   if ((f >> 4) % 2 === 0) g.text(MISC.pressStart, 128, 116, 0x30, { align: 'center', shadow: 0x0f });
   g.text(MISC.copyright, 128, 129, 0x10, { align: 'center' });
   // control hints
-  g.text('ARROWS:MOVE  Z:SHOOT  X:JUMP/SEARCH', 128, 207, 0x10, { align: 'center' });
-  g.text('SHIFT:MAP  ENTER:PAUSE  C:CRT  M:MUTE', 128, 219, 0x10, { align: 'center' });
-  if (t.blackFriday && t.bfFlash <= 0 && (f >> 3) % 2 === 0) g.text('BLACK FRIDAY MODE', 128, 141, 0x16, { align: 'center' });
+  g.text(UI.hint1, 128, 207, 0x10, { align: 'center' });
+  g.text(UI.hint2, 128, 219, 0x10, { align: 'center' });
+  if (t.blackFriday && t.bfFlash <= 0 && (f >> 3) % 2 === 0) g.text(UI.blackFridayMode, 128, 141, 0x16, { align: 'center' });
   // Konami: BLACK FRIDAY!
   if (t.bfFlash > 0) {
     const flash = (f >> 2) % 2 === 0;
@@ -120,8 +120,8 @@ export function drawSpygram(g: Gfx, post: SpygramPost, t: number, photo: 'roof' 
   g.rect(x + 6, y + 5, 10, 9, 0x30);
   g.rect(x + 8, y + 3, 4, 3, 0x30);
   g.disc(x + 11, y + 10, 3, 0x24);
-  g.text('SPYGRAM', x + 24, y + 6, 0x30, { scale: 1, shadow: 0x14 });
-  g.text('@AGENT_RED', x + w - 6, y + 7, 0x30, { align: 'right', font: 3 });
+  g.text(UI.spygram, x + 24, y + 6, 0x30, { scale: 1, shadow: 0x14 });
+  g.text(UI.spygramHandle, x + w - 6, y + 7, 0x30, { align: 'right', font: 3 });
   // photo
   const py = y + 22;
   g.clip(x, py, w, 100);
@@ -149,11 +149,11 @@ export function drawSpygram(g: Gfx, post: SpygramPost, t: number, photo: 'roof' 
   // likes
   const likes = likesFor(post, t);
   g.text('^', x + 8, py + 134, 0x16);
-  g.text(`${likes.toLocaleString('en-US')} LIKES`, x + 20, py + 134, 0x0f);
+  g.text(`${likes.toLocaleString('en-US')} ${UI.likes}`, x + 20, py + 134, 0x0f);
   // one comment
   g.rect(x + 6, py + 146, w - 12, 1, 0x10);
   g.text(post.comment, x + 8, py + 154, 0x13);
-  g.text('2M AGO', x + w - 8, py + 172, 0x10, { align: 'right', font: 3 });
+  g.text(UI.agoStamp, x + w - 8, py + 172, 0x10, { align: 'right', font: 3 });
 }
 
 // ================================================================ map overlay (MALL DIRECTORY)
@@ -239,7 +239,7 @@ export function drawSchematic(g: Gfx, mall: Mall, o: SchematicOpts): void {
   g.rect(gx + 2, gy - 2, 9, 2, 0x17);
   g.px(gx + 2, gy + 5, 0x0f);
   g.px(gx + 10, gy + 5, 0x0f);
-  if (o.labels) g.text('EXIT', gx + 7, gy - 9, 0x2a, { align: 'center', font: 3 });
+  if (o.labels) g.text(UI.exit, gx + 7, gy - 9, 0x2a, { align: 'center', font: 3 });
   // agent
   const p = mall.p;
   if (!o.inStore && p.mode !== 'store' && o.blink) {
@@ -255,7 +255,7 @@ export function drawMap(g: Gfx, mall: Mall, f: number): void {
   g.rect(0, 0, 256, 20, 0x02);
   g.rect(0, 20, 256, 1, 0x30);
   g.text(MISC.mallDirectory, 128, 6, 0x30, { align: 'center', scale: 1, shadow: 0x0f });
-  g.text('YOU ARE HERE', 250, 25, 0x28, { align: 'right', font: 3 });
+  g.text(UI.youAreHere, 250, 25, 0x28, { align: 'right', font: 3 });
   const inStore = mall.p.mode === 'store' ? mall.run && lastStoreOf(mall) : null;
   drawSchematic(g, mall, { x0: 28, y0: 36, w: 216, rowH: 24, labels: true, blink: (f >> 4) % 2 === 0, radar: mall.run.powers.radar, inStore });
   // legend
@@ -265,24 +265,24 @@ export function drawMap(g: Gfx, mall: Mall, f: number): void {
     if (outline) g.box(x, ly, 8, 6, 0x2d);
     g.text(label, x + 11, ly, 0x30, { font: 3 });
   };
-  chip(10, 0x16, 'PACKAGE');
-  chip(62, 0x10, 'CLEARED');
-  chip(114, 0x12, 'POWER-UP');
-  chip(172, 0x0f, 'CLOSED', true);
+  chip(10, 0x16, UI.legendPackage);
+  chip(62, 0x10, UI.legendCleared);
+  chip(114, 0x12, UI.legendPowerup);
+  chip(172, 0x0f, UI.legendClosed, true);
   g.rect(10, ly + 11, 6, 6, 0x28);
-  g.text('CAR', 19, ly + 12, 0x30, { font: 3 });
+  g.text(UI.legendCar, 19, ly + 12, 0x30, { font: 3 });
   g.rect(48, ly + 11, 6, 6, 0x30);
   g.rect(50, ly + 13, 2, 2, 0x16);
-  g.text('YOU', 57, ly + 12, 0x30, { font: 3 });
+  g.text(UI.legendYou, 57, ly + 12, 0x30, { font: 3 });
   if (mall.run.powers.radar) {
     g.text('!', 88, ly + 10, 0x28);
-    g.text('RADAR', 96, ly + 12, 0x30, { font: 3 });
+    g.text(UI.legendRadar, 96, ly + 12, 0x30, { font: 3 });
   }
-  g.text(`PACKAGES ${mall.run.packages.length}/6`, 246, ly + 12, mall.run.packages.length >= 6 ? 0x2a : 0x26, { align: 'right', font: 3 });
+  g.text(`${UI.packages} ${mall.run.packages.length}/6`, 246, ly + 12, mall.run.packages.length >= 6 ? 0x2a : 0x26, { align: 'right', font: 3 });
   // inventory
   const inv = mall.run.inventory;
   g.rect(8, 214, 240, 1, 0x10);
-  const text = inv.length ? 'ITEMS: ' + inv.join(', ') : 'ITEMS: NONE YET';
+  const text = inv.length ? UI.items + inv.join(', ') : UI.itemsNone;
   const lines = wrapLines(text, 56);
   lines.slice(0, 2).forEach((l, i) => g.text(l, 10, 219 + i * 8, 0x38, { font: 3 }));
 }
@@ -297,9 +297,9 @@ export function drawPauseOverlay(g: Gfx, f: number): void {
   if ((f >> 4) % 2 === 0) {
     g.rect(88, 106, 80, 24, 0x0f);
     g.box(88, 106, 80, 24, 0x30);
-    g.text('PAUSE', 128, 112, 0x30, { align: 'center', scale: 2 });
+    g.text(UI.pause, 128, 112, 0x30, { align: 'center', scale: 2 });
   }
-  g.text('PRESS START', 128, 134, 0x10, { align: 'center' });
+  g.text(MISC.pressStart, 128, 134, 0x10, { align: 'center' });
 }
 
 // ================================================================ level clear
@@ -344,7 +344,7 @@ export function drawClear(g: Gfx, game: Game, f: number): void {
       g.rect(bx, 112, w, 11, 0x30);
       g.text(MISC.levelClearReceipt, bx + 3, 114, 0x0f);
     }
-    if (t > 60) g.text('MISSION COMPLETE!', 128, 80, (f >> 3) % 2 ? 0x28 : 0x30, { align: 'center', scale: 2, shadow: 0x0f });
+    if (t > 60) g.text(UI.missionComplete, 128, 80, (f >> 3) % 2 ? 0x28 : 0x30, { align: 'center', scale: 2, shadow: 0x0f });
     return;
   }
   if (c.phase === 'tally') {
@@ -354,21 +354,21 @@ export function drawClear(g: Gfx, game: Game, f: number): void {
     g.rect(24, 30, 208, 176, 0x0f);
     g.box(24, 30, 208, 176, 0x30);
     g.box(26, 32, 204, 172, 0x2d);
-    g.text('LEVEL CLEAR!', 128, 42, 0x28, { align: 'center', scale: 2, shadow: 0x16 });
+    g.text(UI.levelClear, 128, 42, 0x28, { align: 'center', scale: 2, shadow: 0x16 });
     const rows: [string, string, number][] = [
-      ['PACKAGES', `${c.packages}/6`, 0x30],
-      ['TIME', `${Math.floor(c.timeFrames / 3600)}:${String(Math.floor(c.timeFrames / 60) % 60).padStart(2, '0')}`, 0x30],
-      ['TIME BONUS', `+${c.timeBonus}`, 0x2a],
-      ['CLEAR BONUS', `+${c.clearBonus}`, 0x2a],
+      [UI.packages, `${c.packages}/6`, 0x30],
+      [UI.time, `${Math.floor(c.timeFrames / 3600)}:${String(Math.floor(c.timeFrames / 60) % 60).padStart(2, '0')}`, 0x30],
+      [UI.timeBonus, `+${c.timeBonus}`, 0x2a],
+      [UI.clearBonus, `+${c.clearBonus}`, 0x2a],
     ];
     rows.forEach(([l, v, col], i) => {
       if (c.t < 30 + i * 36) return;
       g.text(l, 40, 78 + i * 18, 0x10);
       g.text(v, 216, 78 + i * 18, col, { align: 'right' });
     });
-    if (c.t > 190) g.text(`SCORE ${fmtScore(run.score.score)}`, 128, 160, 0x30, { align: 'center' });
-    if (c.t > 150) g.text(`LOOP ${c.loop}`, 128, 180, (f >> 3) % 2 ? 0x26 : 0x28, { align: 'center', scale: 1 });
-    if (c.t > 150) g.text(`NEXT: LOOP ${c.loop + 1} - HARDER`, 128, 192, 0x10, { align: 'center', font: 3 });
+    if (c.t > 190) g.text(`${UI.score} ${fmtScore(run.score.score)}`, 128, 160, 0x30, { align: 'center' });
+    if (c.t > 150) g.text(`${UI.loop} ${c.loop}`, 128, 180, (f >> 3) % 2 ? 0x26 : 0x28, { align: 'center', scale: 1 });
+    if (c.t > 150) g.text(nextLoopText(c.loop + 1), 128, 192, 0x10, { align: 'center', font: 3 });
     return;
   }
   if (c.phase === 'news') {
@@ -378,7 +378,7 @@ export function drawClear(g: Gfx, game: Game, f: number): void {
   g.clear(0x03);
   stars(g, f, 240, 3);
   drawSpygram(g, c.post, c.t, 'wagon', f);
-  g.text('PRESS START', 128, 226, (f >> 4) % 2 ? 0x30 : 0x10, { align: 'center', font: 3 });
+  g.text(MISC.pressStart, 128, 226, (f >> 4) % 2 ? 0x30 : 0x10, { align: 'center', font: 3 });
 }
 
 export function drawNewspaper(g: Gfx, headline: string, t: number, f: number): void {
@@ -395,7 +395,7 @@ export function drawNewspaper(g: Gfx, headline: string, t: number, f: number): v
   g.text(MISC.dailyMall, 128, 18, 0x0f, { align: 'center', scale: 2 });
   g.hline(x + 6, 36, w - 12, 0x0f);
   g.hline(x + 6, 40, w - 12, 0x0f);
-  g.text('LATE EDITION  *  25 CENTS', 128, 44, 0x0f, { align: 'center', font: 3 });
+  g.text(UI.lateEdition, 128, 44, 0x0f, { align: 'center', font: 3 });
   g.hline(x + 6, 52, w - 12, 0x0f);
   const lines = wrapLines(headline, LIMITS.headline);
   lines.forEach((l, i) => {
@@ -410,11 +410,11 @@ export function drawNewspaper(g: Gfx, headline: string, t: number, f: number): v
   g.rect(x + 11, by + 41, 94, 22, 0x2d);
   g.sprite('wagon', 0, x + 36, by + 28);
   g.sprite('agent.stand', 0, x + 20, by + 28 + 0);
-  g.text('FILE PHOTO', x + 12, by + 52, 0x30, { font: 3 });
+  g.text(UI.filePhoto, x + 12, by + 52, 0x30, { font: 3 });
   // filler columns
   for (let i = 0; i < 9; i++) g.hline(x + 112, by + 4 + i * 7, w - 124, 0x10);
   for (let i = 0; i < 7; i++) g.hline(x + 10, by + 74 + i * 7, w - 20, 0x10);
-  g.text('MALL WALKERS CLUB MEETS', x + 10, 218 - 18 + 0, 0x10, { font: 3 });
+  g.text(UI.newsFiller, x + 10, 218 - 18 + 0, 0x10, { font: 3 });
   void f;
 }
 
@@ -429,9 +429,9 @@ export function drawContinue(g: Gfx, game: Game, f: number): void {
   const digit = String(Math.min(9, sec));
   g.text(digit, 131, 85, 0x03, { align: 'center', scale: 10 });
   g.text(digit, 128, 82, col, { align: 'center', scale: 10 });
-  g.text(`CONTINUES LEFT: ${run.continuesLeft}`, 128, 164, 0x28, { align: 'center' });
+  g.text(`${UI.continuesLeft}${run.continuesLeft}`, 128, 164, 0x28, { align: 'center' });
   if ((f >> 4) % 2 === 0) g.text(MISC.pressStart, 128, 186, 0x30, { align: 'center' });
-  g.text(`SCORE ${fmtScore(run.score.score)}`, 128, 208, 0x10, { align: 'center', font: 3 });
+  g.text(`${UI.score} ${fmtScore(run.score.score)}`, 128, 208, 0x10, { align: 'center', font: 3 });
 }
 
 export function drawGameOverFinal(g: Gfx, game: Game, f: number): void {
@@ -439,10 +439,10 @@ export function drawGameOverFinal(g: Gfx, game: Game, f: number): void {
   g.clear(0x0f);
   stars(g, f, 240, 5);
   g.text(MISC.gameOver, 128, 70, 0x16, { align: 'center', scale: 4, shadow: 0x06 });
-  g.text(`SCORE     ${fmtScore(run.score.score)}`, 128, 128, 0x30, { align: 'center' });
-  g.text(`HI-SCORE  ${fmtScore(game.hiScore)}`, 128, 144, 0x28, { align: 'center' });
-  g.text(`LOOP ${run.loop}   PACKAGES ${run.packages.length}/6`, 128, 166, 0x10, { align: 'center', font: 3 });
-  g.text('THANKS FOR SHOPPING', 128, 200, 0x10, { align: 'center', font: 3 });
+  g.text(`${UI.score}     ${fmtScore(run.score.score)}`, 128, 128, 0x30, { align: 'center' });
+  g.text(`${UI.hiScore}  ${fmtScore(game.hiScore)}`, 128, 144, 0x28, { align: 'center' });
+  g.text(`${UI.loop} ${run.loop}   ${UI.packages} ${run.packages.length}/6`, 128, 166, 0x10, { align: 'center', font: 3 });
+  g.text(UI.thanks, 128, 200, 0x10, { align: 'center', font: 3 });
 }
 
 export function drawClosingMessage(g: Gfx, game: Game): void {

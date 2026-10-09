@@ -57,14 +57,15 @@ export function newRun(seed: number, blackFriday = false, hiScore = 0): RunState
 
 /** Start the next loop (harder): fresh packages / store contents, score and lives carried. */
 export function nextLoop(run: RunState): void {
+  const wasVisited: Record<string, boolean> = {};
+  for (const k of Object.keys(run.setup)) wasVisited[k] = run.setup[k].visited;
   run.loop++;
   run.setup = setupLevel(run.seed, run.loop, run.blackFriday);
   run.packages = [];
   run.levelFrames = 0;
-  run.gamestonkSeen = false;
-  for (const k of Object.keys(run.setup)) run.setup[k].visited = false;
-  run.photoStripGiven = false;
-  run.inventory = [];
+  // Per GAME, not per loop: the GameStonk scene, the photo strip, the joke-item inventory and the first-visit
+  // lines happen once per game, so they are deliberately NOT reset here.
+  for (const k of Object.keys(run.setup)) run.setup[k].visited = wasVisited[k] ?? false;
   run.powers.radar = false; // Radar lasts "the rest of the level"
 }
 
