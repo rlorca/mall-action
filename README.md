@@ -19,6 +19,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | Claude Opus 4.6 | [`opus-4-6`](../../tree/opus-4-6) | https://rlorca.github.io/mall-action/opus-4.6/ |
 | Claude Opus 5 | [`opus-5`](../../tree/opus-5) | https://rlorca.github.io/mall-action/opus-5/ |
 | Claude Haiku 5.5 | [`haiku-5-5`](../../tree/haiku-5-5) | https://rlorca.github.io/mall-action/haiku-5.5/ |
+| Claude Sonnet 5.5 + Fable 5.1 advisor | [`sonnet-5-5-fable-5-1`](../../tree/sonnet-5-5-fable-5-1) | https://rlorca.github.io/mall-action/sonnet-5.5-fable-5.1/ |
 
 Each branch has its own README, tests and CI; pushing to a branch republishes its build.
 
