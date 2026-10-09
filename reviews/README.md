@@ -1,6 +1,7 @@
 # Landing-page assessments
 
-`scores.json` is the review source. It records five category scores, a note of
+`scores.json` is the review source. It records the date each implementation was written (`written`,
+from the branch README benchmark notes or else its first commit), five category scores, a note of
 at most 140 Unicode characters, rationale, verification, and exact source commits.
 Overall is calculated rather than entered separately.
 

@@ -12,6 +12,7 @@
     {
       "name": "Claude Sonnet 5.5", "branch": "sonnet-5-5", "folder": "sonnet-5.5",
       "technology": "TypeScript + WebGL CRT shader",
+      "written": "2026-09-29",
       "commit": "c15cebfb129a3bbf3f9fa75764a70f0c68a7b6e0",
       "scores": { "gameDesign": 9.0, "architecture": 9.2, "codeDesign": 8.8, "cleanliness": 8.8, "completeness": 9.5 },
       "note": "The most convincing mall: rich art, fair encounters, and broad coverage. Strong rule boundaries; the store module is oversized.",
@@ -31,6 +32,7 @@
     {
       "name": "Claude Fable 5.1", "branch": "fable-5-1", "folder": "fable-5.1",
       "technology": "TypeScript + Vite, WebGL CRT shader, Web Audio synth",
+      "written": "2026-09-29",
       "commit": "de6cd0d974dcfddf4fd9cd52f9919607cfa2dc48",
       "scores": { "gameDesign": 8.7, "architecture": 8.7, "codeDesign": 8.4, "cleanliness": 8.5, "completeness": 9.4 },
       "note": "Colorful, generous, and feature-rich, with dependable seeded rules. Large mall and store modules and busy floors limit polish.",
@@ -51,6 +53,7 @@
     {
       "name": "Claude Opus 5", "branch": "opus-5", "folder": "opus-5",
       "technology": "TypeScript + Vite, indexed framebuffer & WebGL CRT shader, Web Audio synth",
+      "written": "2026-09-29",
       "commit": "6bb30716daec1f9cdbdf7745cee351a1659d1ff4",
       "scores": { "gameDesign": 8.6, "architecture": 8.3, "codeDesign": 8.1, "cleanliness": 8.4, "completeness": 9.3 },
       "note": "A thorough, playable caper with strong palette rules and safety fixes. Huge rule files and injected callbacks complicate maintenance.",
@@ -71,6 +74,7 @@
     {
       "name": "Claude Opus 5.5", "branch": "opus-5-5", "folder": "opus-5.5",
       "technology": "PixiJS + vanilla JavaScript",
+      "written": "2026-09-28",
       "commit": "8b77751ed9ff8b614f930d81ec75c3d6df4dc1aa",
       "scores": { "gameDesign": 8.0, "architecture": 7.8, "codeDesign": 8.0, "cleanliness": 8.0, "completeness": 8.8 },
       "note": "Rich arcade detail and focused rule modules. Pixi scenes own some scoring and timing, and busy rooms weaken visual clarity.",
@@ -91,6 +95,7 @@
     {
       "name": "GPT-6.1 Sol", "branch": "gpt-6-1-sol", "folder": "gpt-6.1-sol",
       "technology": "TypeScript + Vite, Canvas 2D & WebGL CRT shader, Web Audio synth",
+      "written": "2026-09-29",
       "commit": "c02a646e080f3f8bce85ea56a0b5c67a0a8af247",
       "scores": { "gameDesign": 7.5, "architecture": 7.5, "codeDesign": 7.2, "cleanliness": 7.7, "completeness": 8.5 },
       "note": "A compact, broadly working game with useful route tests. One large rules file, simpler art, and uneven encounter protection hold it back.",
@@ -111,6 +116,7 @@
     {
       "name": "Claude Opus 4.6", "branch": "opus-4-6", "folder": "opus-4.6",
       "technology": "TypeScript + Vite, Canvas 2D with CRT effect, Web Audio synth",
+      "written": "2026-09-29",
       "commit": "dc90ad97ff8483b3d4faa4971b39c960799488d0",
       "scores": { "gameDesign": 6.0, "architecture": 6.5, "codeDesign": 5.3, "cleanliness": 6.3, "completeness": 6.2 },
       "note": "A substantial core, but several features stop at emitted events. Simplified collisions, mismatched audio hooks, and dark art hurt play.",
@@ -131,6 +137,7 @@
     {
       "name": "GPT-6 Sol", "branch": "gpt-6-sol", "folder": "gpt-6.sol",
       "technology": "JavaScript Canvas 2D and Web Audio",
+      "written": "2026-09-29",
       "commit": "ef387d79eb3a92c2fcfc4b36c9afb6b8ace3edf7",
       "scores": { "gameDesign": 5.2, "architecture": 5.8, "codeDesign": 4.2, "cleanliness": 2.5, "completeness": 5.8 },
       "note": "A recognizable, lightweight prototype. Compressed rules hide revived dead spies, loot gaps, weak collisions, and a very small sprite set.",
@@ -151,6 +158,7 @@
     {
       "name": "Gemini 3.6 Flash", "branch": "gemini-3-6-flash", "folder": "gemini-3.6-flash",
       "technology": "TypeScript + Vite, Canvas 2D & WebGL CRT shader, Web Audio synth",
+      "written": "2026-09-29",
       "commit": "3c26ac0a257488aac7ec94680f5e1a4ced465163",
       "scores": { "gameDesign": 2.0, "architecture": 4.0, "codeDesign": 3.0, "cleanliness": 5.0, "completeness": 2.0 },
       "note": "Readable scaffolding, but the game loop is unfinished: stores cannot be exited, elevators do not carry the agent, and combat is incomplete.",
@@ -170,6 +178,7 @@
     {
       "name": "Claude Haiku 4.5", "branch": "haiku-4-5", "folder": "haiku-4.5",
       "technology": "TypeScript + Vite, Canvas 2D, Web Audio",
+      "written": "2026-09-29",
       "commit": "d2b8c71ca66fbaef022f8dbd42ad99ce56c37b8f",
       "scores": { "gameDesign": 1.0, "architecture": 2.5, "codeDesign": 2.0, "cleanliness": 4.0, "completeness": 1.5 },
       "note": "The browser never leaves frame zero. Readable pieces exist, but broken timing, disconnected elevators, and instant searches prevent play.",
@@ -190,6 +199,7 @@
     {
       "name": "Claude Haiku 5.5", "branch": "haiku-5-5", "folder": "haiku-5.5",
       "technology": "TypeScript + Vite, Canvas 2D with a row-based CRT effect, Web Audio synth",
+      "written": "2026-10-08",
       "commit": "1ec98345999f5393af9fe5369fb5d351518f3c1a",
       "scores": { "gameDesign": 6.2, "architecture": 7.4, "codeDesign": 6.5, "cleanliness": 7.4, "completeness": 7.5 },
       "note": "A complete, playable caper with clean rule boundaries. Power-ups never expire, the map breaks stores, and Game Over hides behind shutters.",

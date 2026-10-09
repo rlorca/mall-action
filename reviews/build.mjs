@@ -1,5 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { escapeHtml, rankedEntries, renderCard, renderScores, repository, validateReview } from './scorecards.mjs';
+import { escapeHtml, formatWritten, rankedEntries, renderCard, renderScores, repository, validateReview } from './scorecards.mjs';
 
 const review = validateReview(JSON.parse(await readFile(new URL('./scores.json', import.meta.url), 'utf8')));
 const entries = rankedEntries(review);
@@ -58,7 +58,7 @@ const assessments = entries.map((entry, index) => `<article class="assessment" i
   <h2 id="${entry.branch}-title"><span class="rank">${String(index + 1).padStart(2, '0')}</span>${escapeHtml(entry.name)}</h2>
   <p class="review-note">${escapeHtml(entry.note)}</p>
   ${renderScores(entry, review.criteria)}
-  <p class="snapshot">Snapshot <a href="${repository}/tree/${entry.commit}"><code>${entry.commit.slice(0, 12)}</code></a> · branch <code>${entry.branch}</code></p>
+  <p class="snapshot">Written <time datetime="${entry.written}">${formatWritten(entry)}</time> · snapshot <a href="${repository}/tree/${entry.commit}"><code>${entry.commit.slice(0, 12)}</code></a> · branch <code>${entry.branch}</code></p>
   <dl class="reasoning">${review.criteria.map(criterion => `<div><dt>${escapeHtml(criterion.label)}</dt><dd>${escapeHtml(entry.assessment[criterion.key])}</dd></div>`).join('\n')}</dl>
   <div class="verification"><h3>Verification</h3><ul>
     <li>${entry.verification.tests} tests passed.</li>
@@ -81,7 +81,7 @@ const report = document('MALL ACTION — review methodology and assessments', 's
     <h3>Review scope</h3>
     <p>The review compared source, assets, tests, build configuration, and gameplay rules with the <a href="${repository}/blob/main/one-shot-prompt.md">original prompt</a>. Every implementation's test suite and production build was run. Haiku 4.5 also received a separate TypeScript check because its build does not typecheck.</p>
     <p>Browser checks sampled launch, title, arrival, and mall presentation. Stronger implementations also received store-entry checks using prepared player positions; Fable, GPT-6.1 and Haiku 5.5 received package-search checks, and Haiku 5.5 was also played in real time through elevator boarding, the map and pause, then stepped through an elevator ride to the parking level, level clear, continue and game over. Targeted probes reproduced the Haiku 4.5 timing blocker, the Gemini store-exit blocker, and the Haiku 5.5 map-in-store, floor-blind wet-floor, power-up timer and Game Over shutter defects. GPT-6 Sol's dead-spy and Black Friday defects were reproduced in Node.</p>
-    <p>This was not an uninterrupted six-package walkthrough of all ten games. Unverified full-route completion is not claimed. Test counts are reported as context; they do not determine scores. Other findings come from source inspection and are described as inferences where relevant. Scores describe these source snapshots; published Play builds may change independently.</p>
+    <p>This was not an uninterrupted six-package walkthrough of all ten games. Unverified full-route completion is not claimed. Test counts are reported as context; they do not determine scores. Other findings come from source inspection and are described as inferences where relevant. Scores describe these source snapshots; published Play builds may change independently. The "written" date on each card is the day the model produced the implementation, taken from the branch README's benchmark notes or, where a README has none, from the branch's first commit.</p>
   </section>
   <nav class="review-nav" aria-label="Implementation assessments">${entries.map(entry => `<a href="#${entry.branch}">${escapeHtml(entry.name)}</a>`).join('\n')}</nav>
   ${assessments}

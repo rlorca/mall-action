@@ -24,6 +24,7 @@ export function validateReview(review) {
       throw new Error(`Invalid implementation path: ${entry.branch}`);
     }
     if (!/^[a-f0-9]{40}$/.test(entry.commit)) throw new Error(`Missing snapshot: ${entry.branch}`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.written)) throw new Error(`Missing written date: ${entry.branch}`);
     if (!entry.note || [...entry.note].length > 140) {
       throw new Error(`Note exceeds 140 characters: ${entry.branch}`);
     }
@@ -53,6 +54,12 @@ export function rankedEntries(review) {
   );
 }
 
+/** The date the implementation was written, as shown on the page. */
+export function formatWritten(entry) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+    .format(new Date(`${entry.written}T00:00:00Z`));
+}
+
 export function renderScores(entry, criteria) {
   const scores = [...criteria.map(criterion => ({
     label: criterion.label, value: entry.scores[criterion.key], key: criterion.key,
@@ -74,6 +81,7 @@ export function renderCard(entry, review, rank) {
   return `<section class="card" data-implementation="${entry.branch}" aria-labelledby="${entry.branch}-title">
     <h2 id="${entry.branch}-title"><span class="rank" aria-label="Rank ${rank}">${String(rank).padStart(2, '0')}</span>${escapeHtml(entry.name)}</h2>
     <p class="technology">${escapeHtml(entry.technology)}. Branch <code>${entry.branch}</code>.</p>
+    <p class="written">Written <time datetime="${entry.written}">${formatWritten(entry)}</time></p>
     ${renderReviewBlock(entry, review.criteria, rank)}
     <div class="actions">
       <a class="btn play" href="${entry.folder}/">Play</a>
