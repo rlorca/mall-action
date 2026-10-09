@@ -71,7 +71,7 @@ const G: Record<string, string[]> = {
   N: ['10001', '11001', '11001', '10101', '10011', '10011', '10001'],
 };
 
-export const RAINBOW = ['#980000', '#d48820', '#a0aa00', '#4cd020', '#38b4cc', '#4c9aec', '#b062ec', '#ec58b4'];
+export const RAINBOW = ['#982220', '#d48820', '#a0aa00', '#4cd020', '#38b4cc', '#4c9aec', '#b062ec', '#ec58b4'];
 const SHADOW = '#3c3c3c';
 
 function glyph(ctx: CanvasRenderingContext2D, ch: string, x: number, y: number, s: number, color: string): void {

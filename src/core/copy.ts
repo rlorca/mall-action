@@ -277,6 +277,13 @@ export const UI = {
   searching: 'SEARCHING...',
   alarmHud: 'ALARM',
   pkgHud: 'PKG',
+  crtOn: 'CRT ON',
+  crtOff: 'CRT OFF',
+  crtNeedsWebgl: 'CRT NEEDS WEBGL',
+  soundOn: 'SOUND ON',
+  soundOff: 'SOUND OFF',
+  gamepadConnected: 'GAMEPAD CONNECTED',
+  gamepadLost: 'GAMEPAD LOST',
 } as const;
 
 /** Short names for the 16 px HUD strip (tiny font). */

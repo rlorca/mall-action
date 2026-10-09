@@ -9,6 +9,7 @@ import { drawClear, drawClosingMessage, drawContinue, drawGameOverFinal, drawMap
 import { FADE_FRAMES } from '../core/game';
 import { GameEvent } from '../core/events';
 import { remainingPackageStores } from '../core/levelsetup';
+import { SimClock } from './clock';
 
 interface Popup {
   x: number;
@@ -25,7 +26,11 @@ export class FrameRenderer {
   toast: { text: string; life: number } | null = null;
   /** The 4-frame photo strip that pops up the first time the agent leaves the photo booth. */
   strip: { t: number } | null = null;
+  /** Simulation frames (60 per second) - the only clock the pictures are allowed to use. */
   frame = 0;
+  private clock = new SimClock();
+  /** Sim frames since the previous draw (0 while nothing is stepping). */
+  private dt = 0;
 
   constructor(readonly g: Gfx) {}
 
@@ -43,8 +48,9 @@ export class FrameRenderer {
 
   draw(game: Game): void {
     const g = this.g;
-    this.frame++;
-    const f = this.frame;
+    this.dt = this.clock.dt(game.frame);
+    this.frame = game.frame;
+    const f = game.frame;
     switch (game.screen) {
       case 'splash':
         drawSplash(g, game);
@@ -92,7 +98,8 @@ export class FrameRenderer {
       g.rect(x, 226, w, 12, 0x0f);
       g.box(x, 226, w, 12, 0x30);
       g.text(this.toast.text, 128, 229, 0x28, { align: 'center' });
-      if (--this.toast.life <= 0) this.toast = null;
+      this.toast.life -= this.dt;
+      if (this.toast.life <= 0) this.toast = null;
     }
   }
 
@@ -101,7 +108,7 @@ export class FrameRenderer {
     const run = game.run;
     if (!run) return;
     if (which === 'store' && game.store) {
-      drawStore(g, game.store, f);
+      drawStore(g, game.store, game.store.frame);
       drawHud(g, run, { frame: f, marquee: game.store.info.longName, alarm: game.mall?.alarm ?? false });
       return;
     }
@@ -146,7 +153,7 @@ export class FrameRenderer {
     const s = this.strip;
     if (!s) return;
     const g = this.g;
-    s.t++;
+    s.t += this.dt;
     if (s.t > 220) {
       this.strip = null;
       return;
@@ -169,7 +176,7 @@ export class FrameRenderer {
   private drawPopups(game: Game): void {
     const g = this.g;
     const cam = game.mall?.cam ?? { x: 0, y: 0 };
-    for (const p of this.popups) p.life--;
+    for (const p of this.popups) p.life -= this.dt;
     this.popups = this.popups.filter((p) => p.life > 0);
     for (const p of this.popups) {
       const rise = (60 - p.life) * 0.4;

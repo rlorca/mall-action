@@ -41,7 +41,10 @@ benchmark; never merge branches; do not edit `one-shot-prompt.md`) are in `AGENT
 7. **Per-GAME vs per-LEVEL state**: the GameStonk scene, the photo strip, the joke-item inventory and first-visit lines
    happen once per *game* (they survive `nextLoop`); packages, opened fixtures, Radar and the level clock reset each loop.
 8. **Keep UI inside a 4 px safe margin.** The CRT curvature crops ~2 px at the edge midpoints.
-9. The CRT effect is ON by default and must never blank or cover the picture. The choice (and mute) persists in
+9. **Pictures run on simulation time, never on draw counts.** Displays run at 60/75/120/144 Hz, so any blink, animation,
+   toast or popup lifetime is measured in simulation frames (`game.frame`, `mall.frame`, `store.frame`, `SimClock` in
+   `src/render/clock.ts`). A `frame++` inside a draw function is a bug (there is a test for the toast and door timing).
+10. The CRT effect is ON by default and must never blank or cover the picture. The choice (and mute) persists in
    `localStorage`; the high score does **not** (it is per session).
 
 ## Conventions

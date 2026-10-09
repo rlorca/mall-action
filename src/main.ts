@@ -7,6 +7,7 @@ import { Crt } from './render/crt';
 import { FrameRenderer } from './render/frame';
 import { GameAudio } from './audio/index';
 import { drawGallery } from './render/gallery';
+import { UI } from './core/copy';
 
 const params = new URLSearchParams(location.search);
 const debug = params.get('debug') === '1';
@@ -76,8 +77,8 @@ function boot(): void {
         if (crt.ok) {
           crt.enabled = !crt.enabled;
           safeSet('mallaction.crt', crt.enabled ? '1' : '0');
-          renderer.showToast(crt.enabled ? 'CRT ON' : 'CRT OFF');
-        } else renderer.showToast('CRT NEEDS WEBGL');
+          renderer.showToast(crt.enabled ? UI.crtOn : UI.crtOff);
+        } else renderer.showToast(UI.crtNeedsWebgl);
         audio.unlock();
       }
       e.preventDefault();
@@ -88,7 +89,7 @@ function boot(): void {
         audio.unlock();
         const m = audio.toggleMute();
         safeSet('mallaction.mute', m ? '1' : '0');
-        renderer.showToast(m ? 'SOUND OFF' : 'SOUND ON');
+        renderer.showToast(m ? UI.soundOff : UI.soundOn);
       }
       e.preventDefault();
       return;
@@ -104,10 +105,10 @@ function boot(): void {
     if (document.hidden) input.releaseAll();
   });
   window.addEventListener('resize', () => crt.resize());
-  window.addEventListener('gamepadconnected', () => renderer.showToast('GAMEPAD CONNECTED'));
+  window.addEventListener('gamepadconnected', () => renderer.showToast(UI.gamepadConnected));
   window.addEventListener('gamepaddisconnected', () => {
     input.releaseAll();
-    renderer.showToast('GAMEPAD LOST');
+    renderer.showToast(UI.gamepadLost);
   });
 
   // ---- debug hooks (?debug=1)

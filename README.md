@@ -133,7 +133,8 @@ own branch, so the workflow triggers on this branch instead - see `AGENTS.md` on
 | Model | Claude Sonnet 5.5 (`claude-sonnet-5-5`), with **Claude Opus 5.5** (`claude-opus-5-5`) as the advisor |
 | Effort | high |
 | Harness | Claude Code 2.1.295 |
-| Date | 2026-10-09 (started 07:18 UTC; first complete build, tests and browser playtests about an hour later, then review fixes) |
+| Date | 2026-10-09 |
+| Duration | started 07:18 UTC, finished 08:29 UTC: about **1 h 11 min** of wall-clock time, including two advisor reviews, the real-browser playtests and the review fixes |
 | Prompt | `one-shot-prompt.md` from `main`, given as the only task, from an empty directory |
 | Interventions | none beyond approving tool calls. The user asked for a dedicated branch with the advisor in its name. |
 

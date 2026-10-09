@@ -86,7 +86,10 @@ describe('input mapping', () => {
   it('unmapped letters fall back to physical position', () => {
     expect(resolveButton({ key: 'ц', code: 'KeyW' })).toBe('up'); // Cyrillic layout
     expect(resolveButton({ key: 'ф', code: 'KeyA' })).toBe('left');
-    expect(resolveButton({ key: 'q', code: 'KeyQ' })).toBeNull(); // latin letter without a binding
+    expect(resolveButton({ key: 'q', code: 'KeyQ' })).toBeNull(); // QWERTY q: no binding, physical Q has none either
+    expect(resolveButton({ key: 'q', code: 'KeyA' })).toBe('left'); // AZERTY: unmapped "q" falls back to the physical A key
+    expect(resolveButton({ key: 'y', code: 'KeyZ' })).toBe('a'); // QWERTZ: unmapped "y" falls back to the physical Z key (shoot)
+    expect(resolveButton({ key: 'Q', code: 'KeyA' })).toBe('left'); // shift held
   });
   it('C (CRT) and M (mute) also work on non-latin layouts and with shift held', () => {
     expect(isCrtKey({ key: 'c', code: 'KeyC' })).toBe(true);
@@ -401,5 +404,84 @@ describe('power-up slots and timers', () => {
     expect(hudSlot(p)?.kind).toBe('spread');
     applyPower(p, 'cinnabomb');
     expect(hudSlot(p)?.kind).toBe('cinnabomb');
+  });
+});
+
+import { SimClock, Countdown } from '../src/render/clock';
+import { MallView } from '../src/render/mall-render';
+import { makeMall, stepN } from './helpers';
+import { RAINBOW } from '../src/flickersoft/splash';
+import { NES } from '../src/art/palette';
+
+describe('visual timing does not depend on the display refresh rate', () => {
+  /** Simulate `seconds` of play drawn `hz` times per second; return how many SIM frames a 100-frame toast stays up. */
+  function toastFrames(hz: number): number {
+    const clock = new SimClock();
+    let sim = 0;
+    let t = 0;
+    let toast: Countdown | null = null;
+    let shown = 0;
+    const dtDraw = 1 / hz;
+    let started = false;
+    let lastSim = 0;
+    for (let draw = 0; draw < hz * 5; draw++) {
+      t += dtDraw;
+      sim = Math.floor(t * 60 + 1e-9);
+      const dt = clock.dt(sim);
+      if (!started && sim >= 30) {
+        toast = new Countdown(100);
+        started = true;
+        lastSim = sim;
+      }
+      if (toast) {
+        if (!toast.tick(dt)) {
+          shown = sim - lastSim;
+          break;
+        }
+      }
+    }
+    return shown;
+  }
+  it('a toast lasts the same number of simulation frames at 30, 60, 75, 120 and 144 Hz', () => {
+    const base = toastFrames(60);
+    expect(base).toBeGreaterThanOrEqual(98);
+    expect(base).toBeLessThanOrEqual(104);
+    for (const hz of [30, 75, 120, 144]) expect(Math.abs(toastFrames(hz) - base), `${hz} Hz`).toBeLessThanOrEqual(4);
+  });
+  it('SimClock reports zero while the simulation is not stepping (pause) and caps huge gaps', () => {
+    const c = new SimClock();
+    expect(c.dt(100)).toBe(0);
+    expect(c.dt(100)).toBe(0);
+    expect(c.dt(101)).toBe(1);
+    expect(c.dt(500)).toBe(8);
+  });
+  it('the elevator doors animate the same whether the mall is drawn every step or every other step', () => {
+    const run = (every: number) => {
+      const { mall, d } = makeMall(3);
+      const view = new MallView();
+      mall.cars[0].moving = true; // closed doors
+      view.tick(mall);
+      for (let i = 1; i <= 40; i++) {
+        mall.step(d.frame({}));
+        mall.cars[0].moving = true;
+        if (i % every === 0) view.tick(mall);
+      }
+      return [view.doors[0], view.frame];
+    };
+    expect(run(1)).toEqual(run(2));
+    expect(run(1)).toEqual(run(4));
+    expect(run(1)[0]).toBe(3);
+    // the world's animation clock is the mall's own: it stands still while the mall is not stepped
+    const { mall } = makeMall(3);
+    const view = new MallView();
+    view.tick(mall);
+    const f = view.frame;
+    for (let i = 0; i < 50; i++) view.tick(mall);
+    expect(view.frame).toBe(f);
+    void stepN;
+  });
+  it('the splash rainbow only uses colours from the NES master palette', () => {
+    const hex = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+    for (const c of RAINBOW) expect(NES.some((n) => n[0] === hex(c)[0] && n[1] === hex(c)[1] && n[2] === hex(c)[2]), c).toBe(true);
   });
 });

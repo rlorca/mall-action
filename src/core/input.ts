@@ -47,9 +47,11 @@ export function resolveButton(e: KeyLike): Button | null {
   if (e.key.length === 1) {
     const k = e.key.toLowerCase();
     if (/^[a-z]$/.test(k)) {
-      // A latin printed letter: bind by that letter only. Never fall back to position: on AZERTY the physical
-      // KeyW prints "z", which must act as "z" (shoot), not as "w".
-      return LETTER_BINDINGS[k] ?? null;
+      // A latin printed letter that HAS a binding always wins: on AZERTY the physical KeyW prints "z", which must act
+      // as "z" (shoot), not as "w". Only a letter with NO binding falls back to the physical position (AZERTY "q"
+      // sits on KeyA -> Left; QWERTZ "y" sits on KeyZ -> shoot).
+      const l = codeLetter(e.code);
+      return LETTER_BINDINGS[k] ?? (l ? LETTER_BINDINGS[l] : undefined) ?? null;
     }
     if (k !== ' ' && /\p{L}/u.test(k)) {
       // Non-latin letter (Cyrillic, Greek...): the printed letter has no binding, fall back to the physical key.

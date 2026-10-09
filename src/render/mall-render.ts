@@ -30,13 +30,21 @@ import { SPY_DEATH_FRAMES } from '../core/mall-spies';
 /** Render-only state for the mall (never read by the rules). */
 export class MallView {
   doors: number[] = [0, 0, 0];
+  /** The mall's own simulation frame: world animations freeze when the mall is not stepped (pause, stores). */
   frame = 0;
+  private last = -1;
+  /** Catch up on the SIMULATION frames since the last draw (never "one per draw": the display may run at any Hz). */
   tick(mall: Mall): void {
-    this.frame++;
-    mall.cars.forEach((car, i) => {
-      const target = doorsOpen(car) ? 0 : 3;
-      if (this.frame % 3 === 0) this.doors[i] += Math.sign(target - this.doors[i]);
-    });
+    if (mall.frame < this.last || this.last < 0) this.last = mall.frame - 1;
+    const n = Math.min(8, mall.frame - this.last);
+    for (let k = mall.frame - n + 1; k <= mall.frame; k++) {
+      mall.cars.forEach((car, i) => {
+        const target = doorsOpen(car) ? 0 : 3;
+        if (k % 3 === 0) this.doors[i] += Math.sign(target - this.doors[i]);
+      });
+    }
+    this.last = mall.frame;
+    this.frame = mall.frame;
   }
 }
 
