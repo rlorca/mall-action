@@ -1,0 +1,19 @@
+{
+  "name": "mall-action",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MALL ACTION - an 8-bit spy caper in an 80s shopping mall (a FLICKERSOFT game)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.0"
+  }
+}

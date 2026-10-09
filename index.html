@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MALL ACTION - A FLICKERSOFT game</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+      canvas#screen { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh; background: #000; image-rendering: pixelated; }
+      #nogl { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); max-width: 90vw; padding: 10px 14px; background: #300; color: #fdd;
+        font: 14px/1.4 monospace; border: 2px solid #f66; z-index: 5; display: none; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <canvas id="screen" width="256" height="240" aria-label="MALL ACTION game screen"></canvas>
+    <div id="nogl" role="alert"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
