@@ -7,12 +7,13 @@ export function drawGallery(g: Gfx, frame: number, page: number): number {
   g.clear(0x2d);
   // lay sprites out in rows (greedy)
   const cellPad = 3;
-  const pages: { s: (typeof list)[number]; x: number; y: number }[][] = [[]];
+  const pages: { s: (typeof list)[number]; x: number; y: number; cw: number }[][] = [[]];
   let x = 4;
   let y = 14;
   let rowH = 0;
+  const labelOf = (n: string) => (n.length > 11 ? n.slice(-11) : n);
   for (const s of list) {
-    const w = s.w + cellPad * 2;
+    const w = Math.max(s.w, g.measure(labelOf(s.name), { font: 3 })) + cellPad * 2;
     const h = s.h + cellPad * 2 + 7;
     if (x + w > 252) {
       x = 4;
@@ -25,7 +26,7 @@ export function drawGallery(g: Gfx, frame: number, page: number): number {
       y = 14;
       rowH = 0;
     }
-    pages[pages.length - 1].push({ s, x: x + cellPad, y: y + cellPad });
+    pages[pages.length - 1].push({ s, x: x + cellPad, y: y + cellPad, cw: w - cellPad * 2 });
     x += w;
     rowH = Math.max(rowH, h);
   }
@@ -35,8 +36,7 @@ export function drawGallery(g: Gfx, frame: number, page: number): number {
   for (const it of pages[page]) {
     g.rect(it.x - 1, it.y - 1, it.s.w + 2, it.s.h + 2, 0x1a);
     g.sprite(it.s.name, Math.floor(frame / 12), it.x, it.y);
-    const short = it.s.name.length > 12 ? it.s.name.slice(-12) : it.s.name;
-    g.text(short, it.x, it.y + it.s.h + 2, 0x38, { font: 3 });
+    g.text(labelOf(it.s.name), it.x, it.y + it.s.h + 2, 0x38, { font: 3 });
   }
   return page;
 }

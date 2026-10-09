@@ -23,6 +23,8 @@ export class FrameRenderer {
   view = new MallView();
   popups: Popup[] = [];
   toast: { text: string; life: number } | null = null;
+  /** The 4-frame photo strip that pops up the first time the agent leaves the photo booth. */
+  strip: { t: number } | null = null;
   frame = 0;
 
   constructor(readonly g: Gfx) {}
@@ -35,6 +37,7 @@ export class FrameRenderer {
   onEvents(events: GameEvent[]): void {
     for (const e of events) {
       if (e.kind === 'popup') this.popups.push({ x: e.x, y: e.y, text: e.text, life: 60, space: e.space });
+      if (e.kind === 'photoStrip') this.strip = { t: 0 };
     }
   }
 
@@ -78,6 +81,7 @@ export class FrameRenderer {
         break;
     }
     this.drawPopups(game);
+    this.drawStrip();
     if (game.fade) {
       const t = game.fade.phase === 'out' ? game.fade.t / FADE_FRAMES : 1 - game.fade.t / FADE_FRAMES;
       g.dim(0, 0, 256, 240, Math.max(0, Math.min(1, t)));
@@ -85,9 +89,9 @@ export class FrameRenderer {
     if (this.toast) {
       const w = g.measure(this.toast.text) + 10;
       const x = Math.floor((256 - w) / 2);
-      g.rect(x, 222, w, 13, 0x0f);
-      g.box(x, 222, w, 13, 0x30);
-      g.text(this.toast.text, 128, 226, 0x28, { align: 'center' });
+      g.rect(x, 226, w, 12, 0x0f);
+      g.box(x, 226, w, 12, 0x30);
+      g.text(this.toast.text, 128, 229, 0x28, { align: 'center' });
       if (--this.toast.life <= 0) this.toast = null;
     }
   }
@@ -136,6 +140,30 @@ export class FrameRenderer {
     void FLOOR_NAMES;
     void MISC;
     void remainingPackageStores;
+  }
+
+  private drawStrip(): void {
+    const s = this.strip;
+    if (!s) return;
+    const g = this.g;
+    s.t++;
+    if (s.t > 220) {
+      this.strip = null;
+      return;
+    }
+    // pops up from below, waits, slides away
+    const rise = Math.min(1, s.t / 14);
+    const fall = s.t > 190 ? (s.t - 190) / 30 : 0;
+    const y = Math.floor(240 - (240 - 116) * rise * (1 - fall));
+    const x = 214;
+    g.rect(x - 2, y - 2, 36, 108, 0x0f);
+    g.rect(x, y, 32, 104, 0x30);
+    const poses = ['agent.stand', 'agent.shoot', 'agent.jump', 'agent.duckshoot'];
+    poses.forEach((p, i) => {
+      g.rect(x + 3, y + 3 + i * 25, 26, 22, 0x02);
+      g.sprite(p, 0, x + 8, y + 2 + i * 25);
+    });
+    if (s.t > 14) g.text('PHOTO STRIP', x + 16, y + 106, 0x28, { font: 3, align: 'center' });
   }
 
   private drawPopups(game: Game): void {

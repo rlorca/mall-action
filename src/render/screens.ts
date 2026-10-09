@@ -325,22 +325,24 @@ export function drawClear(g: Gfx, game: Game, f: number): void {
   const run = game.run!;
   if (c.phase === 'drive') {
     garage(g, f);
-    // the station wagon pulls out, the spy runs after it waving a receipt
+    // the station wagon revs, pulls out and drives off while the spy runs after it waving a receipt
     const t = c.t;
-    const wx = 70 + Math.floor((t * t) / 28);
+    const go = Math.max(0, t - 50);
+    const wx = 70 + Math.floor((go * go) / 38);
     g.sprite('wagon', (f >> 3) & 1, wx, 150);
-    // exhaust
-    for (let i = 0; i < 3; i++) g.sprite('smoke', i, wx - 10 - i * 8, 158 + i, false);
-    const sx = 10 + Math.floor(t * 0.9);
+    // exhaust puffs
+    for (let i = 0; i < 3; i++) g.sprite('smoke', ((f >> 3) + i) % 3, wx - 12 - i * 9, 156 + i * 2, false);
+    const sx = t < 50 ? 6 : 6 + Math.min(150, Math.floor((t - 50) * 1.1));
     g.sprite(`spy.walk${Math.floor(f / 5) % 4}`, 0, sx, 148);
     // receipt flapping in his hand
     const flap = (f >> 2) % 2;
     g.rect(sx + 14, 138 - flap, 8, 12, 0x30);
     for (let i = 0; i < 4; i++) g.hline(sx + 15, 140 + i * 2 - flap, 6, 0x10);
-    if (t > 20 && t < 200) {
+    if (t > 40 && t < 220) {
       const w = g.measure(MISC.levelClearReceipt) + 6;
-      g.rect(Math.min(256 - w - 2, sx - 4), 112, w, 11, 0x30);
-      g.text(MISC.levelClearReceipt, Math.min(256 - w - 2, sx - 4) + 3, 114, 0x0f);
+      const bx = Math.max(4, Math.min(256 - w - 4, sx - 4));
+      g.rect(bx, 112, w, 11, 0x30);
+      g.text(MISC.levelClearReceipt, bx + 3, 114, 0x0f);
     }
     if (t > 60) g.text('MISSION COMPLETE!', 128, 80, (f >> 3) % 2 ? 0x28 : 0x30, { align: 'center', scale: 2, shadow: 0x0f });
     return;
@@ -425,7 +427,8 @@ export function drawContinue(g: Gfx, game: Game, f: number): void {
   g.text(MISC.continueQ, 128, 40, 0x30, { align: 'center', scale: 3, shadow: 0x03 });
   const col = red ? ((f >> 3) % 2 ? 0x16 : 0x26) : 0x30;
   const digit = String(Math.min(9, sec));
-  g.text(digit, 128, 82, col, { align: 'center', scale: 10, shadow: 0x03 });
+  g.text(digit, 131, 85, 0x03, { align: 'center', scale: 10 });
+  g.text(digit, 128, 82, col, { align: 'center', scale: 10 });
   g.text(`CONTINUES LEFT: ${run.continuesLeft}`, 128, 164, 0x28, { align: 'center' });
   if ((f >> 4) % 2 === 0) g.text(MISC.pressStart, 128, 186, 0x30, { align: 'center' });
   g.text(`SCORE ${fmtScore(run.score.score)}`, 128, 208, 0x10, { align: 'center', font: 3 });

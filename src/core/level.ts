@@ -82,7 +82,7 @@ const PLACEMENT: Record<StoreId, number> = {
   forever12: 24,
   radioshock: 232,
   crookstone: 416,
-  gamestonk: 616,
+  gamestonk: 608,
   kgbtoys: 24,
   spenders: 232,
   blockblustar: 416,
@@ -132,7 +132,6 @@ export const FURNITURE: Furniture[] = [
   { kind: 'bench', floor: FLOOR_2F, x: 520, w: 24 },
   { kind: 'plant', floor: FLOOR_2F, x: 548, w: 12 },
   // 1F
-  { kind: 'plant', floor: FLOOR_1F, x: 14, w: 8 },
   { kind: 'fountain', floor: FLOOR_1F, x: 262, w: 32 },
   { kind: 'kiosk', floor: FLOOR_1F, x: 330, w: 24 },
   { kind: 'bench', floor: FLOOR_1F, x: 520, w: 24 },
