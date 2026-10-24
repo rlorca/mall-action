@@ -1,0 +1,23 @@
+{
+  "model": "k3.1-pro",
+  "harness": "OpenCode v2.1.4",
+  "effort": "high",
+  "started_at": "2026-10-24T13:24:48Z",
+  "finished_at": "2026-10-24T15:42:23Z",
+  "wall_clock_seconds": 8255,
+  "tokens": {
+    "input_uncached": null,
+    "cache_read": null,
+    "cache_write": null,
+    "output": null,
+    "reasoning": null
+  },
+  "usd": {
+    "input_uncached": null,
+    "cache_read": null,
+    "cache_write": null,
+    "output": null,
+    "total": null
+  },
+  "method": "OpenCode did not expose token usage or USD cost to the agent, so unavailable numbers are null. Wall-clock time is the UTC difference between the recorded start and file-writing timestamps. No subagents were used."
+}

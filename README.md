@@ -116,3 +116,13 @@ See [`AGENTS.md`](AGENTS.md) for architecture, invariants, and verification rule
 ---
 
 *A FLICKERSOFT fan homage. Not affiliated with Taito or any parodied brand. All storefront names are parodies; no real logos, trade dress, external art, external audio, or copyrighted melodies are used.*
+
+## Run notes
+
+- **Model:** Kimi K3.1 Pro (`k3.1-pro`), high reasoning effort.
+- **Harness:** OpenCode v2.1.4.
+- **Run date:** 2026-10-24; started 13:24:48 UTC and finished 15:42:23 UTC (about 2 hours 18 minutes).
+- **Subagents:** none; all implementation and verification were performed in the main session.
+- **Interventions:** no human design or implementation interventions.
+- **Verification:** 64 Vitest tests pass; the production build passes; the real-time Chromium playtest passes against both the dev server and a nested-path production build with CRT on and no console errors. Twelve actual browser screenshots were inspected.
+- **Not finished:** no known blocking items. Long travel in the automated playtest is shortened with debug positioning; the interactions themselves use real keyboard input and animation frames.
