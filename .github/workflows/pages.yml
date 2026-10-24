@@ -1,0 +1,40 @@
+name: Test, build and publish
+on:
+  push:
+    branches: [main, kimi-k3-1-pro-high]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          fetch-depth: 0
+      - name: Copy static build
+        run: |
+          mkdir -p pages/kimi-k3.1-pro-high
+          rm -rf pages/kimi-k3.1-pro-high/*
+          cp -R dist/. pages/kimi-k3.1-pro-high/
+      - name: Publish gh-pages
+        working-directory: pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kimi-k3.1-pro-high
+          git diff --cached --quiet || git commit -m "Publish kimi-k3.1-pro-high"
+          git push origin gh-pages
