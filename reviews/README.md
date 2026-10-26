@@ -5,6 +5,10 @@ from the branch README benchmark notes or else its first commit), five category 
 at most 140 Unicode characters, rationale, verification, and exact source commits.
 Overall is calculated rather than entered separately.
 
+An entry may set `playable: false` when no deployed build is available. Its card
+then shows "Build unavailable" in place of a broken Play link; the assessment
+records the reason. Remove that flag after a working build is published.
+
 Generate the landing page and assessment page from this directory's data:
 
 ```sh

@@ -24,6 +24,9 @@ export function validateReview(review) {
       throw new Error(`Invalid implementation path: ${entry.branch}`);
     }
     if (!/^[a-f0-9]{40}$/.test(entry.commit)) throw new Error(`Missing snapshot: ${entry.branch}`);
+    if (entry.playable !== undefined && typeof entry.playable !== 'boolean') {
+      throw new Error(`Invalid play availability: ${entry.branch}`);
+    }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.written)) throw new Error(`Missing written date: ${entry.branch}`);
     if (!entry.note || [...entry.note].length > 140) {
       throw new Error(`Note exceeds 140 characters: ${entry.branch}`);
@@ -84,7 +87,7 @@ export function renderCard(entry, review, rank) {
     <p class="written">Written <time datetime="${entry.written}">${formatWritten(entry)}</time></p>
     ${renderReviewBlock(entry, review.criteria, rank)}
     <div class="actions">
-      <a class="btn play" href="${entry.folder}/">Play</a>
+      ${entry.playable === false ? '<span class="btn">Build unavailable</span>' : `<a class="btn play" href="${entry.folder}/">Play</a>`}
       <a class="btn" href="${repository}/tree/${entry.branch}">Source code</a>
     </div>
   </section>`;

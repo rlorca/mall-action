@@ -8,7 +8,8 @@ try {
   const cards = [...document.querySelectorAll('section.card')];
   const entries = rankedEntries(review);
   const known = entries.flatMap((entry, index) => {
-    const card = cards.find(candidate => candidate.querySelector(`a[href="${entry.folder}/"]`));
+    const card = cards.find(candidate => candidate.dataset.implementation === entry.branch
+      || candidate.querySelector(`a[href="${entry.folder}/"]`));
     if (!card) return [];
     card.dataset.implementation = entry.branch;
     card.querySelector('.review-block')?.remove();
