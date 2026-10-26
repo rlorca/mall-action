@@ -1,0 +1,46 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [deepseek-v4-pro-high]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages
+          git worktree add --detach /tmp/gh-pages origin/gh-pages
+          rm -rf /tmp/gh-pages/deepseek-v4-pro-high
+          mkdir -p /tmp/gh-pages/deepseek-v4-pro-high
+          cp -r dist/. /tmp/gh-pages/deepseek-v4-pro-high/
+          cd /tmp/gh-pages
+          git add -A
+          git commit -m "Deploy deepseek-v4-pro-high" || echo "No changes to commit"
+          git push origin HEAD:gh-pages
