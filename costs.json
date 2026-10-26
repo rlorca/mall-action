@@ -1,0 +1,23 @@
+{
+  "model": "deepseek-v4-pro",
+  "harness": "OpenCode",
+  "effort": "high",
+  "started_at": "2026-10-26T20:50:44Z",
+  "finished_at": "2026-10-26T21:02:07Z",
+  "wall_clock_seconds": 683,
+  "tokens": {
+    "input_uncached": null,
+    "cache_read": null,
+    "cache_write": null,
+    "output": null,
+    "reasoning": null
+  },
+  "usd": {
+    "input_uncached": null,
+    "cache_read": null,
+    "cache_write": null,
+    "output": null,
+    "total": null
+  },
+  "method": "Token and cost figures are not exposed by the OpenCode harness for this session, so they are recorded as null. wall_clock_seconds is the elapsed wall-clock time between the start timestamp (step 2) and this file, measured from the shell `date -u` output."
+}
