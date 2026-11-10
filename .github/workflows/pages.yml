@@ -46,7 +46,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch --depth=1 origin gh-pages
+          # a shallow single-branch checkout has no origin/gh-pages: fetch it into that ref explicitly
+          git fetch --depth=1 origin gh-pages:refs/remotes/origin/gh-pages
           git worktree add -B gh-pages-publish ../gh-pages origin/gh-pages
           rm -rf "../gh-pages/${PUBLISH_DIR}"
           mkdir -p "../gh-pages/${PUBLISH_DIR}"
