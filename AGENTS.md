@@ -74,7 +74,7 @@ choice), `powers.ts` (power-ups, scoring, difficulty).
 
 ## How to verify a change
 
-1. `npm test` - 150 tests of the rules, including a scripted bot (`tests/bot.ts`) that plays whole
+1. `npm test` - 151 tests of the rules, including a scripted bot (`tests/bot.ts`) that plays whole
    loops using pad input only. If the bot gets stuck, you created a softlock. If the fairness test
    fails, loop 1 got too hard.
 2. `npm run build` - also type-checks `src`, `tests` and `scripts`.
@@ -102,6 +102,8 @@ choice), `powers.ts` (power-ups, scoring, difficulty).
 - **Store guards were unfair when they could stand next to you.** They now keep `GUARD_KEEP_AWAY`
   tiles off, telegraph for 30 frames and fire slow bullets. A fitting-room spy spawns away from the
   agent, otherwise his shoe hit on the frame it was thrown.
+- **CI checkouts are shallow and single-branch.** `origin/gh-pages` does not exist until it is
+  fetched into that ref explicitly; a local dry run of the publish script caught this.
 - **A favicon 404 is a console error.** `index.html` carries an empty `data:` icon.
 - **Do not "fix" CRT wobble with filtering.** Curvature with nearest sampling makes pixel columns
   slightly uneven at 2x. A sharp-bilinear shader was tried and reverted: it softened the default

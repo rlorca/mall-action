@@ -152,9 +152,9 @@ given to different AI models.
 | Model | Claude Fable 5.2 (`claude-fable-5-2`) |
 | Date | 2026-11-10 |
 | Harness | Claude Code 2.1.322 (CLI), with its advisor tool enabled |
-| Reasoning / effort setting | not visible to the model; whatever the session was configured with |
-| Wall-clock time | about 1 hour 10 minutes, start to finished docs (08:02 to about 09:10 CET) |
-| Human interventions | none during the build |
+| Reasoning / effort setting | the session context showed a reasoning-effort value of 10 late in the run; the label was not otherwise visible to the model, so the operator should confirm it |
+| Wall-clock time | about 1 hour 15 minutes (08:02 to about 09:15 CET), including tests, browser playtests and docs |
+| Human interventions | none. The user asked one question mid-run (how the game was being play-tested); it was answered and did not steer the work |
 
 Things a careful reader should know about how this run differed from the protocol:
 
@@ -169,14 +169,21 @@ Things a careful reader should know about how this run differed from the protoco
 - **Advisor tool.** The harness offered an `advisor` tool (a reviewer model that sees the transcript).
   It was consulted for a plan review before coding and for a completion review at the end. Its advice
   on process (prove the screenshot chain first, write the bot before adding breadth) was followed.
+  The completion review led to real changes: nearest-neighbour sampling restored under the CRT, called
+  cars retargeting instead of crushing the caller, a truncated kiosk label, a CI fetch bug found by a
+  local dry run of the publish step, and several screens being looked at for the first time.
 - **Harness memory.** Notes saved by earlier sessions on this machine were available: tips for driving
   headless Chrome over the DevTools protocol for playtests. They describe testing technique, not any
   implementation.
-- **CI trigger.** The brief says "every push to `main`"; this repository publishes per branch.
-- **Verification actually done:** 150 automated tests; a scripted bot that completes whole loops through
+- **CI trigger.** The brief says "every push to `main`"; this repository publishes per branch. The
+  workflow had not run on GitHub when these notes were written; its publish step was dry-run locally.
+- **Verification actually done:** 151 automated tests; a scripted bot that completes whole loops through
   pad input only; real-time playtests in headless Chrome with real key events and the CRT on (splash,
   title, arrival, elevator, escalator, lamp, spy, stores, search, package, map, pause, level clear,
-  continue, game over, resize), with screenshots inspected and an empty error console. Audio was checked
+  continue, game over, resize, CRT persistence, the no-WebGL message), with screenshots inspected and an
+  empty error console. Continue and game over were reached by setting state through the debug hook,
+  not by playing down to them. The bot that plays whole loops is told where each package is; the
+  separate fairness test is not, but only covers the first package. Audio was checked
   for running and scheduling notes, but **nobody listened to it**: the music is unreviewed by ear.
   Gamepad input is unit-tested but was not tried with a physical pad.
 
