@@ -136,7 +136,7 @@ export function drawMap(fb: Fb, g: Game): void {
 }
 
 export function drawPause(fb: Fb, g: Game): void {
-  fb.shade(0, 16, 256, 224, 2);
+  fb.shade(0, 16, 256, 224, 1);
   if (g.frame & 16) {
     fb.rect(96, 108, 64, 20, 0x0f);
     fb.frame(96, 108, 64, 20, 0x30);

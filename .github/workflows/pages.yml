@@ -1,0 +1,68 @@
+# Test, build and publish this implementation to GitHub Pages.
+#
+# The repository hosts several independent implementations, one per branch. Pages is served
+# from the `gh-pages` branch, where each implementation owns one folder. This workflow only
+# ever touches its own folder (PUBLISH_DIR), and a failing test blocks the publish.
+name: Test, build, publish
+
+on:
+  push:
+    branches: [fable-5-2]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Shared by every implementation branch, so two workflows never push to gh-pages at once.
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
+env:
+  PUBLISH_DIR: fable-5.2
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish dist/ to gh-pages/${{ env.PUBLISH_DIR }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --depth=1 origin gh-pages
+          git worktree add -B gh-pages-publish ../gh-pages origin/gh-pages
+          rm -rf "../gh-pages/${PUBLISH_DIR}"
+          mkdir -p "../gh-pages/${PUBLISH_DIR}"
+          cp -R dist/. "../gh-pages/${PUBLISH_DIR}/"
+          cd ../gh-pages
+          git add -A -- "${PUBLISH_DIR}"
+          if git diff --cached --quiet; then
+            echo "Nothing changed in ${PUBLISH_DIR}; skipping publish."
+            exit 0
+          fi
+          git commit -m "Publish ${PUBLISH_DIR} from ${GITHUB_SHA::7}"
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:gh-pages; then exit 0; fi
+            echo "Push rejected (attempt ${attempt}); rebasing on the latest gh-pages."
+            git pull --rebase origin gh-pages
+            sleep 3
+          done
+          echo "Could not publish after 5 attempts." >&2
+          exit 1

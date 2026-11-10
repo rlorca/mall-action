@@ -67,18 +67,18 @@ export function drawHud(fb: Fb, g: Game): void {
     fb.text(name + name, px + 2 - off, 4, 0x26);
     [fb.cx0, fb.cy0, fb.cx1, fb.cy1] = saved;
   } else {
+    // big LED read-out of the current floor, plus a ladder of all six
     const f = floorOf(L.player.y);
+    const name = FLOOR_NAMES[f];
+    fb.text(name, px + 5 + (name.length === 1 ? 4 : 0), 4, 0x26);
     for (let i = 0; i < 6; i++) {
-      const on = i === f;
-      const lx = px + 3 + i * 9;
-      if (on) { fb.rect(lx - 1, 2, FLOOR_NAMES[i].length > 1 ? 9 : 5, 7, 0x16); }
-      fb.tiny(FLOOR_NAMES[i], lx, 3, on ? 0x30 : 0x16);
-      fb.pset(lx + 2, 12, on ? 0x28 : 0x07);
+      const lx = px + 26 + i * 4;
+      fb.rect(lx, 5, 3, 6, i === f ? 0x28 : 0x07);
     }
     const P = L.player;
     if (P.ride && P.ride.part === 'in') {
       const d = L.cars[P.ride.shaft].dir;
-      if (d) fb.text(d < 0 ? '^' : '~', px + pw - 10, 8, 0x28);
+      if (d) fb.text(d < 0 ? '^' : '~', px + pw - 9, 4, 0x28);
     }
   }
 }

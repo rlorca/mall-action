@@ -201,6 +201,8 @@ export function drawMall(fb: Fb, g: Game): void {
   // getaway station wagon
   fb.spr(Pr('wagon'), WAGON_X - 32 - cx, FLOOR_Y[F_P] - 24 + oy);
   if (g.pkgs >= 6 && frame & 16) fb.text('~', WAGON_X - 4 - cx, FLOOR_Y[F_P] - 36 + oy, 0x2a);
+  // a door stands open while a spy steps out of it
+  for (const sp of L.spies) if (sp.state === 'emerge') fb.rect(sp.x - 7 - cx, sp.y - 31 + oy, 14, 31, 0x0f);
   drawShafts(fb, L, cx, oy, true, frame);
   // wet floor
   for (const w of L.wets) {
