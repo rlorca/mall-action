@@ -74,8 +74,8 @@ export interface Spot {
 }
 export const KIOSKS: Spot[] = [
   { floor: F_4, x: 320 },
-  { floor: F_3, x: 416 },
-  { floor: F_2, x: 152 },
+  { floor: F_3, x: 428 },
+  { floor: F_2, x: 144 },
   { floor: F_1, x: 536 },
 ];
 export const BOOTH: Spot = { floor: F_3, x: 140 };
@@ -93,9 +93,9 @@ export const LAMPS: LampDef[] = [
   { floor: F_4, x: 724, disco: false },
   { floor: F_3, x: 114, disco: false },
   { floor: F_3, x: 360, disco: false },
-  { floor: F_3, x: 440, disco: false },
+  { floor: F_3, x: 448, disco: false },
   { floor: F_3, x: 724, disco: false },
-  { floor: F_2, x: 124, disco: true },
+  { floor: F_2, x: 122, disco: true },
   { floor: F_2, x: 316, disco: true },
   { floor: F_2, x: 524, disco: true },
   { floor: F_2, x: 724, disco: true },

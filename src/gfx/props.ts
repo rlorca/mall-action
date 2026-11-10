@@ -550,7 +550,7 @@ const fitting = (open: boolean) => paint(16, 16, (p) => {
   const k = 0x07, c = 0x15, w = 0x30;
   p.r(0, 0, 16, 16, k).r(1, 1, 14, 2, w);
   if (!open) { p.r(2, 3, 12, 13, c); for (let x = 3; x < 14; x += 3) p.r(x, 3, 1, 13, w); }
-  else { p.r(2, 3, 3, 13, c).r(11, 3, 3, 13, c).r(5, 3, 6, 13, 0x0f).r(7, 6, 2, 2, w); }
+  else { p.r(2, 3, 3, 13, c).r(11, 3, 3, 13, c).r(5, 3, 6, 13, w).r(6, 4, 4, 12, k).r(7, 6, 2, 2, w); }
 });
 const toyShelf = (open: boolean) => paint(16, 16, (p) => {
   const a = 0x17, r = 0x16, y = 0x28;

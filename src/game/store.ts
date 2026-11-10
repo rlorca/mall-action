@@ -8,7 +8,9 @@ import { addScore, difficulty, grantPower, maxShots, searchFrames, shotCooldown,
 import { banner, finishDeath, say } from './mall';
 
 export const GRACE = 90; // guards hold fire this long after you walk in
-export const GUARD_TELEGRAPH = 24;
+export const GUARD_TELEGRAPH = 30; // a visible half-second warning
+export const GUARD_BULLET_V = 1.25;
+export const GUARD_KEEP_AWAY = 3; // tiles: guard spies do not crowd the agent
 export const GUARD_SPEED = 0.5;
 export const BOT_SPEED = 0.75;
 export const STUN_TRAP = 60;
@@ -79,7 +81,7 @@ export function roomMove(tpl: RoomTpl, R: { x: number; y: number }, dx: number, 
 
 /** Unopened fixtures the agent is touching (front or either side), best candidate first. */
 export function touchingFixtures(R: Room, fixtures: Fixture[]): number[] {
-  const x0 = R.x + HB.x0 - 3, x1 = R.x + HB.x1 + 3, y0 = R.y + HB.y0 - 3, y1 = R.y + HB.y1 + 3;
+  const x0 = R.x + HB.x0 - 4, x1 = R.x + HB.x1 + 4, y0 = R.y + HB.y0 - 4, y1 = R.y + HB.y1 + 4;
   const cx = R.x + 8, cy = R.y + 10;
   const [fx, fy] = VEC[R.face];
   const out: { i: number; score: number }[] = [];
@@ -108,9 +110,18 @@ function smoke(L: Level, x: number, y: number): void {
   L.fx.push({ kind: 'smoke', x, y, t: 40 });
 }
 
+/** A free floor tile next to (tx,ty), preferring ones away from the agent. */
 function freeTileNear(R: Room, tx: number, ty: number): [number, number] {
-  for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, 1]]) if (!solidTile(R.tpl, tx + dx, ty + dy) && tileAt(R.tpl, tx + dx, ty + dy) === '.') return [tx + dx, ty + dy];
-  return [tx, ty + 1];
+  const ptx = Math.floor((R.x + 8) / TILE), pty = Math.floor((R.y + 10) / TILE);
+  let best: [number, number] = [tx, ty + 1];
+  let bd = -1;
+  for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [1, 1], [-1, 1], [2, 1], [-2, 1], [0, 2], [2, 0], [-2, 0]]) {
+    const x = tx + dx, y = ty + dy;
+    if (tileAt(R.tpl, x, y) !== '.') continue;
+    const d = Math.abs(x - ptx) + Math.abs(y - pty);
+    if (d > bd) { bd = d; best = [x, y]; }
+  }
+  return best;
 }
 
 function resolveSearch(g: Game, L: Level, R: Room, fi: number): void {
@@ -121,7 +132,7 @@ function resolveSearch(g: Game, L: Level, R: Room, fi: number): void {
   if (f.kind === 'R' && !f.revealed && g.rng.chance(FITTING_CHANCE)) {
     f.revealed = true;
     const [tx, ty] = freeTileNear(R, f.tx, f.ty);
-    const spy = newGuard('spy', tx, ty, 'h', 90);
+    const spy = newGuard('spy', tx, ty, 'h', 150);
     R.guards.push(spy);
     say(L, fxX, fxY - 6, TEXT.occupied, 80);
     g.sfx.push('shriek');
@@ -223,7 +234,7 @@ function stepGuards(g: Game, L: Level, R: Room, frozen: boolean): void {
     if (q.aimT > 0) {
       if (--q.aimT === 0) {
         const [vx, vy] = VEC[q.face];
-        R.bullets.push({ x: q.x + 8 + vx * 8, y: q.y + 8 + vy * 8, vx: vx * 1.5, vy: vy * 1.5, owner: 'g', shoe: false, shot: 0 });
+        R.bullets.push({ x: q.x + 8 + vx * 8, y: q.y + 8 + vy * 8, vx: vx * GUARD_BULLET_V, vy: vy * GUARD_BULLET_V, owner: 'g', shoe: false, shot: 0 });
         g.sfx.push('eshot');
       }
       continue;
@@ -254,12 +265,13 @@ function stepGuards(g: Game, L: Level, R: Room, frozen: boolean): void {
     if (ddy > 4) toward.push([0, 1, 'd']);
     if (ddy < -4) toward.push([0, -1, 'u']);
     if (Math.abs(ddy) > Math.abs(ddx)) toward.reverse();
-    if (g.rng.chance(0.7)) opts.push(...toward);
+    const near = Math.abs(q.tx - ptx) + Math.abs(q.ty - pty) <= GUARD_KEEP_AWAY;
+    if (!near && g.rng.chance(0.7)) opts.push(...toward);
     const all: [number, number, Facing][] = [[1, 0, 'r'], [-1, 0, 'l'], [0, 1, 'd'], [0, -1, 'u']];
     opts.push(...g.rng.shuffle(all));
     for (const [ox, oy, face] of opts) {
       const tx = q.tx + ox, ty = q.ty + oy;
-      if (tx === ptx && ty === pty) continue;
+      if (Math.abs(tx - ptx) + Math.abs(ty - pty) < 2) continue; // never step right next to the agent
       if (!guardTileFree(R, q, tx, ty)) continue;
       q.tx = tx; q.ty = ty; q.face = face; q.moving = true;
       break;
@@ -333,7 +345,7 @@ function stepRoomBullets(g: Game, L: Level, R: Room): void {
     }
     if (!gone && b.owner === 'p') {
       for (const q of R.guards) {
-        if (q.alive && b.x > q.x + 1 && b.x < q.x + 15 && b.y > q.y + 1 && b.y < q.y + 15) {
+        if (q.alive && b.x >= q.x + 1 && b.x <= q.x + 15 && b.y >= q.y + 1 && b.y <= q.y + 15) {
           hitGuard(g, L, R, q);
           gone = true;
           break;

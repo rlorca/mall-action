@@ -14,7 +14,7 @@ export const JUMP_V = 2.5; // ~20 px high
 export const JUMP_V_SNEAK = 2.9;
 export const STEP_UP = 4;
 export const PH = 24; // agent / spy height
-export const FATAL_FALL = 52; // more than one floor
+export const FATAL_FALL = 48; // falling more than one floor kills
 export const BULLET_V = 4;
 export const SPY_BULLET_V = 2;
 export const SPY_SPEED = 0.5;
@@ -54,6 +54,7 @@ export function groundBelow(L: Level, x: number, y: number, tol = STEP_UP): numb
   }
   const roof = car.y - CAR_H;
   if (roof >= lim && roof < best) best = roof;
+  if (car.y >= lim && car.y < best) best = car.y; // the car floor itself (riders)
   return best;
 }
 

@@ -179,7 +179,7 @@ export function drawClear(fb: Fb, g: Game): void {
     lines.forEach(([a, b], i) => {
       if (c.t > 40 + i * 40) { fb.text(a, 48, 176 + i * 11, 0x30); fb.text(b, 208 - b.length * 8, 176 + i * 11, i === 3 ? 0x28 : 0x2a); }
     });
-    if (c.t > 200) fb.textC('LOOP ' + g.loop, 128, 224, 0x26);
+    if (c.t > 200) fb.textC('LOOP ' + g.loop, 128, 221, 0x26);
   } else if (c.phase === 1) {
     // front page of THE DAILY MALL
     fb.rect(0, 0, 256, 240, 0x00);
@@ -210,7 +210,8 @@ export function drawClear(fb: Fb, g: Game): void {
       fb.spr(S('pkg'), x + 8, y + h - 22);
     });
   }
-  if (c.t > 60 && f & 32) fb.textC('START: NEXT', 128, 230, 0x10);
+  if (c.t > 60 && f & 32 && c.phase !== 0) fb.textC('START: NEXT', 128, 230, 0x10);
+  if (c.phase === 0 && c.t > 60 && f & 32) fb.textC('START: NEXT', 128, 232, 0x10);
 }
 
 export function drawContinue(fb: Fb, g: Game): void {
