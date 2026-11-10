@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-10-26",
+  "reviewedAt": "2026-11-10",
   "scale": 10,
   "criteria": [
     { "key": "gameDesign", "label": "Game design", "description": "Playability, fairness, feedback, pacing, visual readability, and how the mall and store mechanics work together." },
@@ -9,6 +9,36 @@
     { "key": "completeness", "label": "Prompt completeness", "description": "Working coverage of the original prompt: traversal, packages, stores, enemies, extras, power-ups, screens, audio, art, input, and technical constraints." }
   ],
   "implementations": [
+    {
+      "name": "Claude Fable 5.2", "branch": "fable-5-2", "folder": "fable-5.2",
+      "technology": "TypeScript + Vite, indexed framebuffer & WebGL CRT shader, Web Audio synth",
+      "written": "2026-11-10",
+      "commit": "2249d2902db7a859cb2c91166873be284e792247",
+      "scores": { "gameDesign": 8.6, "architecture": 8.9, "codeDesign": 8.5, "cleanliness": 8.8, "completeness": 9.3 },
+      "note": "A broad, well-structured caper with strong route coverage. Forced item poses remain vulnerable; store Cinnabomb contact kills are missing.",
+      "assessment": {
+        "gameDesign": "Recognizable window displays, distinct store themes, clear search prompts and generous guard telegraphs support the caper. Offline scenes show readable characters, though bright patterned floors compete with them. With normal lives, the supplied bot completed 19 of 20 seeded six-package routes without a continue; eight were deathless. Its separate no-peeking first-package route succeeded without a death on 19 of 20 seeds. A natural seed-9 run died during the mandatory package-holding pose: input is frozen while guards and bullets remain active. These are deterministic simulations, not human or real-time browser playtests.",
+        "architecture": "A plain-data Game owns seeded, frame-based rules, with separate mall, store, setup, power-up and flow modules. Rendering reads state; WebGL, audio and browser input sit outside the rules, and the splash has no imports. The render-independence regression passed. The roughly 980-line mall module still combines physics, elevators, AI, combat and NPCs; rules also import text wrapping from the graphics font module. Sound and held-item identities use strings instead of closed typed contracts.",
+        "codeDesign": "Queued per-source input preserves keyboard layouts, releases and merged gamepad presses. Explicit shaft geometry, car pickup protection, persistent fixtures, corner assistance and room cameras are solid foundations. Probes confirmed that Cinnabomb protects the store player but does not kill a touched store spy, unlike its mall behavior. The route bot stalls on seed 16 when two adjacent fixtures are touchable and the prompt selects the non-package fixture; one ordinary search resolves it and the route finishes. That is a bot limitation, not an established game softlock, and is outside the suite's eight normal-route seeds.",
+        "cleanliness": "Strict TypeScript covers source, tests and scripts; focused names, centralized copy, documented frame units and comments explaining collision choices make the code approachable. There are no runtime dependencies. The large mall module, some compressed multi-assignment branches and untyped event identities add maintenance cost, but most files have clear responsibilities. Benchmark notes candidly record advisor assistance and the limits of the original verification.",
+        "completeness": "Broad working rule coverage includes all six packages, traversal, store extras, NPCs, powers, Black Friday, continues, harder loops, generated sprites and music, and a reusable splash. All 151 tests and the typechecked build passed after npm ci; the generated bundle exactly matches the published branch artifact. Remaining gaps include Cinnabomb contact kills in stores and exposure during compulsory item poses. The suite also completes loop 2 and Black Friday with 99 lives. This review inspected offline renders, but could not independently verify real-time browser behavior, the CRT shader, browser console, audio playback or hardware gamepad input. The README's browser claims are the author's report, not fresh results from this review."
+      },
+      "verification": {
+        "tests": 151,
+        "build": "Pass after npm ci; strict typecheck included; relative asset URLs and exact deployed-bundle match checked",
+        "browser": "Independent browser checks unavailable: Chrome automation failed to launch and the alternate browser connection could not verify its policy. Offline renderer scenes were inspected. Node probes with normal lives completed 19/20 full routes unaided (8 deathless); seed 16 completed after one manual search input. No continues were used. The no-peeking first-package probe passed deathless on 19/20 seeds; package-pose death and missing store Cinnabomb contact kills were reproduced"
+      },
+      "evidence": [
+        { "path": "src/game/game.ts", "label": "Frame-based flow and timers" },
+        { "path": "src/game/mall.ts", "label": "Mall rules and shaft geometry" },
+        { "path": "src/game/store.ts", "label": "Item pose freezes input while hazards continue", "line": 427 },
+        { "path": "src/game/store.ts", "label": "Store guard contact behavior", "line": 209 },
+        { "path": "src/core/input.ts", "label": "Queued input and per-source ownership" },
+        { "path": "tests/bot.test.ts", "label": "Route tests and their 99-life allowance" },
+        { "path": "tests/bot.ts", "label": "Bot's adjacent-fixture selection", "line": 298 },
+        { "path": "README.md", "label": "Benchmark provenance and original verification limits", "line": 145 }
+      ]
+    },
     {
       "name": "Claude Sonnet 5.5", "branch": "sonnet-5-5", "folder": "sonnet-5.5",
       "technology": "TypeScript + WebGL CRT shader",
