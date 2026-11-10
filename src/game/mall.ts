@@ -112,7 +112,8 @@ export function inWet(L: Level, x: number): boolean {
 }
 
 export function say(L: Level, x: number, y: number, text: string, t = 110): void {
-  L.bubbles = L.bubbles.filter((b) => Math.abs(b.x - x) > 40 || Math.abs(b.y - y) > 20);
+  // a new bubble replaces any it would overlap
+  L.bubbles = L.bubbles.filter((b) => Math.abs(b.y - y) > 14 || Math.abs(b.x - x) > (b.text.length + text.length) * 4 + 10);
   L.bubbles.push({ x, y, text, t });
 }
 export function popup(L: Level, x: number, y: number, text: string): void {
@@ -194,6 +195,12 @@ export function stepCars(g: Game, L: Level, pad: PadFrame): void {
       }
     }
     if (c.dir !== 0) {
+      // A call placed ahead of a car that is already travelling retargets it, so the car
+      // that was called picks the caller up instead of passing through (and crushing them).
+      if (!c.manual && !inside && c.call >= 0) {
+        const cy = FLOOR_Y[c.call];
+        if ((c.dir > 0 && cy > c.y) || (c.dir < 0 && cy < c.y)) { c.target = c.call; c.pickup = true; c.call = -1; }
+      }
       if (c.manual && inside) {
         if (c.dir === -1 && down) c.dir = 1;
         else if (c.dir === 1 && up) c.dir = -1;

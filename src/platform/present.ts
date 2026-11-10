@@ -15,7 +15,6 @@ varying vec2 v;
 uniform sampler2D tex;
 uniform float crt;
 uniform float time;
-uniform float scale;
 const vec2 RES = vec2(256.0, 240.0);
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233)) + time) * 43758.5453); }
 void main() {
@@ -31,11 +30,8 @@ void main() {
   q.y *= 1.0 + 0.040 * p.x * p.x;
   uv = q * 0.5 + 0.5;
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) { gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
-  // "sharp bilinear": crisp pixels, the curve only softens the 1-px seams between them
-  vec2 t = uv * RES;
-  vec2 f = fract(t) - 0.5;
-  vec2 st = (floor(t) + 0.5 + clamp(f * scale, -0.5, 0.5)) / RES;
-  vec3 c = texture2D(tex, st).rgb;
+  // nearest-neighbour under the curve too: no blur, pixels stay hard-edged
+  vec3 c = texture2D(tex, (floor(uv * RES) + 0.5) / RES).rgb;
   float scan = 1.0 - 0.30 * (0.5 + 0.5 * cos(uv.y * 240.0 * 6.2831853));
   float mask = 1.0 - 0.06 * (0.5 + 0.5 * cos(uv.x * 256.0 * 6.2831853));
   float vig = 1.0 - 0.30 * pow(length(p * vec2(0.80, 0.86)), 3.0);
@@ -49,7 +45,6 @@ export class Presenter {
   private rgba = new Uint8Array(SCREEN_W * SCREEN_H * 4);
   private uCrt: WebGLUniformLocation | null;
   private uTime: WebGLUniformLocation | null;
-  private uScale: WebGLUniformLocation | null;
   crt = true;
   scale = 1;
   private frame = 0;
@@ -81,14 +76,13 @@ export class Presenter {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, SCREEN_W, SCREEN_H, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.rgba);
     this.uCrt = gl.getUniformLocation(prog, 'crt');
     this.uTime = gl.getUniformLocation(prog, 'time');
-    this.uScale = gl.getUniformLocation(prog, 'scale');
     this.resize();
   }
 
@@ -115,7 +109,6 @@ export class Presenter {
     fb.toRGBA(this.rgba);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, SCREEN_W, SCREEN_H, gl.RGBA, gl.UNSIGNED_BYTE, this.rgba);
     gl.uniform1f(this.uCrt, this.crt ? 1 : 0);
-    gl.uniform1f(this.uScale, this.scale);
     // Render-side noise only: never touches the game RNG.
     gl.uniform1f(this.uTime, (this.frame++ % 600) * 0.37);
     gl.drawArrays(gl.TRIANGLES, 0, 6);

@@ -131,7 +131,7 @@ export function drawMap(fb: Fb, g: Game): void {
   if (g.photoStrip) { fb.rect(ix, 216, 6, 12, 0x30); for (let k = 0; k < 4; k++) fb.rect(ix + 1, 217 + k * 3, 4, 2, 0x16); ix += 10; }
   for (const it of g.inventory.slice(0, 5)) { void it; fb.spr(S('pu_joke'), ix, 216); ix += 14; }
   const last = g.inventory[g.inventory.length - 1];
-  if (last) fb.text(last.slice(0, 24 - Math.floor((ix - 56) / 8)), ix + 2, 218, 0x28);
+  if (last) fb.text(last.slice(0, Math.max(0, Math.floor((248 - (ix + 2)) / 8))), ix + 2, 218, 0x28);
   else if (!g.photoStrip) fb.text('-', ix, 218, 0x10);
 }
 

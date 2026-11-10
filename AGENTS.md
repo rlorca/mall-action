@@ -103,8 +103,11 @@ choice), `powers.ts` (power-ups, scoring, difficulty).
   tiles off, telegraph for 30 frames and fire slow bullets. A fitting-room spy spawns away from the
   agent, otherwise his shoe hit on the frame it was thrown.
 - **A favicon 404 is a console error.** `index.html` carries an empty `data:` icon.
-- **CRT curvature with nearest sampling made text wobble.** The shader uses "sharp bilinear"
-  sampling when the CRT is on and exact texel centres when it is off.
+- **Do not "fix" CRT wobble with filtering.** Curvature with nearest sampling makes pixel columns
+  slightly uneven at 2x. A sharp-bilinear shader was tried and reverted: it softened the default
+  view, and the brief demands nearest-neighbour with no blur. The texture stays `NEAREST`.
+- **A called car must retarget if it is already moving.** An automatic car on its own trip used to
+  pass through the floor of someone who had just called it from a grate, crushing them.
 - **Size the canvas in device pixels** (`Presenter.resize`), or a fractional `devicePixelRatio`
   blurs the picture.
 - **Level clear lasts 1080 frames** (three screens). Tests that wait for the next loop must wait

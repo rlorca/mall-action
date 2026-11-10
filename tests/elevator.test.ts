@@ -163,6 +163,18 @@ describe('elevators', () => {
     run(g, 110);
     expect(L.player.cause).toBe('crush');
   });
+  it('calling a car that is already on its way down retargets it: it picks you up instead of passing through', () => {
+    const g = toMall(1); quiet(g);
+    const L = g.level!;
+    const car = L.cars[2];
+    car.y = FLOOR_Y[F_R]; car.dir = 1; car.target = F_1; car.manual = false; car.pickup = false; car.door = 0;
+    place(g, F_3, CX); // on the grate, below the descending automatic car
+    run(g, 200); // stands still: the auto-call fires while the car is still above
+    expect(L.player.dying).toBe(0);
+    expect(g.lives).toBe(3);
+    expect(car.y).toBe(FLOOR_Y[F_3]);
+    expect(L.player.ride).toEqual({ shaft: 2, part: 'in' });
+  });
   it('you can ride on a car roof, and rising into the top of the shaft crushes you', () => {
     const g = toMall(1); quiet(g);
     const L = g.level!;

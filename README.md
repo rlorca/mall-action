@@ -69,7 +69,7 @@ elevator, ride an escalator, use a kiosk, the photo booth or the getaway car.
 
 ## Run, test, build
 
-Requires Node 20 or newer.
+Requires Node 22.12 or newer (the test runner's minimum). Developed on Node 26; CI uses Node 22.
 
 ```sh
 npm install

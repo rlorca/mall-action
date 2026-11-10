@@ -273,23 +273,23 @@ export function drawMall(fb: Fb, g: Game): void {
 
 /** Small "you are here" panel: highlights the nearest store that still holds a package. */
 function drawKioskPanel(fb: Fb, L: Level, frame: number): void {
-  const x0 = 64, y0 = 44, w = 128, h = 74;
+  const x0 = 48, y0 = 44, w = 160, h = 74;
   fb.rect(x0, y0, w, h, 0x0f);
   fb.frame(x0, y0, w, h, 0x21);
   fb.textC('DIRECTORY', 128, y0 + 3, 0x21);
   for (let f = 1; f <= 4; f++) {
     const y = y0 + 4 + f * 13;
     fb.tiny(['', '4F', '3F', '2F', '1F'][f], x0 + 4, y + 2, 0x10);
-    fb.rect(x0 + 14, y + 8, 108, 1, 0x00);
+    fb.rect(x0 + 14, y + 8, 140, 1, 0x00);
     for (const st of L.stores) {
       if (st.def.floor !== f) continue;
-      const sx = x0 + 14 + Math.round(st.def.x * 0.14);
+      const sx = x0 + 14 + Math.round(st.def.x * 0.18);
       const hot = st.def.id === L.kioskPanel!.store;
       const col = st.def.role === 'closed' ? 0x00 : st.def.role === 'shop' ? 0x12 : st.cleared ? 0x10 : 0x16;
-      fb.rect(sx, y, 11, 8, hot && frame & 8 ? 0x30 : col);
-      if (hot) fb.frame(sx - 1, y - 1, 13, 10, 0x28);
+      fb.rect(sx, y, 14, 8, hot && frame & 8 ? 0x30 : col);
+      if (hot) fb.frame(sx - 1, y - 1, 16, 10, 0x28);
     }
   }
   const t = L.kioskPanel!.store;
-  fb.textC(t >= 0 ? STORES[t].name.slice(0, 15) : 'ALL CLEAR', 128, y0 + h - 10, 0x28);
+  fb.textC(t >= 0 ? STORES[t].name : 'ALL CLEAR', 128, y0 + h - 10, 0x28); // longest name: 18 chars = 144 px
 }

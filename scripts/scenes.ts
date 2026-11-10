@@ -14,10 +14,22 @@ const fb = new Fb();
 function run(g: Game, n: number, held = 0, pressedFirst = 0) {
   for (let i = 0; i < n; i++) stepGame(g, { held, pressed: i === 0 ? pressedFirst | held : 0 });
 }
+// Scenes are also packed four to a contact sheet (sheet-NN.png) for quick review.
+const sheet = new Fb(512, 480);
+let sheetN = 0, sheetI = 0;
+function flush() {
+  if (sheetI === 0) return;
+  savePng(sheet, `${out}/sheet-${String(sheetN++).padStart(2, '0')}.png`, 1);
+  sheet.clear(0x0f);
+  sheetI = 0;
+}
 function snap(g: Game, name: string) {
   if (only && !name.includes(only)) return;
   drawGame(fb, g);
   savePng(fb, `${out}/${name}.png`, 2);
+  const ox = (sheetI % 2) * 256, oy = Math.floor(sheetI / 2) * 240;
+  for (let y = 0; y < 240; y++) sheet.px.set(fb.px.subarray(y * 256, y * 256 + 256), (oy + y) * 512 + ox);
+  if (++sheetI === 4) flush();
 }
 function toMall(seed = 7): Game {
   const g = newGame(seed);
@@ -80,4 +92,37 @@ for (const st of STORES) {
   run(g, 600); snap(g, '51-gameover');
   run(g, 100); snap(g, '52-gameover2');
 }
+{
+  // things that only show up in special situations
+  const g = toMall(5);
+  const L = g.level!;
+  L.spawnT = 99999;
+  for (const st of L.stores) if (st.def.key !== 'hotspy' && st.def.role === 'target') st.cleared = true;
+  teleport(g, 3, 144);
+  run(g, 1, 0, Btn.Up); run(g, 10); snap(g, '60-kiosk-panel');
+  const g2 = toMall(6);
+  const M = g2.level!;
+  M.spawnT = 99999;
+  M.powers.weapon = 'spread'; M.powers.weaponT = 700; M.powers.armor = true; M.powers.radar = true; M.alarm = true; g2.score = 123450; g2.pkgs = 6; g2.lives = 12;
+  M.wets = [{ x0: 200, t: 500 }];
+  M.cop.floor = 4; M.cop.x = 150; M.cop.dir = 1; M.cop.cool = 0;
+  teleport(g2, 4, 250);
+  g2.frame = 16;
+  run(g2, 1, Btn.Left, Btn.A); run(g2, 6); snap(g2, '61-hud-full-wet-cop');
+  M.powers.speed = 'juliooze'; M.powers.speedT = 300; M.powers.weapon = 'none';
+  M.photoStripT = 150; M.banner = { lines: ['WILL THE OWNER OF A BLACK VAN', "MARKED 'NOT SPIES' PLEASE", 'MOVE IT.'], t: 100 };
+  M.spies.push({ id: 5, x: 330, y: 256, face: -1, state: 'aim', t: 22, shootT: 0, aimLow: true, goalX: 330, pause: 0, volley: -1, car: -1, far: 0, slide: 0, seen: 99 });
+  M.bubbles.push({ x: 330, y: 226, text: "WHAT'S YOUR RETURN POLICY?!", t: 50 });
+  g2.frame = 21;
+  drawGame(fb, g2); snap(g2, '62-banner-strip-bubble');
+  const g3 = toMall(7);
+  g3.blackFriday = true;
+  teleport(g3, 1, 300); snap(g3, '63-black-friday');
+  const g4 = toMall(8);
+  g4.level!.powers.radar = true;
+  teleport(g4, 1, 64); run(g4, 1, 0, Btn.Up); run(g4, 200); g4.frame = 8; snap(g4, '64-store-radar');
+  g4.inventory = ['PET ROCK', 'PRE-OWNED STRATEGY GUIDE']; g4.photoStrip = true;
+  run(g4, 1, 0, Btn.Select); g4.frame = 8; snap(g4, '65-map-in-store-radar-items');
+}
+flush();
 console.log('done');
