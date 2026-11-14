@@ -1,0 +1,3 @@
+import http from 'node:http';import {readFile} from 'node:fs/promises';import path from 'node:path';
+const root=path.resolve('dist');
+http.createServer(async(req,res)=>{try{const file=path.resolve(root,'.'+decodeURIComponent(req.url.split('?')[0]));if(!file.startsWith(root+'/')&&file!==root)throw Error();const name=file===root||req.url.split('?')[0].endsWith('/')?path.join(file,'index.html'):file;const data=await readFile(name);res.setHeader('Content-Type',name.endsWith('.wasm')?'application/wasm':name.endsWith('.js')?'text/javascript':'text/html');res.end(data)}catch{res.writeHead(404);res.end('Not found')}}).listen(4176,'127.0.0.1',()=>console.log('MALL ACTION: http://127.0.0.1:4176'));

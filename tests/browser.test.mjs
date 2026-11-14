@@ -1,0 +1,10 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {Input,FixedLoop,mapKey} from '../browser.js';
+test('printed letters work across layouts and unmapped letters fall back',()=>{assert.equal(mapKey('z','KeyY'),16);assert.equal(mapKey('w','KeyZ'),1);assert.equal(mapKey('q','KeyA'),4);assert.equal(mapKey('a','KeyQ'),4);assert.equal(mapKey(' ','Space'),32)});
+test('release clears original key even when layout changes',()=>{const p=new Input;p.down('z','KeyY');assert.equal(p.held(),16);p.up('KeyY');assert.equal(p.held(),0)});
+test('two keys mapped to same action release independently',()=>{const p=new Input;p.down('z','KeyZ');p.down('j','KeyJ');p.up('KeyZ');assert.equal(p.held(),16);p.up('KeyJ');assert.equal(p.held(),0)});
+test('rapid taps queue across catch-up steps',()=>{const p=new Input;for(let i=0;i<3;i++){p.down('x','KeyX');p.up('KeyX')}assert.deepEqual([p.edge(),p.edge(),p.edge(),p.edge()],[32,32,32,0])});
+test('repeat ignored and blur clears input',()=>{const p=new Input;p.down('x','KeyX');p.down('x','KeyX',true);assert.equal(p.edge(),32);assert.equal(p.edge(),0);p.clear();assert.equal(p.held(),0)});
+test('gamepad disconnect clears held state',()=>{const p=new Input;const buttons=Array.from({length:16},(_,i)=>({pressed:i===0}));p.poll([{buttons,axes:[0,0]}]);assert.equal(p.held(),16);p.poll([]);assert.equal(p.held(),0)});
+test('fixed 60 Hz and bounded catchup',()=>{const c=new FixedLoop;let n=0;c.advance(0,()=>n++);c.advance(1000/60+.01,()=>n++);assert.equal(n,1);c.advance(5000,()=>n++);assert.equal(n,6)});
+import {SCORES} from '../audio.js';
+test('all 10 stores have distinct original scores and valid notes',()=>{const names=['fashion','electronics','lounge','games','toys','novelty','music','gadgets','food','sports'];assert.equal(new Set(names.map(n=>SCORES[n].lead.join(','))).size,10);for(const score of Object.values(SCORES)){assert.ok(score.bpm>=60&&score.bpm<=180);assert.ok(score.lead.every(n=>Number.isInteger(n)&&n>=-1&&n<=36))}});
