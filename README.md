@@ -40,7 +40,7 @@ npm run build
 npm run dev
 ```
 
-Open http://127.0.0.1:4176/. `npm run build` outputs static files in `dist/`; all asset references are relative, including the Wasm fetch. Serve the directory over HTTP, rather than opening its HTML with `file://`.
+Open http://127.0.0.1:4176/. `npm run build` outputs static files in `dist/`; all asset references are relative, including the Wasm fetch. Runtime assets use content-hashed filenames, so published artwork changes load without stale browser caches. Serve the directory over HTTP, rather than opening its HTML with `file://`.
 
 The production build is about 100 KB of Wasm, plus source JavaScript and HTML. Pixels, fonts, sprites and music are source-defined; there are no external art/audio files.
 
@@ -49,7 +49,7 @@ The production build is about 100 KB of Wasm, plus source JavaScript and HTML. P
 ## Debug options
 
 - `?seed=123`: reproducible world and random decisions.
-- `?gallery=1`: animated source sprite gallery.
+- `?gallery=1`: animated four-page actor/prop atlas, automatically cycling every eight seconds.
 - `?debug=1&seed=123`: skip splash and expose `window.game`.
 
 ```js
@@ -67,6 +67,7 @@ game.freeze(false)
 
 - `src/game.rs`: pure deterministic simulation, collision, room plans and AI.
 - `src/art.rs`: palette, bitmap fonts, sprites and clipped framebuffer primitives.
+- `src/pixel.rs`: explicitly authored pixel-row atlas for actors, clothing, electronics, toys, food, furnishings and mall architecture. Each stamp uses three inks plus transparency.
 - `src/render.rs`: immutable-state drawing, HUD, CRT-ready scenes and directory.
 - `src/copy.rs`: jokes, SPYGRAM posts, first-visit lines, headlines and item names. Add jokes here; tests enforce the copy limits.
 - `src/splash.rs`, `splash/README.md`: reusable FLICKERSOFT timing module.
@@ -89,5 +90,9 @@ Simulation runs at 60 Hz with integer coordinates. Rendering is decoupled, catch
 - This is a **Rust-constrained, interactively revised run**, not a strict unchanged-prompt one-shot. The shared brief was read unchanged. The user required Rust and the exact branch name, criticised the first graphics pass, reported missing music, requested a look at the published Sonnet–Fable version, and asked for a more ambitious visual result. That version was viewed in the browser as a visual reference; its source/art/audio were not copied.
 - Environment interventions: an isolated Rust toolchain and Wasm target were installed under `/tmp` because the system compiler lacked the target; native approvals were needed for Git worktree writes, downloads and the local server.
 - Browser QA: CRT enabled; real keyboard elevator ride, store entry, one-tap search, package acquisition, exit, map, pause and escalator; deterministic/debug completion of remaining packages, escape, loop 2, continue and game over. Audio checked using a running Web Audio context and nonzero analyser output. Screenshots were captured and visually inspected.
+
+### Art revision
+
+Following further user feedback, a separate revision replaces the original geometric placeholder art with a source bitmap atlas, drawn actor poses, 5×7 storefront lettering, distinct material tiles, shop furniture, and detailed mall props. The original commits remain in history. The revision keeps the simulation unchanged and passes 48 automated tests plus the real-browser mission playtest with CRT enabled. Screenshots above show the revised artwork.
 
 A FLICKERSOFT fan homage, not affiliated with Taito or any parodied brand.

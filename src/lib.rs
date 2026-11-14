@@ -1,6 +1,7 @@
 pub mod art;
 pub mod copy;
 pub mod game;
+pub mod pixel;
 pub mod render;
 pub mod splash;
 use game::Game;

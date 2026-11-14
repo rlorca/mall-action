@@ -1,6 +1,13 @@
 import {execFileSync} from 'node:child_process';
-import {mkdirSync,copyFileSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync,rmSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 execFileSync(process.env.CARGO || 'cargo',['build','--release','--target','wasm32-unknown-unknown'],{stdio:'inherit'});
-mkdirSync('dist',{recursive:true});
-for(const f of ['index.html','browser.js','audio.js']) copyFileSync(f,`dist/${f}`);
-copyFileSync('target/wasm32-unknown-unknown/release/mall_action.wasm','dist/mall_action.wasm');
+const wasm=readFileSync('target/wasm32-unknown-unknown/release/mall_action.wasm');
+const browser=readFileSync('browser.js','utf8'),audio=readFileSync('audio.js','utf8'),html=readFileSync('index.html','utf8');
+const hash=createHash('sha256').update(wasm).update(browser).update(audio).update(html).digest('hex').slice(0,12);
+rmSync('dist',{recursive:true,force:true});mkdirSync('dist',{recursive:true});
+writeFileSync(`dist/mall_action.${hash}.wasm`,wasm);
+writeFileSync(`dist/audio.${hash}.js`,audio);
+writeFileSync(`dist/browser.${hash}.js`,browser.replace("'./audio.js'",`'./audio.${hash}.js'`).replace("'./mall_action.wasm'",`'./mall_action.${hash}.wasm'`));
+writeFileSync('dist/index.html',html.replace('./browser.js',`./browser.${hash}.js`));
+console.log(`Static build: dist/ (${hash})`);

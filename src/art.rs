@@ -1,6 +1,6 @@
 pub const W: usize = 256;
 pub const H: usize = 240;
-pub const PAL: [[u8; 3]; 32] = [
+pub const PAL: [[u8; 3]; 48] = [
     [7, 8, 22],
     [18, 18, 47],
     [37, 30, 67],
@@ -33,6 +33,22 @@ pub const PAL: [[u8; 3]; 32] = [
     [198, 78, 197],
     [255, 129, 216],
     [255, 209, 237],
+    [232, 216, 184],
+    [196, 178, 151],
+    [148, 131, 120],
+    [87, 72, 78],
+    [37, 48, 55],
+    [59, 78, 79],
+    [112, 139, 131],
+    [177, 196, 171],
+    [47, 33, 54],
+    [71, 45, 64],
+    [113, 72, 58],
+    [156, 108, 76],
+    [202, 155, 100],
+    [112, 140, 179],
+    [67, 85, 116],
+    [217, 183, 179],
 ];
 pub struct Canvas {
     pub pixels: Vec<u8>,
@@ -51,7 +67,7 @@ impl Canvas {
             return;
         }
         let i = (y as usize * W + x as usize) * 4;
-        self.pixels[i..i + 3].copy_from_slice(&PAL[c % 32]);
+        self.pixels[i..i + 3].copy_from_slice(&PAL[c % PAL.len()]);
         self.pixels[i + 3] = 255;
     }
     pub fn rect(&mut self, x: i32, y: i32, w: i32, h: i32, c: usize) {
@@ -113,17 +129,98 @@ impl Canvas {
         }
         yy
     }
+    pub fn stamp_scaled(&mut self, x: i32, y: i32, rows: &[&str], inks: [usize; 3], scale: i32) {
+        for (yy, row) in rows.iter().enumerate() {
+            for (xx, p) in row.bytes().enumerate() {
+                if (b'1'..=b'3').contains(&p) {
+                    self.rect(
+                        x + xx as i32 * scale,
+                        y + yy as i32 * scale,
+                        scale,
+                        scale,
+                        inks[(p - b'1') as usize],
+                    );
+                }
+            }
+        }
+    }
+    pub fn logo(&mut self, x: i32, y: i32, text: &str, scale: i32) {
+        for depth in (1..=4).rev() {
+            for (i, ch) in text.chars().enumerate() {
+                for (yy, row) in big_glyph(ch).iter().enumerate() {
+                    for xx in 0..5 {
+                        if row & (1 << (4 - xx)) != 0 {
+                            let px = x + i as i32 * 6 * scale + xx * scale + (6 - yy as i32) / 2;
+                            let py = y + yy as i32 * scale;
+                            self.rect(
+                                px - 1 + depth,
+                                py - 1 + depth,
+                                scale + 2,
+                                scale + 2,
+                                if depth == 4 { 0 } else { 8 },
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        for (i, ch) in text.chars().enumerate() {
+            for (yy, row) in big_glyph(ch).iter().enumerate() {
+                for xx in 0..5 {
+                    if row & (1 << (4 - xx)) != 0 {
+                        let px = x + i as i32 * 6 * scale + xx * scale + (6 - yy as i32) / 2;
+                        let py = y + yy as i32 * scale;
+                        self.rect(px, py, scale, scale, if yy < 3 { 16 } else { 11 });
+                        if yy == 0 || big_glyph(ch)[yy - 1] & (1 << (4 - xx)) == 0 {
+                            self.rect(px, py, scale, 1, 7)
+                        }
+                        if xx == 4 || row & (1 << (3 - xx)) == 0 {
+                            self.rect(px + scale - 1, py, 1, scale, if yy < 3 { 15 } else { 10 });
+                        }
+                    }
+                }
+            }
+        }
+    }
+    pub fn stamp(&mut self, x: i32, y: i32, rows: &[&str], inks: [usize; 3], flip: bool) {
+        let w = rows.iter().map(|r| r.len()).max().unwrap_or(0) as i32;
+        for (yy, row) in rows.iter().enumerate() {
+            for (xx, p) in row.bytes().enumerate() {
+                if (b'1'..=b'3').contains(&p) {
+                    self.pixel(
+                        x + if flip { w - 1 - xx as i32 } else { xx as i32 },
+                        y + yy as i32,
+                        inks[(p - b'1') as usize],
+                    );
+                }
+            }
+        }
+    }
+    pub fn label(&mut self, x: i32, y: i32, s: &str, color: usize) {
+        for (i, ch) in s.chars().enumerate() {
+            for (yy, row) in big_glyph(ch.to_ascii_uppercase()).iter().enumerate() {
+                for xx in 0..5 {
+                    if row & (1 << (4 - xx)) != 0 {
+                        self.pixel(x + i as i32 * 6 + xx, y + yy as i32, color);
+                    }
+                }
+            }
+        }
+    }
     pub fn sprite(&mut self, x: i32, y: i32, id: usize, frame: u32, flip: bool) {
         let s = sprite(id, frame);
         let colors = match id {
             0 => [10, 7, 0],
-            1 => [2, 7, 0],
+            1 => [4, 7, 0],
             2 => [24, 7, 0],
             3 => [19, 7, 0],
             4 => [15, 7, 0],
             5 => [25, 7, 0],
             6 => [10, 7, 0],
-            8 => [2, 7, 0],
+            8 => [4, 7, 0],
+            9 => [10, 7, 0],
+            10 => [29, 7, 0],
+            11 => [19, 7, 0],
             _ => [29, 7, 0],
         };
         for yy in 0..s.h {
@@ -150,129 +247,94 @@ pub struct Sprite {
     pub data: Vec<u8>,
 }
 pub fn sprite(id: usize, frame: u32) -> Sprite {
-    let h = if id < 4 { 24 } else { 16 };
+    use crate::pixel::*;
+    let rows = match id {
+        0 | 2 | 3 => AGENT,
+        1 => SPY,
+        4 => PACKAGE,
+        5 => BOT,
+        6 | 8 => SMALL_AGENT,
+        9 => SMALL_BACK,
+        10 => WALKER,
+        11 => WALKER_B,
+        _ => POWER,
+    };
+    let h = if id < 4 || id == 10 || id == 11 {
+        24
+    } else {
+        16
+    };
     let mut s = Sprite {
         w: 16,
         h,
         data: vec![0; 16 * h],
     };
-    let mut r = |x: usize, y: usize, w: usize, h: usize, c: u8| {
-        for yy in y..(y + h).min(h.max(if id < 4 { 24 } else { 16 })) {
-            for xx in x..(x + w).min(16) {
-                if yy < s.h {
-                    s.data[yy * 16 + xx] = c
-                }
+    for (y, row) in rows.iter().take(h).enumerate() {
+        for (x, p) in row.bytes().take(16).enumerate() {
+            s.data[y * 16 + x] = if p == b'.' { 0 } else { p - b'0' };
+        }
+    }
+    // Four poses have different silhouettes; hands swing against the planted foot.
+    if matches!(id, 0 | 1 | 2 | 3 | 10 | 11) && frame % 4 == 1 {
+        for y in 18..23 {
+            for x in 0..16 {
+                s.data[y * 16 + x] = 0;
             }
         }
-    };
-    if id < 4 {
-        let rows = [
-            "......33333.....",
-            ".....3333333....",
-            "....333333333...",
-            "....333333332...",
-            "....332222222...",
-            ".....22223232...",
-            ".....22222222...",
-            "......222222....",
-            ".....112211.....",
-            "....11122111....",
-            "...1111221111...",
-            "...11112211112..",
-            "...11212211122..",
-            "...1221221112...",
-            "...122111111....",
-            "...111113111....",
-            "....11113111....",
-            "....111131111...",
-            "....1111.1111...",
-            ".....333.333....",
-            ".....333.333....",
-            ".....333.333....",
-            "....3333.3333...",
-            "....3333.3333...",
-        ];
-        for (yy, row) in rows.iter().enumerate() {
-            for (xx, v) in row.bytes().enumerate() {
-                s.data[yy * 16 + xx] = if v == b'.' { 0 } else { v - b'0' };
+        for (y, left, right) in [
+            (18, 5, 9),
+            (19, 4, 10),
+            (20, 3, 11),
+            (21, 3, 12),
+            (22, 2, 12),
+        ] {
+            for x in left..left + 2 {
+                s.data[y * 16 + x] = if id >= 10 && y < 21 { 1 } else { 3 };
+            }
+            for x in right..right + 2 {
+                s.data[y * 16 + x] = if id >= 10 && y < 21 { 1 } else { 3 };
             }
         }
-        if id == 1 {
-            for y in 0..4 {
-                for x in 3..14 {
-                    if y == 3 || x >= 5 && x < 12 {
-                        s.data[y * 16 + x] = 3
-                    }
-                }
-            }
-            for y in 8..19 {
-                for x in 3..13 {
-                    if s.data[y * 16 + x] == 1 {
-                        s.data[y * 16 + x] = 3
-                    }
-                }
+    }
+    if matches!(id, 0 | 1 | 2 | 3 | 10 | 11) && frame % 4 == 3 {
+        for y in 18..23 {
+            for x in 0..16 {
+                s.data[y * 16 + x] = 0;
             }
         }
-        if frame % 4 == 1 || frame % 4 == 3 {
-            for y in 19..24 {
-                for x in 0..16 {
-                    s.data[y * 16 + x] = 0
-                }
+        for (y, left, right) in [(18, 7, 8), (19, 7, 8), (20, 7, 9), (21, 6, 9), (22, 5, 10)] {
+            for x in left..left + 2 {
+                s.data[y * 16 + x] = if id >= 10 && y < 21 { 1 } else { 3 };
             }
-            let phase = frame % 4 == 1;
-            for y in 19..24 {
-                for x in if phase { 3..6 } else { 7..10 } {
-                    s.data[y * 16 + x] = 3
-                }
-                for x in if phase { 10..13 } else { 5..8 } {
-                    if y < 22 {
-                        s.data[y * 16 + x] = 3
-                    }
-                }
+            for x in right..right + 2 {
+                s.data[y * 16 + x] = if id >= 10 && y < 21 { 1 } else { 3 };
             }
         }
-    } else {
-        match id {
-            4 => {
-                r(2, 3, 12, 11, 1);
-                r(2, 3, 12, 2, 2);
-                r(7, 3, 2, 11, 2);
-                r(5, 0, 6, 4, 1)
-            }
-            5 => {
-                r(3, 1, 10, 12, 1);
-                r(5, 3, 2, 3, 3);
-                r(10, 3, 2, 3, 3);
-                r(5, 9, 7, 2, 2);
-                r(1, 5, 2, 7, 3);
-                r(13, 5, 2, 7, 3);
-                r(4, 13, 3, 3, 3);
-                r(10, 13, 3, 3, 3)
-            }
-            6 | 8 => {
-                r(5, 0, 7, 3, 3);
-                r(4, 2, 8, 4, 3);
-                r(6, 3, 6, 4, 2);
-                r(10, 4, 3, 2, 3);
-                r(4, 7, 8, 6, 1);
-                r(2, 8, 3, 4, 1);
-                r(12, 8, 2, 4, 1);
-                r(6, 7, 2, 4, 2);
-                r(3, 12, 10, 2, 1);
-                r(4, 14, 3, 2, 3);
-                r(10, 14, 3, 2, 3);
-            }
-            _ => {
-                r(4, 2, 8, 12, 1);
-                r(2, 5, 12, 6, 1);
-                r(6, 4, 4, 8, 2)
-            }
+    }
+    if matches!(id, 6 | 8 | 9) && frame % 2 == 1 {
+        for x in 3..6 {
+            s.data[15 * 16 + x] = 0;
         }
+        s.data[14 * 16 + 4] = 3;
+        s.data[14 * 16 + 3] = 3;
     }
     s
 }
 pub fn big_glyph(c: char) -> [u8; 7] {
     match c {
+        '0' => [14, 17, 19, 21, 25, 17, 14],
+        '1' => [4, 12, 4, 4, 4, 4, 14],
+        '2' => [14, 17, 1, 2, 4, 8, 31],
+        '3' => [30, 1, 1, 14, 1, 1, 30],
+        '4' => [2, 6, 10, 18, 31, 2, 2],
+        '5' => [31, 16, 16, 30, 1, 1, 30],
+        '6' => [14, 16, 16, 30, 17, 17, 14],
+        '7' => [31, 1, 2, 4, 8, 8, 8],
+        '8' => [14, 17, 17, 14, 17, 17, 14],
+        '9' => [14, 17, 17, 15, 1, 1, 14],
+        '\'' => [4, 4, 8, 0, 0, 0, 0],
+        '!' => [4, 4, 4, 4, 4, 0, 4],
+        '-' => [0, 0, 0, 31, 0, 0, 0],
         'A' => [14, 17, 17, 31, 17, 17, 17],
         'B' => [30, 17, 17, 30, 17, 17, 30],
         'C' => [14, 17, 16, 16, 16, 17, 14],
@@ -398,11 +460,18 @@ mod tests {
     use super::*;
     #[test]
     fn sprites_have_three_colors() {
-        for id in 0..9 {
+        for id in 0..12 {
             for f in 0..4 {
                 let s = sprite(id, f);
                 assert_eq!(s.w, 16);
-                assert_eq!(s.h, if id < 4 { 24 } else { 16 });
+                assert_eq!(
+                    s.h,
+                    if id < 4 || id == 10 || id == 11 {
+                        24
+                    } else {
+                        16
+                    }
+                );
                 assert!(s.data.iter().all(|p| *p <= 3));
                 assert!(s.data.iter().any(|p| *p > 0));
             }

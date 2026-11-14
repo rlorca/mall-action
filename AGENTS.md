@@ -3,7 +3,8 @@
 This orphan branch belongs to the Rust-constrained GPT-6.1 Sol benchmark. Never merge another implementation into it. The root repository's shared one-shot-prompt.md is immutable.
 
 - `src/game.rs`: pure fixed-frame simulation, seeded RNG, collision, elevators, stores and progression. No browser calls. Use integer coordinates; one tick is 1/60 second.
-- `src/art.rs`: source-defined pixel font and sprites, NES-like palette and software framebuffer.
+- `src/art.rs`: source-defined pixel font and sprites, fixed 48-colour master palette and software framebuffer.
+- `src/pixel.rs`: pixel-row bitmap atlas. Dots are transparent, digits 1–3 are material inks. Keep every sprite to three inks, add new props to `ALL`, and inspect them in the four-page `?gallery=1` view.
 - `src/render.rs`: draws immutable state. Never mutate simulation from rendering.
 - `src/copy.rs`: editable jokes and captions.
 - `src/splash.rs`: reusable studio timing module; see splash/README.md.
@@ -15,3 +16,5 @@ Run `npm test`, `npm run build`, `npm run dev`. Rust requires the wasm32-unknown
 Keep pause/map timers frozen, elevator stops aligned and ding events unique. Calls protect waiting riders. Package acquisition and level clear are idempotent. Persistent room fixtures survive re-entry; guards reset. Debug mutations are enabled only by ?debug=1. Browser keyup uses the mapping recorded at keydown. Consume queued edges once per simulation tick. WebGL uploads RGBA pixels from Wasm memory; refresh views after memory growth.
 
 Publishing uses the branch workflow and relative asset URLs. Never edit generated gh-pages builds manually.
+
+Art changes must be inspected in the browser at 256×240 with CRT on. Keep silhouettes legible against both pale mall walls and dark store floors. Animate walking from travelled distance, so idle actors do not walk in place. Build assets have content-hashed URLs to prevent the browser displaying a stale Wasm renderer after publishing.
