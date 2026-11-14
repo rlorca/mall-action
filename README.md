@@ -14,6 +14,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | GPT-6 Sol | [`gpt-6-sol`](../../tree/gpt-6-sol) | https://rlorca.github.io/mall-action/gpt-6.sol/ |
 | GPT-6 Astra | [`gpt-6-astra`](../../tree/gpt-6-astra) | https://rlorca.github.io/mall-action/gpt-6.astra/ |
 | GPT-6.1 Sol | [`gpt-6-1-sol`](../../tree/gpt-6-1-sol) | https://rlorca.github.io/mall-action/gpt-6.1-sol/ |
+| GPT-6.1 Sol (medium), Rust | [`rust-gpt-6.1-sol-medium`](../../tree/rust-gpt-6.1-sol-medium) | https://rlorca.github.io/mall-action/rust-gpt-6.1-sol-medium/ |
 | Claude Fable 5.1 | [`fable-5-1`](../../tree/fable-5-1) | https://rlorca.github.io/mall-action/fable-5.1/ |
 | Claude Fable 5.2 | [`fable-5-2`](../../tree/fable-5-2) | https://rlorca.github.io/mall-action/fable-5.2/ |
 | Claude Haiku 4.5 | [`haiku-4-5`](../../tree/haiku-4-5) | https://rlorca.github.io/mall-action/haiku-4.5/ |
