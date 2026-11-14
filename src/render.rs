@@ -577,17 +577,21 @@ fn mall(g: &Game, c: &mut Canvas) {
             c.rect(x, y + 14, 20, 6, 2);
             c.text(x, y + 5, "+100", 16)
         } else {
-            c.sprite(
-                x,
-                y + if en.duck { 10 } else { 0 },
-                1,
-                if en.aim > 0 {
-                    0
-                } else {
-                    (en.x / 5).unsigned_abs()
-                },
-                en.dir < 0,
-            );
+            if en.duck {
+                c.stamp(x, y, px::AGENT_DUCK, [4, 7, 0], en.dir < 0)
+            } else {
+                c.sprite(
+                    x,
+                    y,
+                    1,
+                    if en.aim > 0 {
+                        0
+                    } else {
+                        (en.x / 5).unsigned_abs()
+                    },
+                    en.dir < 0,
+                )
+            }
             if en.aim > 0 {
                 c.text(x + 5, y - 8, "!", 11);
                 c.rect(x + if en.dir > 0 { 13 } else { -4 }, y + 9, 7, 3, 6)
@@ -617,7 +621,7 @@ fn mall(g: &Game, c: &mut Canvas) {
         agent(c, g.p.x - cx, g.p.y - 24 - cy, g, false)
     }
     for b in &g.bullets {
-        c.rect(b.x - cx, b.y - cy, 4, 2, if b.enemy { 11 } else { 16 })
+        c.rect(b.x - cx, b.y - cy, 3, 2, if b.enemy { 11 } else { 16 })
     }
     for d in &g.drops {
         c.sprite(
@@ -1275,23 +1279,29 @@ fn room(g: &Game, c: &mut Canvas) {
     c.rect(111, 194, 34, 13, 14);
     c.rect(111, 194, 34, 1, 15);
     c.text(120, 199, "EXIT", 7);
-    for (i, f) in r.fixtures.iter().enumerate() {
-        let x = f.x - ox;
-        let y = f.y + 32 - oy;
-        fixture(c, x, y, s.theme, i, f.open, f.kind == 1, g.frame);
-        if !f.open && g.p.radar && f.content == 1 && g.frame / 12 % 2 == 0 {
-            c.text(x + 10, y - 8, "!", 16);
-        }
-        if let Some((idx, t, _)) = g.search {
-            if i == idx {
-                c.rect(x - 1, y - 7, 26, 4, 0);
-                c.rect(
-                    x,
-                    y - 6,
-                    24 - (t as i32 * 24 / if g.p.speed > 0 { 24 } else { 45 }),
-                    2,
-                    20,
-                )
+    let mut depth: Vec<(i32, u8, usize)> = r
+        .fixtures
+        .iter()
+        .enumerate()
+        .map(|(i, f)| (f.y + f.h, 0, i))
+        .collect();
+    depth.extend(
+        g.enemies
+            .iter()
+            .enumerate()
+            .filter(|(_, e)| e.hp > 0)
+            .map(|(i, e)| (e.y + 16, 1, i)),
+    );
+    depth.push((g.p.y + 16, 2, 0));
+    depth.sort_by_key(|entry| *entry);
+    for (_, kind, index) in depth {
+        match kind {
+            0 => room_fixture(g, c, ox, oy, index),
+            1 => room_enemy(g, c, ox, oy, &g.enemies[index]),
+            _ => {
+                if g.p.inv == 0 || g.frame / 5 % 2 == 0 {
+                    agent(c, g.p.x - ox, g.p.y + 32 - oy, g, true)
+                }
             }
         }
     }
@@ -1319,29 +1329,8 @@ fn room(g: &Game, c: &mut Canvas) {
             c.sprite(120, 120, 7, g.frame / 10, false)
         }
     }
-    for en in &g.enemies {
-        if en.hp <= 0 {
-            continue;
-        }
-        c.sprite(
-            en.x - ox,
-            en.y + 32 - oy,
-            if en.bot { 5 } else { 8 },
-            ((en.x + en.y) / 5).unsigned_abs(),
-            en.dir < 0,
-        );
-        if en.aim > 0 {
-            c.text(en.x + 6 - ox, en.y + 24 - oy, "!", 11)
-        }
-        if en.stun > 0 {
-            c.text(en.x - ox, en.y + 26 - oy, "***", 16)
-        }
-    }
-    if g.p.inv == 0 || g.frame / 5 % 2 == 0 {
-        agent(c, g.p.x - ox, g.p.y + 32 - oy, g, true)
-    }
     for b in &g.bullets {
-        c.rect(b.x - ox, b.y + 32 - oy, 3, 3, if b.enemy { 11 } else { 16 })
+        c.rect(b.x - ox, b.y + 32 - oy, 3, 2, if b.enemy { 11 } else { 16 })
     }
     for t in &g.toys {
         c.stamp(t.x - ox, t.y + 32 - oy, px::WINDUP, [0, 15, 7], t.dx < 0)
@@ -1365,6 +1354,44 @@ fn room(g: &Game, c: &mut Canvas) {
     if g.first_t > 0 {
         let lines = copy::VISITS[visit_index(g.store)];
         bubble(c, 115, 75, if g.first_t > 90 { lines.0 } else { lines.1 })
+    }
+}
+
+fn room_fixture(g: &Game, c: &mut Canvas, ox: i32, oy: i32, i: usize) {
+    let s = STORES[g.store];
+    let f = &g.rooms[g.store].fixtures[i];
+    let x = f.x - ox;
+    let y = f.y + 32 - oy;
+    fixture(c, x, y, s.theme, i, f.open, f.kind == 1, g.frame);
+    if !f.open && g.p.radar && f.content == 1 && g.frame / 12 % 2 == 0 {
+        c.text(x + 10, y - 8, "!", 16);
+    }
+    if let Some((idx, t, _)) = g.search {
+        if i == idx {
+            c.rect(x - 1, y - 7, 26, 4, 0);
+            c.rect(
+                x,
+                y - 6,
+                24 - (t as i32 * 24 / if g.p.speed > 0 { 24 } else { 45 }),
+                2,
+                20,
+            )
+        }
+    }
+}
+fn room_enemy(_g: &Game, c: &mut Canvas, ox: i32, oy: i32, en: &Enemy) {
+    c.sprite(
+        en.x - ox,
+        en.y + 32 - oy,
+        if en.bot { 5 } else { 8 },
+        ((en.x + en.y) / 5).unsigned_abs(),
+        en.dir < 0,
+    );
+    if en.aim > 0 {
+        c.text(en.x + 6 - ox, en.y + 24 - oy, "!", 11)
+    }
+    if en.stun > 0 {
+        c.text(en.x - ox, en.y + 26 - oy, "***", 16)
     }
 }
 fn bubble(c: &mut Canvas, x: i32, y: i32, s: &str) {

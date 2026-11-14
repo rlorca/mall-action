@@ -1,4 +1,5 @@
 pub mod art;
+pub mod collision;
 pub mod copy;
 pub mod game;
 pub mod pixel;
@@ -87,6 +88,8 @@ pub extern "C" fn game_read(field: u32) -> i32 {
             23 => g.p.stun as i32,
             24 => g.bonus_track as i32,
             25 => g.lamps.iter().filter(|l| l.active).count() as i32,
+            26 => g.p.roof.map_or(-1, |i| i as i32),
+            27 => g.p.falling as i32,
             _ => 0,
         }
     })

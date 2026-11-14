@@ -1,30 +1,41 @@
-// Original four-voice scores. Numbers are semitone offsets; -1 is a rest.
-// No recordings, samples, downloaded melodies, or third-party assets.
-const REST=-1;
-export const SCORES={
- title:{name:'Red Coat After Dark',bpm:126,root:57,lead:[0,7,12,10,7,3,5,7,12,-1,10,7,5,3,2,-1,0,7,12,15,14,12,10,7,5,7,3,2,0,-1,7,-1],bass:[0,0,8,8,5,5,7,7],chords:[0,8,5,7]},
- alarm:{name:'Security Is Watching',bpm:158,root:57,lead:[0,1,7,8,0,1,10,8,0,1,7,8,12,11,8,7],bass:[0,0,0,0,8,8,7,7],chords:[0,0,8,7]},
- elevator:{name:'Please Hold (Muzak)',bpm:96,root:60,lead:[4,-1,7,11,9,-1,7,-1,2,-1,5,9,7,-1,5,-1,0,4,7,12,11,9,7,4,2,-1,7,-1,4,-1,2,-1],bass:[0,7,9,4,5,0,7,2],chords:[0,9,5,7]},
- ambient:{name:'Closing Time Neon',bpm:64,root:45,lead:[19,-1,-1,-1,-1,-1,-1,-1,22,-1,-1,-1,-1,-1,-1,-1,24,-1,-1,-1,-1,-1,-1,-1,19,-1,-1,-1,-1,-1,-1,-1],bass:[0,0,8,8,5,5,7,7],chords:[0,8,5,7],ambient:true},
- fashion:{name:'Trenchcoat Strut',bpm:118,root:57,lead:[0,-1,7,10,12,-1,10,7,3,-1,5,7,10,7,5,-1,0,-1,3,5,7,10,12,10,7,-1,5,3,2,-1,0,-1],bass:[0,12,8,20,5,17,7,19],chords:[0,8,5,7]},
- electronics:{name:'Batteries Not Included',bpm:136,root:60,lead:[0,7,12,15,12,7,3,7,5,12,17,20,17,12,8,12,7,14,19,22,19,14,10,14,3,10,15,19,15,10,7,2],bass:[0,0,5,5,7,7,3,7],chords:[0,5,7,3]},
- toys:{name:'Little Comrade Waltz',bpm:104,root:60,meter:3,lead:[0,-1,4,7,12,7,2,-1,5,9,14,9,4,-1,7,12,16,12,2,-1,7,11,14,-1],bass:[0,7,7,2,9,9,4,11,11,7,2,2],chords:[0,2,4,7]},
- food:{name:'Pretzel Polka',bpm:138,root:62,lead:[0,4,7,4,0,-1,4,-1,2,5,9,5,2,-1,5,-1,4,7,12,7,4,2,0,2,7,5,4,2,0,-1,7,-1],bass:[0,7,0,7,5,12,7,2],chords:[0,0,5,7]},
- sports:{name:'Both Left Feet',bpm:116,root:55,lead:[0,0,7,-1,12,12,10,7,5,5,3,-1,5,7,10,-1,12,12,15,12,10,7,5,3,2,5,7,2,0,-1,0,-1],bass:[0,0,5,5,8,8,7,7],chords:[0,5,8,7]},
- music:{name:'No Refunds Rock',bpm:132,root:52,lead:[0,0,12,0,3,0,5,3,0,0,12,0,7,5,3,-1,5,5,17,5,8,5,10,8,7,7,19,7,10,7,5,3],bass:[0,0,0,0,5,5,7,7],chords:[0,0,5,7]},
- lounge:{name:'Massage Chair Bossa',bpm:98,root:57,lead:[4,-1,7,9,-1,7,4,-1,2,-1,5,7,-1,5,2,-1,0,-1,4,7,11,9,7,-1,2,-1,5,9,7,-1,4,2],bass:[0,7,9,4,5,0,7,2],chords:[0,9,5,7]},
- gadgets:{name:'Dreaming In Retail',bpm:86,root:57,lead:[12,-1,-1,7,-1,4,-1,-1,14,-1,-1,9,-1,5,-1,-1,16,-1,-1,12,-1,7,-1,-1,14,-1,11,-1,7,-1,4,-1],bass:[0,0,5,5,9,9,7,7],chords:[0,5,9,7]},
- novelty:{name:'Lava Lamp Surf Club',bpm:142,root:57,lead:[0,0,3,5,7,7,5,3,0,0,3,5,8,7,5,3,5,5,8,10,12,10,8,5,7,7,10,12,14,12,10,7],bass:[0,7,0,7,5,12,7,14],chords:[0,0,5,7]},
- games:{name:'To The Moon Menu',bpm:154,root:60,lead:[0,7,12,19,15,12,7,3,5,12,17,24,20,17,12,8,7,14,19,26,22,19,14,10,3,10,15,22,19,15,10,7],bass:[0,0,5,5,7,7,3,7],chords:[0,5,7,3]},
- sideb:{name:'Side B: Mall Hearts',bpm:122,root:60,lead:[4,7,9,-1,7,4,2,-1,0,4,7,-1,9,7,4,-1,5,9,12,9,7,5,4,2,7,9,7,4,2,0,-1,-1],bass:[0,0,9,9,5,5,7,7],chords:[0,9,5,7]}
-};
-const STORES=['fashion','electronics','lounge','games','toys','electronics','novelty','music','gadgets','food','electronics','sports','music'];
+import {SCORES,STORE_TRACKS} from './score.js';
+export {SCORES} from './score.js';
 export class AudioEngine{
- constructor(){this.ctx=null;this.mute=false;this.next=0;this.beat=0;this.track='';this.nodes=new Set;this.started=false;}
- async start(){try{if(!this.ctx){this.ctx=new (globalThis.AudioContext||globalThis.webkitAudioContext)();this.master=this.ctx.createGain();this.master.gain.value=.4;this.analyser=this.ctx.createAnalyser();this.analyser.fftSize=1024;this.master.connect(this.analyser);this.analyser.connect(this.ctx.destination);this.noise=this.ctx.createBuffer(1,this.ctx.sampleRate,this.ctx.sampleRate);let x=98765;const a=this.noise.getChannelData(0);for(let i=0;i<a.length;i++){x^=x<<13;x^=x>>>17;x^=x<<5;a[i]=(x>>>0)/2147483648-1;}}await this.ctx.resume();this.started=this.ctx.state==='running';}catch{this.started=false;}}
- tone(freq,t,dur,type='square',vol=.2){if(!this.ctx||this.mute||freq<=0)return;const o=this.ctx.createOscillator(),v=this.ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);v.gain.setValueAtTime(.001,t);v.gain.linearRampToValueAtTime(vol,t+.006);v.gain.exponentialRampToValueAtTime(.001,t+Math.max(.012,dur));o.connect(v);v.connect(this.master);o.start(t);o.stop(t+dur+.01);this.nodes.add(o);o.onended=()=>{o.disconnect();v.disconnect();this.nodes.delete(o)}}
- hiss(dur=.1,t=this.ctx?.currentTime,vol=.1){if(!this.ctx||this.mute)return;const n=this.ctx.createBufferSource(),v=this.ctx.createGain();n.buffer=this.noise;v.gain.setValueAtTime(vol,t);v.gain.exponentialRampToValueAtTime(.001,t+dur);n.connect(v);v.connect(this.master);n.start(t);n.stop(t+dur);n.onended=()=>{n.disconnect();v.disconnect()}}
- fx(n){if(!this.ctx||this.mute)return;const t=this.ctx.currentTime;switch(n){case 1:this.tone(150,t,.055,'square',.28);this.hiss(.035);break;case 2:this.tone(220,t,.09);this.tone(440,t+.04,.09);break;case 3:this.tone(880,t,.25,'triangle',.5);this.tone(1320,t+.06,.3,'triangle',.25);break;case 4:this.tone(95,t,.07);break;case 5:case 7:case 15:this.hiss(.22);this.tone(60,t,.18,'triangle',.4);break;case 6:this.tone(440,t,.025);break;case 8:[0,4,7,12].forEach((n,i)=>this.tone(330*2**(n/12),t+i*.09,.18));break;case 11:this.tone(1100,t,.06);this.tone(1650,t+.06,.1);break;case 12:this.tone(100,t,.17);break;case 13:this.tone(1400,t,.25,'triangle',.4);break;case 16:[660,550,440].forEach((f,i)=>this.tone(f,t+i*.16,.3,'triangle'));break;default:this.tone(300,t,.06,'triangle')}}
- music(state){if(!this.ctx||this.ctx.state!=='running')return;const key=state.scene===5?(state.bonusTrack?'sideb':STORES[state.store]):state.scene===4?(state.lift>=0?'elevator':state.alarm?'alarm':'ambient'):'title';const score=SCORES[key];const now=this.ctx.currentTime;if(key!==this.track){this.track=key;this.beat=0;this.next=now;for(const n of this.nodes){try{n.stop()}catch{}}}this.master.gain.setTargetAtTime(this.mute?0:state.paused?.06:.4,now,.04);if(state.map||state.scene===9){this.next=now;return}if(this.next<now-.2)this.next=now;let budget=0;while(this.next<now+.12&&budget++<8){const b=this.beat;const step=60/score.bpm/2;const note=score.lead[b%score.lead.length];const hz=n=>440*2**((score.root+n-69)/12);if(note!==REST)this.tone(hz(note+12),this.next,step*(score.ambient?3:.74),'square',score.ambient?.035:.2);if(!score.ambient&&b%2===1){const chord=score.chords[Math.floor(b/8)%4];const harmony=chord+[7,12,16,12][Math.floor(b/2)%4];this.tone(hz(harmony),this.next,step*.65,'square',.075)}if(b%2===0){const bass=score.bass[Math.floor(b/2)%score.bass.length];this.tone(hz(bass-12),this.next,step*1.75,'triangle',score.ambient?.11:.36)}if(!score.ambient&&key!=='gadgets'&&key!=='elevator'){if(b%4===0)this.tone(65,this.next,.08,'triangle',.4);else this.hiss(b%4===2?.06:.025,this.next,b%4===2?.1:.035)}this.next+=step;this.beat++;}}
- status(){let rms=0;if(this.analyser){const a=new Float32Array(this.analyser.fftSize);this.analyser.getFloatTimeDomainData(a);rms=Math.sqrt(a.reduce((s,v)=>s+v*v,0)/a.length)}return {state:this.ctx?.state??'not-started',track:SCORES[this.track]?.name,muted:this.mute,rms,voices:this.nodes.size};}
+ constructor(){this.ctx=null;this._mute=false;this.started=false;this.starting=null;this.track='';this.hidden=false;this.lastState=null;this.nodes=new Set;this.metrics={voices:0,samples:0,steps:0};this.error=null;}
+ get mute(){return this._mute;}
+ set mute(value){this._mute=!!value;this.applyGain();}
+ applyGain(){if(!this.master)return;const value=this._mute?0:.65;if(value!==this.lastVolume){this.lastVolume=value;this.master.gain.setTargetAtTime(value,this.ctx.currentTime,.025);}}
+ async start(){
+  if(this.ctx?.state==='suspended')this.ctx.resume().catch(()=>{});
+  if(this.starting)return this.starting;
+  if(this.ctx&&this.node){if(this.ctx.state==='suspended')await this.ctx.resume().catch(()=>{});this.started=this.ctx.state==='running';return;}
+  this.starting=this.initialize();await this.starting;this.starting=null;
+ }
+ async initialize(){try{
+  if(!this.ctx)this.ctx=new (globalThis.AudioContext||globalThis.webkitAudioContext)({latencyHint:'interactive'});
+  await this.ctx.resume();
+  this.master=this.ctx.createGain();this.master.gain.value=.65;
+  this.musicBus=this.ctx.createGain();this.fxBus=this.ctx.createGain();this.fxBus.gain.value=.28;
+  this.filter=this.ctx.createBiquadFilter();this.filter.type='lowpass';this.filter.frequency.value=6500;this.filter.Q.value=.5;
+  this.compressor=this.ctx.createDynamicsCompressor();this.compressor.threshold.value=-12;this.compressor.knee.value=12;this.compressor.ratio.value=4;this.compressor.attack.value=.006;this.compressor.release.value=.12;
+  this.analyser=this.ctx.createAnalyser();this.analyser.fftSize=2048;
+  this.musicBus.connect(this.master);this.fxBus.connect(this.master);this.master.connect(this.filter).connect(this.compressor).connect(this.analyser).connect(this.ctx.destination);
+  this.noise=this.ctx.createBuffer(1,this.ctx.sampleRate,this.ctx.sampleRate);let x=98765;const a=this.noise.getChannelData(0);for(let i=0;i<a.length;i++){x^=x<<13;x^=x>>>17;x^=x<<5;a[i]=(x>>>0)/2147483648-1;}
+  await this.ctx.audioWorklet.addModule(new URL('./synth-worklet.js',import.meta.url));
+  this.node=new AudioWorkletNode(this.ctx,'mall-synth',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[1]});
+  this.node.port.onmessage=({data})=>{this.metrics=data;};this.node.onprocessorerror=()=>{this.error='Audio processor stopped';};this.node.connect(this.musicBus);
+  this.started=this.ctx.state==='running';this.track='';if(this.lastState)this.music(this.lastState);
+ }catch(error){this.error=String(error.message??error);this.started=false;}}
+ tone(freq,t,dur,type='square',vol=.2){if(!this.node||this.mute)return;const o=this.ctx.createOscillator(),v=this.ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(vol,t+.008);v.gain.exponentialRampToValueAtTime(.001,t+Math.max(.012,dur));o.connect(v).connect(this.fxBus);o.start(t);o.stop(t+dur+.01);this.nodes.add(o);o.onended=()=>{o.disconnect();v.disconnect();this.nodes.delete(o);};}
+ hiss(dur=.1,vol=.1){if(!this.node||this.mute)return;const t=this.ctx.currentTime,n=this.ctx.createBufferSource(),v=this.ctx.createGain(),f=this.ctx.createBiquadFilter();n.buffer=this.noise;f.type='lowpass';f.frequency.value=1800;v.gain.setValueAtTime(vol,t);v.gain.exponentialRampToValueAtTime(.001,t+dur);n.connect(f).connect(v).connect(this.fxBus);n.start(t);n.stop(t+dur);n.onended=()=>{n.disconnect();v.disconnect();f.disconnect();};}
+ fx(n){if(!this.node||this.mute)return;const t=this.ctx.currentTime;switch(n){case 1:this.tone(150,t,.055,'square',.28);this.hiss(.035,.07);break;case 2:this.tone(220,t,.09);this.tone(440,t+.04,.09);break;case 3:this.tone(880,t,.25,'triangle',.5);this.tone(1320,t+.06,.3,'triangle',.25);break;case 4:this.tone(95,t,.07);break;case 5:case 7:case 15:this.hiss(.22);this.tone(60,t,.18,'triangle',.4);break;case 6:this.tone(440,t,.025);break;case 8:{const score=SCORES[this.track];const base=440*2**(((score?.root??60)+12-69)/12);const third=score?score.chords[0][1]-score.chords[0][0]:4;[0,third,7,12].forEach((n,i)=>this.tone(base*2**(n/12),t+i*.09,.18,'triangle',.22));break;}case 11:this.tone(1100,t,.06);this.tone(1650,t+.06,.1);break;case 12:this.tone(100,t,.17);break;case 13:this.tone(1000,t,.2,'triangle',.2);break;case 16:[660,550,440].forEach((f,i)=>this.tone(f,t+i*.16,.3,'triangle'));break;default:this.tone(300,t,.06,'triangle');}}
+ music(state){this.lastState=state;if(!this.node)return;
+  const key=state.scene===0||state.scene===9?'':state.scene===5?(state.bonusTrack?'sideb':STORE_TRACKS[state.store]):state.scene===4?(state.lift>=0?'elevator':state.alarm?'alarm':'ambient'):state.scene===6?'clear':state.scene===10?'over':state.scene===7||state.scene===8?'elevator':'title';
+  if(key!==this.track){this.track=key;this.node.port.postMessage({track:key});}
+  const duck=this.hidden?0:state.paused?.16:state.map?.2:1;
+  if(duck!==this.lastDuck){this.lastDuck=duck;this.node.port.postMessage({duck});}
+  this.applyGain();
+ }
+ setHidden(hidden){this.hidden=hidden;if(this.lastState)this.music(this.lastState);}
+ status(){let rms=0,peak=0;if(this.analyser){const a=new Float32Array(this.analyser.fftSize);this.analyser.getFloatTimeDomainData(a);for(const x of a){rms+=x*x;peak=Math.max(peak,Math.abs(x));}rms=Math.sqrt(rms/a.length);}return {state:this.ctx?.state??'not-started',engine:this.node?'audio-worklet':'starting',sampleRate:this.ctx?.sampleRate??0,track:SCORES[this.track]?.name,muted:this.mute,rms,peak,voices:this.metrics.voices+this.nodes.size,samples:this.metrics.samples,steps:this.metrics.steps,error:this.error};}
 }

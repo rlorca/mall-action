@@ -1,3 +1,4 @@
+use crate::collision::{bolt, crosses_surface, mall_body, room_body, room_feet, Rect, CAR_HEIGHT};
 use crate::copy;
 pub const UP: u32 = 1;
 pub const DOWN: u32 = 2;
@@ -308,14 +309,50 @@ impl Room {
         }
     }
     pub fn solid(&self, x: i32, y: i32) -> bool {
-        x < 10
-            || x > self.w - 22
-            || y < 26
-            || y > self.h - 16
+        self.blocks(room_feet(x, y))
+    }
+    pub fn blocks(&self, b: Rect) -> bool {
+        let door_left = self.w / 2 - 18;
+        let door_right = self.w / 2 + 18;
+        b.x < 10
+            || b.right() > self.w - 10
+            || b.y < 26
+            || b.bottom() > self.h
+            || (b.bottom() > self.h - 16 && (b.x < door_left || b.right() > door_right))
             || self
                 .fixtures
                 .iter()
-                .any(|f| overlap(x, y, 12, 12, f.x, f.y, f.w, f.h))
+                .any(|f| b.overlaps(Rect::new(f.x, f.y, f.w, f.h)))
+    }
+    /// Unit steps, with at most one pixel of lateral assistance near an actual corner.
+    pub fn move_actor(&self, x: i32, y: i32, dx: i32, dy: i32) -> (i32, i32) {
+        if !self.solid(x + dx, y + dy) {
+            return (x + dx, y + dy);
+        }
+        for distance in 1..=3 {
+            for side in [-1, 1] {
+                let (sx, sy) = if dx == 0 { (side, 0) } else { (0, side) };
+                if !self.solid(x + sx, y + sy)
+                    && !self.solid(x + dx + sx * distance, y + dy + sy * distance)
+                {
+                    return (x + sx, y + sy);
+                }
+            }
+        }
+        (x, y)
+    }
+    pub fn free_actor_near(&self, x: i32, y: i32) -> (i32, i32) {
+        for r in 0i32..=48 {
+            for dx in -r..=r {
+                let dy = r - dx.abs();
+                for yy in [y - dy, y + dy] {
+                    if !self.solid(x + dx, yy) {
+                        return (x + dx, yy);
+                    }
+                }
+            }
+        }
+        (self.w / 2 - 6, self.h - 28)
     }
 }
 #[derive(Clone)]
@@ -508,6 +545,7 @@ pub struct Game {
     pub time_bonus: i32,
     pub bonus_track: bool,
     pub score_life_awarded: bool,
+    pub store_exit_armed: bool,
 }
 impl Game {
     pub fn new(seed: u32, debug: bool) -> Self {
@@ -568,6 +606,7 @@ impl Game {
             time_bonus: 0,
             bonus_track: false,
             score_life_awarded: false,
+            store_exit_armed: false,
         };
         g.setup();
         g
@@ -953,7 +992,22 @@ impl Game {
         self.shot_id += 1;
         let (dx, dy, x, y) = if self.scene == Scene::Store {
             let (dx, dy) = [(0, -4), (0, 4), (-4, 0), (4, 0)][self.p.face];
-            (dx, dy, self.p.x + 6, self.p.y + 6)
+            (
+                dx,
+                dy,
+                self.p.x
+                    + match self.p.face {
+                        2 => 0,
+                        3 => 15,
+                        _ => 8,
+                    },
+                self.p.y
+                    + match self.p.face {
+                        0 => 6,
+                        1 => 16,
+                        _ => 11,
+                    },
+            )
         } else {
             (
                 self.p.dir * 4,
@@ -996,7 +1050,13 @@ impl Game {
         }
     }
     fn mall(&mut self, h: u32, e: u32) {
-        self.elevators(h);
+        let old_lifts: Vec<i32> = self.lifts.iter().map(|l| l.y).collect();
+        let previous_lift = self.p.lift;
+        self.elevators(if self.p.stun > 0 || self.p.pose > 0 {
+            0
+        } else {
+            h
+        });
         if self.p.hidden > 0 {
             return;
         }
@@ -1023,81 +1083,44 @@ impl Game {
                         0
                     }
                 };
-                if move_x != 0 {
+                if move_x != 0 && !(previous_lift.is_some() && self.p.lift.is_none()) {
                     self.p.dir = move_x;
                     self.p.x = (self.p.x + move_x * speed).clamp(8, 744)
                 }
                 self.p.duck = h & DOWN != 0 && self.p.jump == 0;
                 if e & B != 0 && self.p.jump == 0 && !self.p.falling {
                     self.p.vy = -4;
+                    self.p.origin = self.p.y;
+                    self.p.roof = None;
                     self.p.jump = 1;
                     self.sound(2)
                 }
-                if self.p.jump != 0 {
-                    self.p.y += self.p.vy;
-                    if self.frame % 3 == 0 {
-                        self.p.vy += 1
+            }
+        }
+        if self.p.lift.is_none() && self.p.escalator == 0 {
+            self.mall_vertical(&old_lifts);
+            if self.scene != Scene::Mall {
+                return;
+            }
+            if self.p.stun == 0
+                && self.p.pose == 0
+                && self.p.jump == 0
+                && !self.p.falling
+                && self.p.roof.is_none()
+            {
+                self.interact(h, e)
+            }
+            if self.p.jump == 0 && !self.p.falling && self.p.roof.is_none() {
+                for (i, l) in self.lifts.iter().enumerate() {
+                    if l.stopped
+                        && l.y == self.p.y
+                        && self.p.floor >= l.min
+                        && self.p.floor <= l.max
+                        && (self.p.x + 8 - l.x).abs() < 12
+                    {
+                        self.p.lift = Some(i);
+                        break;
                     }
-                    self.p.jump += 1;
-                    if self.p.y >= FLOOR[self.p.floor] {
-                        self.p.y = FLOOR[self.p.floor];
-                        self.p.jump = 0;
-                        self.p.vy = 0;
-                    }
-                }
-                if self.p.roof.is_none() {
-                    for i in 0..self.lifts.len() {
-                        let l = &self.lifts[i];
-                        if self.p.floor >= l.min
-                            && self.p.floor <= l.max
-                            && (self.p.x + 8 - l.x).abs() < 11
-                            && self.p.jump == 0
-                            && !self.p.falling
-                            && l.y > self.p.y + 2
-                        {
-                            self.p.falling = true;
-                            self.p.origin = self.p.y;
-                            self.p.vy = 0;
-                        }
-                    }
-                }
-                if self.p.falling {
-                    self.p.vy = (self.p.vy + 1).min(6);
-                    self.p.y += self.p.vy;
-                    let mut land = None;
-                    for (i, l) in self.lifts.iter().enumerate() {
-                        if (self.p.x + 8 - l.x).abs() < 20 && self.p.y >= l.y - 16 {
-                            land = Some((i, l.y - 16));
-                        }
-                    }
-                    if let Some((i, y)) = land {
-                        if y - self.p.origin > 48 {
-                            self.damage()
-                        } else {
-                            self.p.y = y;
-                            self.p.roof = Some(i);
-                            self.p.falling = false;
-                        }
-                    } else if self.p.y > 300 {
-                        self.damage()
-                    }
-                }
-                if let Some(i) = self.p.roof {
-                    let l = &self.lifts[i];
-                    if (self.p.x + 8 - l.x).abs() > 20 {
-                        self.p.roof = None;
-                        self.p.falling = true;
-                        self.p.origin = self.p.y;
-                        self.p.floor = nearest_floor(self.p.y);
-                    } else {
-                        self.p.y = l.y - 16;
-                        if l.y <= FLOOR[l.min] + 16 {
-                            self.damage()
-                        }
-                    }
-                }
-                if self.p.jump == 0 && !self.p.falling && self.p.roof.is_none() {
-                    self.interact(h, e)
                 }
             }
         }
@@ -1111,6 +1134,9 @@ impl Game {
                 self.p.safe = (self.p.x, self.p.floor);
             }
         }
+        if self.p.lift.is_some() || self.p.escalator != 0 {
+            self.p.duck = false;
+        }
         self.npcs();
         self.spy_tick(false);
         self.spawn = self.spawn.saturating_sub(1);
@@ -1121,6 +1147,95 @@ impl Game {
             self.spawn_spy();
         }
         self.lamp_tick();
+    }
+    fn floor_supports(&self, f: usize, x: i32) -> bool {
+        self.lifts
+            .iter()
+            .all(|l| f < l.min || f > l.max || (x + 8 - l.x).abs() >= 12 || l.y <= FLOOR[f])
+    }
+    fn fatal_damage(&mut self) {
+        self.p.inv = 0;
+        self.p.food = 0;
+        self.p.armor = false;
+        self.damage()
+    }
+    fn mall_vertical(&mut self, old_lifts: &[i32]) {
+        if let Some(i) = self.p.roof {
+            if (self.p.x + 8 - self.lifts[i].x).abs() < 20 {
+                self.p.y = self.lifts[i].y - CAR_HEIGHT;
+                if self.p.y - 22 < FLOOR[self.lifts[i].min] - CAR_HEIGHT {
+                    self.fatal_damage();
+                }
+                return;
+            }
+            self.p.roof = None;
+            self.p.falling = true;
+            self.p.origin = self.p.y;
+            self.p.vy = 0;
+        }
+        if self.p.jump == 0 && !self.p.falling && !self.floor_supports(self.p.floor, self.p.x) {
+            self.p.falling = true;
+            self.p.origin = self.p.y;
+            self.p.vy = 0;
+        }
+        if self.p.jump == 0 && !self.p.falling {
+            return;
+        }
+        let old_y = self.p.y;
+        if self.p.falling {
+            self.p.vy = (self.p.vy + 1).min(6)
+        }
+        self.p.y += self.p.vy;
+        if self.p.jump > 0 {
+            self.p.jump += 1;
+            if self.frame % 3 == 0 {
+                self.p.vy += 1
+            }
+        }
+        let mut landing: Option<(i32, Option<usize>, usize, Option<usize>)> = None;
+        if self.p.vy >= 0 {
+            for (f, &surface) in FLOOR.iter().enumerate() {
+                if self.floor_supports(f, self.p.x)
+                    && crosses_surface(old_y, self.p.y, surface, surface)
+                {
+                    if landing.is_none_or(|(y, _, _, _)| surface < y) {
+                        landing = Some((surface, None, f, None))
+                    }
+                }
+            }
+            for (i, l) in self.lifts.iter().enumerate() {
+                let surface = l.y - CAR_HEIGHT;
+                let old_surface = old_lifts[i] - CAR_HEIGHT;
+                if (self.p.x + 8 - l.x).abs() < 20
+                    && crosses_surface(old_y, self.p.y, old_surface, surface)
+                    && landing.is_none_or(|(y, _, _, _)| surface < y)
+                {
+                    landing = Some((surface, Some(i), nearest_floor(surface), None));
+                }
+                if (self.p.x + 8 - l.x).abs() < 12
+                    && old_y >= old_lifts[i] - CAR_HEIGHT + 2
+                    && crosses_surface(old_y, self.p.y, old_lifts[i], l.y)
+                    && landing.is_none_or(|(y, _, _, _)| l.y < y)
+                {
+                    landing = Some((l.y, None, nearest_floor(l.y), Some(i)));
+                }
+            }
+        }
+        if let Some((y, roof, f, ride)) = landing {
+            if y - self.p.origin > 48 {
+                self.fatal_damage();
+                return;
+            }
+            self.p.y = y;
+            self.p.floor = f;
+            self.p.roof = roof;
+            self.p.lift = ride;
+            self.p.falling = false;
+            self.p.jump = 0;
+            self.p.vy = 0;
+        } else if self.p.y > FLOOR[5] + 32 {
+            self.fatal_damage()
+        }
     }
     fn interact(&mut self, h: u32, e: u32) {
         let floor = self.p.floor;
@@ -1215,9 +1330,11 @@ impl Game {
             let occupied = self.p.lift == Some(i);
             let l = &mut self.lifts[i];
             if occupied && l.stopped && h & (LEFT | RIGHT) != 0 {
-                self.p.lift = None;
-                self.p.x = l.x + if h & LEFT != 0 { -34 } else { 20 };
-                self.p.safe = (self.p.x, self.p.floor);
+                self.p.x += if h & LEFT != 0 { -1 } else { 1 };
+                if (self.p.x + 8 - l.x).abs() >= 20 {
+                    self.p.lift = None;
+                    self.p.safe = (self.p.x, self.p.floor);
+                }
                 continue;
             }
             if occupied && !l.auto {
@@ -1264,21 +1381,21 @@ impl Game {
                     && self.p.floor <= l.max
                     && (self.p.x + 8 - l.x).abs() < 18
                     && l.dir > 0
-                    && self.p.y >= l.y - 3
-                    && self.p.y <= l.y + 3
+                    && self.p.roof != Some(i)
+                    && l.y >= self.p.y - 22
+                    && l.y - 1 < self.p.y - 22
                     && !self.p.falling
                 {
-                    if l.call {
-                        self.p.lift = Some(i)
-                    } else {
-                        crush = true
+                    if !l.call {
+                        crush = true;
                     }
                 }
                 for en in &mut self.enemies {
                     if en.dead == 0
                         && l.dir > 0
                         && (en.x + 8 - l.x).abs() < 20
-                        && (en.y - l.y).abs() < 3
+                        && l.y >= en.y - 22
+                        && l.y - 1 < en.y - 22
                     {
                         en.dead = 24;
                         en.hp = 0;
@@ -1304,7 +1421,9 @@ impl Game {
             }
             if self.p.lift == Some(i) {
                 self.p.y = l.y;
-                self.p.x = l.x - 8;
+                if !l.stopped {
+                    self.p.x = l.x - 8;
+                }
                 self.p.floor = nearest_floor(l.y)
             }
             if ding {
@@ -1327,7 +1446,7 @@ impl Game {
                 }
             }
             if crush {
-                self.damage();
+                self.fatal_damage();
             }
         }
     }
@@ -1415,15 +1534,15 @@ impl Game {
                     if en.aim == 0 {
                         let (dx, dy, y) = if room {
                             if (en.x - px).abs() < (en.y - py).abs() {
-                                (0, if py < en.y { -2 } else { 2 }, en.y + 6)
+                                (0, if py < en.y { -2 } else { 2 }, en.y + 11)
                             } else {
-                                (en.dir * 2, 0, en.y + 6)
+                                (en.dir * 2, 0, en.y + 11)
                             }
                         } else {
                             (en.dir * 2, 0, en.y - if en.high { 15 } else { 7 })
                         };
                         let clear = !room
-                            || line_clear(&self.rooms[self.store], en.x + 6, y, px + 6, py + 6);
+                            || line_clear(&self.rooms[self.store], en.x + 8, y, px + 8, py + 11);
                         if clear {
                             shots.push(Bullet {
                                 x: en.x + 8,
@@ -1458,15 +1577,13 @@ impl Game {
                     }
                 }
             }
-            let (ey, ph) = if room { (en.y, 12) } else { (en.y - 22, 22) };
-            let ptop = if room {
-                py
+            let contact = if room {
+                room_feet(px, py).overlaps(room_feet(en.x, en.y))
             } else {
-                py - if self.p.duck { 12 } else { 23 }
+                en.floor == self.p.floor
+                    && mall_body(px, py, self.p.duck).overlaps(mall_body(en.x, en.y, en.duck))
             };
-            if overlap(px, ptop, 12, if room { 12 } else { ph }, en.x, ey, 12, ph)
-                && self.p.hidden == 0
-            {
+            if contact && self.p.hidden == 0 {
                 if self.p.food > 0 || !room && (self.p.jump > 0 || self.p.sliding != 0) {
                     en.dead = 24;
                     en.hp = 0;
@@ -1487,6 +1604,7 @@ impl Game {
     }
     fn enter(&mut self, id: usize) {
         self.store = id;
+        self.store_exit_armed = false;
         self.p.pose = 0;
         self.p.floor = STORES[id].floor;
         self.transition(Scene::Store);
@@ -1526,6 +1644,9 @@ impl Game {
         self.say(copy::VISITS[idx].0);
     }
     fn room_tick(&mut self, h: u32, e: u32) {
+        if h & DOWN == 0 {
+            self.store_exit_armed = true;
+        }
         self.first_t = self.first_t.saturating_sub(1);
         if self.first_t == 90 {
             self.say(copy::VISITS[visit_index(self.store)].1)
@@ -1577,22 +1698,9 @@ impl Game {
                     let (dx, dy) = [(0, -1), (0, 1), (-1, 0), (1, 0)][d];
                     let speed = if self.p.speed > 0 { 2 } else { 1 };
                     for _ in 0..speed {
-                        let nx = self.p.x + dx;
-                        let ny = self.p.y + dy;
-                        if !self.rooms[self.store].solid(nx, ny) {
-                            self.p.x = nx;
-                            self.p.y = ny;
-                        } else {
-                            for s in [-1, 1] {
-                                let ax = nx + if dy != 0 { s } else { 0 };
-                                let ay = ny + if dx != 0 { s } else { 0 };
-                                if !self.rooms[self.store].solid(ax, ay) {
-                                    self.p.x = ax;
-                                    self.p.y = ay;
-                                    break;
-                                }
-                            }
-                        }
+                        let (x, y) = self.rooms[self.store].move_actor(self.p.x, self.p.y, dx, dy);
+                        self.p.x = x;
+                        self.p.y = y;
                     }
                 }
                 if e & B != 0 {
@@ -1622,7 +1730,8 @@ impl Game {
                 self.shoot()
             }
         }
-        if self.p.y >= 155 && (self.p.x - 122).abs() < 19 && h & DOWN != 0 {
+        if self.store_exit_armed && self.p.y >= 155 && (self.p.x - 122).abs() < 19 && h & DOWN != 0
+        {
             let s = STORES[self.store];
             self.transition(Scene::Mall);
             self.p.x = s.x - 8;
@@ -1647,7 +1756,7 @@ impl Game {
         for toy in &mut self.toys {
             toy.ttl = toy.ttl.saturating_sub(1);
             let nx = toy.x + toy.dx;
-            if self.rooms[self.store].solid(nx, toy.y) {
+            if self.rooms[self.store].blocks(Rect::new(nx, toy.y, 8, 8)) {
                 toy.dx *= -1
             } else {
                 toy.x = nx
@@ -1674,12 +1783,27 @@ impl Game {
         self.toys.retain(|t| t.ttl > 0);
     }
     pub fn touch_fixture(&self) -> Option<usize> {
+        let hand = Rect::new(self.p.x + 1, self.p.y + 3, 14, 13);
         self.rooms[self.store]
             .fixtures
             .iter()
             .enumerate()
             .filter(|(_, f)| !f.open)
-            .find(|(_, f)| overlap(self.p.x - 3, self.p.y - 3, 18, 18, f.x, f.y, f.w, f.h))
+            .filter_map(|(i, f)| {
+                let r = Rect::new(f.x, f.y, f.w, f.h);
+                let gap = hand.gap(r);
+                if gap <= 4 {
+                    Some((
+                        i,
+                        gap * 100
+                            + (self.p.x + 8 - f.x - f.w / 2).abs()
+                            + (self.p.y + 11 - f.y - f.h / 2).abs(),
+                    ))
+                } else {
+                    None
+                }
+            })
+            .min_by_key(|(_, distance)| *distance)
             .map(|(i, _)| i)
     }
     fn finish_search(&mut self, idx: usize) {
@@ -1687,9 +1811,11 @@ impl Game {
         if f.kind == 1 && self.rng.range(4) == 0 {
             self.say("OCCUPIED!!");
             self.sound(13);
+            let (spawn_x, spawn_y) =
+                self.rooms[self.store].free_actor_near(self.p.x, self.p.y - 26);
             self.enemies.push(Enemy {
-                x: self.p.x,
-                y: self.p.y - 26,
+                x: spawn_x,
+                y: spawn_y,
                 floor: self.p.floor,
                 age: 0,
                 aim: 0,
@@ -1740,169 +1866,180 @@ impl Game {
         }
     }
     fn projectiles(&mut self) {
-        let room = self.scene == Scene::Store;
-        let mut bs = std::mem::take(&mut self.bullets);
-        for b in &mut bs {
-            b.x += b.dx;
-            b.y += b.dy;
+        let mut bullets = std::mem::take(&mut self.bullets);
+        let lives = self.lives;
+        let scene = self.scene;
+        for b in &mut bullets {
             b.ttl = b.ttl.saturating_sub(1);
-            if b.x < 0 || b.x > if room { 256 } else { 768 } || b.y < 0 || b.y > 320 {
-                b.ttl = 0;
-                continue;
-            }
-            if room && self.rooms[self.store].solid(b.x, b.y) {
-                b.ttl = 0;
-                if self.store == 4 && !b.enemy && self.toys.len() < 6 {
-                    for d in [-1, 1, 1] {
-                        self.toys.push(Drop {
-                            x: b.x,
-                            y: b.y + 25,
-                            dx: d,
-                            dy: 0,
-                            kind: 0,
-                            ttl: 600,
-                        })
-                    }
-                    self.sound(15)
-                }
-                continue;
-            }
-            if b.enemy {
-                let y = if room {
-                    self.p.y
-                } else {
-                    self.p.y - if self.p.duck { 11 } else { 23 }
-                };
-                if overlap(
-                    b.x,
-                    b.y,
-                    3,
-                    2,
-                    self.p.x,
-                    y,
-                    12,
-                    if room || self.p.duck { 12 } else { 23 },
-                ) {
-                    self.damage();
+            let (x, y) = (b.x, b.y);
+            let steps = b.dx.abs().max(b.dy.abs()).max(1);
+            for step in 1..=steps {
+                b.x = x + b.dx * step / steps;
+                b.y = y + b.dy * step / steps;
+                if self.bullet_hit(b) {
                     b.ttl = 0;
+                    break;
                 }
-                continue;
             }
-            for en in &mut self.enemies {
-                if en.hp <= 0 || en.dead > 0 {
-                    continue;
-                }
-                let y = if room { en.y } else { en.y - 23 };
-                if !room && en.volley != b.volley && (b.x - en.x).abs() < 48 {
-                    en.volley = b.volley;
-                    en.duck = self.rng.range(10) == 0
-                }
-                if overlap(
-                    b.x,
-                    b.y,
-                    3,
-                    2,
-                    en.x,
-                    y + if en.duck { 12 } else { 0 },
-                    14,
-                    if room || en.duck { 12 } else { 24 },
-                ) {
-                    en.hp -= 1;
-                    b.ttl = 0;
-                    if en.hp <= 0 {
-                        en.dead = 24;
-                        self.score += 100;
-                        self.hi = self.hi.max(self.score);
-                        self.sounds.push(5);
-                        if self.rng.range(100) < 35 {
-                            self.bubbles.push(Bubble {
-                                x: en.x,
-                                y: y - 10,
-                                text: copy::LAST[self.rng.range(8) as usize].into(),
-                                time: 90,
-                            });
-                        }
-                        if self.rng.range(20) == 0 {
-                            let kind = if self.rng.range(2) == 0 {
-                                8 + self.rng.range(3) as u8
-                            } else {
-                                2 + self.rng.range(6) as u8
-                            };
-                            self.drops.push(Drop {
-                                x: en.x,
-                                y: if room { en.y } else { en.y - 8 },
-                                dx: 0,
+            if self.lives != lives || self.scene != scene {
+                self.bullets.clear();
+                return;
+            }
+        }
+        bullets.retain(|b| b.ttl > 0);
+        self.bullets.extend(bullets);
+    }
+    fn bullet_hit(&mut self, b: &Bullet) -> bool {
+        let room = self.scene == Scene::Store;
+        let body = bolt(b.x, b.y);
+        if b.x < 0 || b.x > if room { 256 } else { 768 } || b.y < 0 || b.y > 320 {
+            return true;
+        }
+        if room && self.rooms[self.store].blocks(body) {
+            if self.store == 4 && !b.enemy && self.toys.len() < 6 {
+                if let Some(f) = self.rooms[self.store]
+                    .fixtures
+                    .iter()
+                    .find(|f| body.overlaps(Rect::new(f.x, f.y, f.w, f.h)))
+                    .cloned()
+                {
+                    for (i, dx) in [-1, 1, 1].iter().enumerate() {
+                        let x = f.x + i as i32 * 8;
+                        let y = f.y + f.h + 1;
+                        if !self.rooms[self.store].blocks(Rect::new(x, y, 8, 8)) {
+                            self.toys.push(Drop {
+                                x,
+                                y,
+                                dx: *dx,
                                 dy: 0,
-                                kind,
+                                kind: 0,
                                 ttl: 600,
                             });
                         }
                     }
-                    break;
+                    self.sound(15);
                 }
             }
-            if !room {
-                for lamp in &mut self.lamps {
-                    if !lamp.broken
-                        && !lamp.active
-                        && (b.x - lamp.x).abs() < 8
-                        && b.y >= lamp.y - 12
-                        && b.y <= lamp.y + 18
-                    {
-                        lamp.active = true;
-                        lamp.vy = 1;
-                        lamp.roll = if lamp.floor == 3 {
-                            b.dx.signum() * 2
-                        } else {
-                            0
-                        };
-                        b.ttl = 0;
-                        self.sounds.push(5);
+            return true;
+        }
+        if !room {
+            for x in self.walk {
+                if body.overlaps(mall_body(x, FLOOR[3], false)) {
+                    if !b.enemy {
+                        self.points(-200);
+                        self.bubbles.push(Bubble {
+                            x,
+                            y: FLOOR[3] - 28,
+                            text: "HEY!".into(),
+                            time: 90,
+                        });
                     }
+                    return true;
                 }
-                for (idx, (floor, x)) in [(2, 245), (4, 645)].iter().enumerate() {
-                    if self.fountains[idx] == 0
-                        && (b.x - x).abs() < 16
-                        && (b.y - FLOOR[*floor] + 15).abs() < 12
-                    {
-                        self.fountains[idx] = 900;
-                        b.ttl = 0;
-                        for k in 0..(3 + self.rng.range(3)) {
-                            let gold = self.rng.range(20) == 0 && k == 0;
-                            self.drops.push(Drop {
-                                x: *x,
-                                y: FLOOR[*floor] - 18,
-                                dx: k as i32 - 2,
-                                dy: -4,
-                                kind: if gold { 7 } else { 12 },
-                                ttl: 500,
-                            });
-                        }
-                        self.sounds.push(11);
+            }
+            if body.overlaps(mall_body(self.cop_x, FLOOR[self.cop_floor], false)) {
+                self.sound(3);
+                return true;
+            }
+        }
+        if b.enemy {
+            let p = if room {
+                room_body(self.p.x, self.p.y)
+            } else {
+                mall_body(self.p.x, self.p.y, self.p.duck)
+            };
+            if self.p.hidden == 0 && body.overlaps(p) {
+                self.damage();
+                return true;
+            }
+            return false;
+        }
+        for en in &mut self.enemies {
+            if en.hp <= 0 || en.dead > 0 {
+                continue;
+            }
+            if !room && en.volley != b.volley && (b.x - en.x).abs() < 48 {
+                en.volley = b.volley;
+                en.duck = self.rng.range(10) == 0;
+            }
+            let target = if room {
+                room_body(en.x, en.y)
+            } else {
+                mall_body(en.x, en.y, en.duck)
+            };
+            if !body.overlaps(target) {
+                continue;
+            }
+            en.hp -= 1;
+            if en.hp <= 0 {
+                en.dead = 24;
+                self.score += 100;
+                self.sounds.push(5);
+                if self.rng.range(100) < 35 {
+                    self.bubbles.push(Bubble {
+                        x: en.x,
+                        y: target.y - 10,
+                        text: copy::LAST[self.rng.range(8) as usize].into(),
+                        time: 90,
+                    });
+                }
+                if self.rng.range(20) == 0 {
+                    let kind = if self.rng.range(2) == 0 {
+                        8 + self.rng.range(3) as u8
+                    } else {
+                        2 + self.rng.range(6) as u8
+                    };
+                    self.drops.push(Drop {
+                        x: en.x,
+                        y: if room { en.y } else { en.y - 8 },
+                        dx: 0,
+                        dy: 0,
+                        kind,
+                        ttl: 600,
+                    });
+                }
+            }
+            return true;
+        }
+        if !room {
+            for lamp in &mut self.lamps {
+                if !lamp.broken
+                    && !lamp.active
+                    && body.overlaps(Rect::new(lamp.x - 8, lamp.y + 6, 16, 12))
+                {
+                    lamp.active = true;
+                    lamp.vy = 1;
+                    lamp.roll = if lamp.floor == 3 {
+                        b.dx.signum() * 2
+                    } else {
+                        0
+                    };
+                    self.sounds.push(5);
+                    return true;
+                }
+            }
+            for (idx, (floor, x)) in [(2, 245), (4, 645)].iter().enumerate() {
+                if self.fountains[idx] == 0
+                    && body.overlaps(Rect::new(x - 16, FLOOR[*floor] - 24, 32, 24))
+                {
+                    self.fountains[idx] = 900;
+                    for k in 0..3 + self.rng.range(3) {
+                        let gold = k == 0 && self.rng.range(20) == 0;
+                        self.drops.push(Drop {
+                            x: *x,
+                            y: FLOOR[*floor] - 18,
+                            dx: k as i32 - 2,
+                            dy: -4,
+                            kind: if gold { 7 } else { 12 },
+                            ttl: 500,
+                        });
                     }
-                }
-                if self.p.floor == 3 {
-                    for x in self.walk {
-                        if (b.x - x).abs() < 9 && (b.y - FLOOR[3] + 12).abs() < 13 {
-                            b.ttl = 0;
-                            self.points(-200);
-                            self.bubbles.push(Bubble {
-                                x,
-                                y: FLOOR[3] - 28,
-                                text: "HEY!".into(),
-                                time: 90,
-                            });
-                        }
-                    }
-                }
-                if (b.x - self.cop_x).abs() < 9 && (b.y - FLOOR[self.cop_floor] + 12).abs() < 13 {
-                    b.ttl = 0;
-                    self.sound(3)
+                    self.sounds.push(11);
+                    return true;
                 }
             }
         }
-        bs.retain(|b| b.ttl > 0);
-        self.bullets.extend(bs);
+        false
     }
     fn lamp_tick(&mut self) {
         let mut hurt = false;
@@ -2088,6 +2225,14 @@ impl Game {
                 self.p.inv = 0;
                 self.damage()
             }
+            10 => {
+                if let Some(l) = self.lifts.get_mut(a as usize) {
+                    l.y = FLOOR[(b as usize).clamp(l.min, l.max)];
+                    l.target = None;
+                    l.stopped = true;
+                    l.wait = 120;
+                }
+            }
             9 => self.spawn_spy(),
             _ => (),
         }
@@ -2108,7 +2253,7 @@ pub fn overlap(x: i32, y: i32, w: i32, h: i32, a: i32, b: i32, c: i32, d: i32) -
     x < a + c && x + w > a && y < b + d && y + h > b
 }
 fn line_clear(r: &Room, x: i32, y: i32, a: i32, b: i32) -> bool {
-    if (x - a).abs() > 12 && (y - b).abs() > 12 {
+    if (x - a).abs() > 6 && (y - b).abs() > 6 {
         return false;
     }
     let steps = (x - a).abs().max((y - b).abs()).max(1);

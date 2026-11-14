@@ -61,7 +61,7 @@ game.step(60, game.buttons.RIGHT)
 game.freeze(false)
 ```
 
-`game.command(op,a,b)` provides test setup: 0 resets the mall; 1 positions the player at floor `a`, x `b`; 2 enters store `a`; 3 positions inside a room; 4 inflicts damage; 5 marks all packages; 6 grants power-up `a`; 7 triggers continue; 8 triggers game over; 9 spawns a spy using ordinary spawning rules. These commands are gated in Rust as well as JavaScript by `debug=1`. Scene IDs are Splash 0, Title 1, Arrival 2, Selfie 3, Mall 4, Store 5, Clear 6, News 7, Post 8, Continue 9, Over 10.
+`game.command(op,a,b)` provides test setup: 0 resets the mall; 1 positions the player at floor `a`, x `b`; 2 enters store `a`; 3 positions inside a room; 4 inflicts damage; 5 marks all packages; 6 grants power-up `a`; 7 triggers continue; 8 triggers game over; 9 spawns a spy using ordinary spawning rules; 10 positions car `a` at floor `b`. These commands are gated in Rust as well as JavaScript by `debug=1`. Scene IDs are Splash 0, Title 1, Arrival 2, Selfie 3, Mall 4, Store 5, Clear 6, News 7, Post 8, Continue 9, Over 10.
 
 ## Source layout
 
@@ -73,7 +73,9 @@ game.freeze(false)
 - `src/splash.rs`, `splash/README.md`: reusable FLICKERSOFT timing module.
 - `src/lib.rs`: dependency-free Wasm ABI; Rust owns the framebuffer and state.
 - `browser.js`: input edge queue, fixed-step clock, WebGL post-effect and persistence.
-- `audio.js`: original score data, two pulse voices, triangle bass, procedural noise and sound effects.
+- `audio.js`: browser audio graph, effect envelopes, mute and state changes.
+- `score.js`, `synth.js`, `synth-worklet.js`: original arrangements and a sample-clock sequencer on the audio thread; two band-limited pulse voices, triangle bass and filtered noise.
+- `src/collision.rs`: shared actor feet, hurt boxes, bullet bounds and platform sweep geometry.
 - `tests/`: native mission/navigation integration tests and browser-adapter tests.
 
 Simulation runs at 60 Hz with integer coordinates. Rendering is decoupled, catch-up is bounded, and random choices are simulation-owned. Map/pause stop rule timers. The source framebuffer stays 256×240; the browser scales by integer factors and uploads with nearest-neighbour filtering. C toggles a persistent scanline/curvature/vignette/noise shader.
@@ -90,6 +92,18 @@ Simulation runs at 60 Hz with integer coordinates. Rendering is decoupled, catch
 - This is a **Rust-constrained, interactively revised run**, not a strict unchanged-prompt one-shot. The shared brief was read unchanged. The user required Rust and the exact branch name, criticised the first graphics pass, reported missing music, requested a look at the published Sonnet–Fable version, and asked for a more ambitious visual result. That version was viewed in the browser as a visual reference; its source/art/audio were not copied.
 - Environment interventions: an isolated Rust toolchain and Wasm target were installed under `/tmp` because the system compiler lacked the target; native approvals were needed for Git worktree writes, downloads and the local server.
 - Browser QA: CRT enabled; real keyboard elevator ride, store entry, one-tap search, package acquisition, exit, map, pause and escalator; deterministic/debug completion of remaining packages, escape, loop 2, continue and game over. Audio checked using a running Web Audio context and nonzero analyser output. Screenshots were captured and visually inspected.
+
+### Collision and audio revision
+
+Further user playtesting exposed collision and music problems despite the original passing checks. This revision gives store movement a dedicated foot box, gives bullets their own swept bounds, fixes roof-to-floor landings and moving-car boarding, prevents entrance/exit bouncing, and resolves fatal falls immediately. Shop depth ordering now follows feet and furniture edges.
+
+Music now runs from the audio sample clock in an AudioWorklet, independently of rendering. The arrangements have explicit major/minor chord voicings, softer band-limited pulse tones, filtered percussion and smooth transitions. In the browser, music continued through a deliberate 750 ms main-thread stall; mute also worked while game frames were frozen. The revised suite has 72 automated tests, with focused collision and waveform regressions plus real-keyboard playtests.
+
+To audition a score offline from the production synthesizer:
+
+```sh
+node scripts/render-audio.mjs title /tmp/mall-title.wav 12
+```
 
 ### Art revision
 
