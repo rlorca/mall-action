@@ -83,7 +83,7 @@ Simulation runs at 60 Hz with integer coordinates. Rendering is decoupled, catch
 
 ## Benchmark notes
 
-- Model: GPT-6.1 Sol (`gpt-6.1-sol`), medium reasoning setting.
+- Requested benchmark label: GPT-6.1 Sol (`gpt-6.1-sol`), medium. Runtime model/effort metadata was not independently introspected.
 - Date: 2026-11-14. Harness: Codex desktop, local macOS workspace and browser automation.
 - Duration: approximately 45 minutes for implementation, visual/audio revision and verification.
 - This is a **Rust-constrained, interactively revised run**, not a strict unchanged-prompt one-shot. The shared brief was read unchanged. The user required Rust and the exact branch name, criticised the first graphics pass, reported missing music, requested a look at the published Sonnet–Fable version, and asked for a more ambitious visual result. That version was viewed in the browser as a visual reference; its source/art/audio were not copied.

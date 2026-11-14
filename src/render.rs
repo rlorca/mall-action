@@ -282,28 +282,36 @@ fn camera(g: &Game) -> (i32, i32) {
     };
     (
         (g.p.x - 120).clamp(0, 512) + shake,
-        (g.p.y - 142).clamp(0, 80),
+        (g.p.y - 142).clamp(-100, 80),
     )
 }
 fn mall(g: &Game, c: &mut Canvas) {
     let (cx, cy) = camera(g);
     sky(c);
+    let horizon = 40 - cy;
     for i in 0..16 {
         let x = i * 57 - cx / 4;
-        c.rect(x, 2, 38, 37, 1);
-        for wy in [8, 18, 28] {
-            for wx in [4, 16, 28] {
-                c.rect(x + wx, wy, 3, 5, if (i + wx) % 3 == 0 { 15 } else { 3 })
+        let h = 28 + (i * 31) % 61;
+        c.rect(x, horizon - h, 38, h, 1);
+        for wy in (horizon - h + 5..horizon - 3).step_by(10) {
+            for wx in [5, 16, 28] {
+                c.rect(
+                    x + wx,
+                    wy,
+                    3,
+                    5,
+                    if (i + wx + wy) % 3 == 0 { 15 } else { 3 },
+                );
             }
         }
     }
-    c.rect(-cx, 0, 65, 40, 1);
-    for y in [4, 14, 24] {
+    c.rect(-cx, 0, 65, horizon, 1);
+    for y in (5..horizon - 4).step_by(10) {
         for x in [8, 24, 40] {
-            c.rect(x - cx, y, 5, 5, 15)
+            c.rect(x - cx, y, 5, 5, if (x + y) % 3 == 0 { 25 } else { 15 });
         }
     }
-    c.line(42 - cx, 0 - cy, 220 - cx, 38 - cy, 6);
+    c.line(42 - cx, -80 - cy, 220 - cx, 38 - cy, 6);
     c.rect(220 - cx, 28 - cy, 3, 12, 5);
     for (f, &fy) in FLOOR.iter().enumerate() {
         let y = fy - cy;
@@ -476,10 +484,24 @@ fn mall(g: &Game, c: &mut Canvas) {
         }
     }
     if g.scene == Scene::Arrival {
-        let t = g.scene_t.min(90) as i32;
-        let x = 42 + t * 2 - cx;
-        let y = if t < 80 { t / 3 + 2 - cy } else { 40 - cy };
-        agent(c, x, y - 24, g, false)
+        let t = g.scene_t.min(110) as i32;
+        if t < 62 {
+            let x = 42 + t * 2 - cx;
+            let y = -80 + t * 2 * 118 / 178 - cy;
+            agent(c, x, y + 4, g, false);
+            c.rect(x + 3, y, 2, 8, 7);
+            c.rect(x + 11, y, 2, 8, 7);
+        } else {
+            let x = (166 + (t - 62) * 2).min(210) - cx;
+            let bottom = (30 + (t - 62) * (t - 62) / 12).min(40) - cy;
+            agent(
+                c,
+                x,
+                bottom - 24 + if t > 78 && t < 94 { 5 } else { 0 },
+                g,
+                false,
+            );
+        }
     } else if g.p.hidden == 0 && (g.p.inv == 0 || g.frame / 5 % 2 == 0) {
         agent(c, g.p.x - cx, g.p.y - 24 - cy, g, false)
     }
