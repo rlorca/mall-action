@@ -1,0 +1,121 @@
+/**
+ * Shared, PURE sound-design primitives. Both the Web Audio synth (synth.ts) and the offline sample renderer
+ * (offline.ts) are built on exactly these functions, so what the tests measure is what the browser plays:
+ * channel gains, envelope key-frames, vibrato, pulse-wave harmonics and the NES noise LFSR.
+ */
+export const CHANNELS = ['pulse1', 'pulse2', 'triangle', 'noise'];
+export const DUTIES = [0.125, 0.25, 0.5, 0.75];
+/**
+ * Linear gain of a full-scale voice on each channel. With the duty compensation below, the worst case (all four
+ * at full velocity, thinnest pulses) sums to about 0.94 and the master gain brings it to about 0.85, so a single
+ * song can never clip even before the soft clipper.
+ */
+export const CHANNEL_GAIN = { pulse1: 0.18, pulse2: 0.18, triangle: 0.26, noise: 0.14 };
+/**
+ * A PeriodicWave pulse is mean-removed and peak-normalised, so thin duty cycles (12.5 %) carry far less energy
+ * than a 50 % square. This partly (not fully: thin pulses are also brighter) makes up for it.
+ */
+export const DUTY_GAIN = { 0.125: 1.5, 0.25: 1.2, 0.5: 1, 0.75: 1.2 };
+/** [high, low] output levels of a mean-removed pulse wave normalised to a peak of 1 (matches the PeriodicWave). */
+export function pulseLevels(duty) {
+    return duty <= 0.5 ? [1, -duty / (1 - duty)] : [(1 - duty) / duty, -1];
+}
+export const MASTER_GAIN = 0.9;
+/** Sfx are a little hotter than the music so they cut through. */
+export const SFX_LEVEL = 1.5;
+/** Velocity presets used by the pattern DSL ("!" accent, "?" soft). */
+export const VEL_NORMAL = 0.8;
+export const VEL_ACCENT = 1;
+export const VEL_SOFT = 0.5;
+/** Level of a key-frame list at time t: 0 before the first frame, the last frame's value after the last. */
+export function evalFrames(frames, t) {
+    const first = frames[0];
+    if (!first || t <= first[0])
+        return first && t === first[0] ? first[1] : 0;
+    for (let i = 1; i < frames.length; i++) {
+        const [t1, v1] = frames[i];
+        if (t <= t1) {
+            const [t0, v0] = frames[i - 1];
+            return t1 === t0 ? v1 : v0 + ((v1 - v0) * (t - t0)) / (t1 - t0);
+        }
+    }
+    return frames[frames.length - 1][1];
+}
+/**
+ * Envelope for a gated note, as key-frames in seconds from the note start: linear attack to 1, linear decay to
+ * `sustain`, hold until the gate closes (cut mid-ramp if the note is shorter), then a linear release to silence.
+ * NES volume envelopes are linear, so this is the authentic shape. Attack is clamped to >= 1 ms to avoid clicks.
+ */
+export function adsrFrames(attackMs, decayMs, sustain, gateSec, releaseMs) {
+    const a = Math.max(attackMs, 1) / 1000;
+    const body = [
+        [0, 0],
+        [a, 1],
+    ];
+    if (decayMs > 0 && sustain < 1)
+        body.push([a + decayMs / 1000, sustain]);
+    const gate = Math.max(gateSec, 0.001);
+    const levelAtGate = evalFrames(body, gate);
+    const out = body.filter(([t]) => t < gate);
+    out.push([gate, levelAtGate]);
+    out.push([gate + Math.max(releaseMs, 2) / 1000, 0]);
+    return out;
+}
+/** Vibrato pitch offset in cents at time t (seconds since note start). Ramps in over 80 ms after the delay. */
+export function vibratoCents(v, t) {
+    if (!v)
+        return 0;
+    const t0 = v.delay / 1000;
+    if (t <= t0)
+        return 0;
+    const ramp = Math.min(1, (t - t0) / 0.08);
+    return v.depth * ramp * Math.sin(2 * Math.PI * v.rate * (t - t0));
+}
+/**
+ * Fourier coefficients of a pulse wave with the given duty, for Web Audio's PeriodicWave
+ * (x(t) = sum real[k] cos(k t) + imag[k] sin(k t)). DC (index 0) is left out.
+ */
+export function pulseCoefficients(duty, harmonics = 48) {
+    const real = new Float32Array(harmonics + 1);
+    const imag = new Float32Array(harmonics + 1);
+    for (let k = 1; k <= harmonics; k++) {
+        real[k] = Math.sin(2 * Math.PI * k * duty) / (k * Math.PI);
+        imag[k] = (1 - Math.cos(2 * Math.PI * k * duty)) / (k * Math.PI);
+    }
+    return { real, imag };
+}
+/**
+ * One full period of the NES noise LFSR as +1 / -1 samples. Long mode (feedback bit0^bit1) has a 32767-step
+ * period (white-ish noise); short mode (bit0^bit6) repeats after 93 steps, which sounds metallic / pitched.
+ */
+const lfsrCache = new Map();
+export function lfsrSequence(short) {
+    const hit = lfsrCache.get(short);
+    if (hit)
+        return hit;
+    const out = [];
+    let reg = 1;
+    do {
+        out.push((reg & 1) === 0 ? 1 : -1);
+        const bit = (reg & 1) ^ ((reg >> (short ? 6 : 1)) & 1);
+        reg = (reg >> 1) | (bit << 14);
+    } while (reg !== 1 && out.length < 40000);
+    const seq = Float32Array.from(out);
+    lfsrCache.set(short, seq);
+    return seq;
+}
+/**
+ * Transfer curve for a WaveShaperNode acting as a soft clipper: identity up to 0.7, then a smooth tanh knee towards
+ * ~0.93 at full scale. Static (no attack / release / delay), so short sounds are never smeared.
+ */
+export function softClipCurve(points = 2049) {
+    const curve = new Float32Array(points);
+    const knee = 0.7;
+    for (let i = 0; i < points; i++) {
+        const x = (i / (points - 1)) * 2 - 1;
+        const a = Math.abs(x);
+        const y = a <= knee ? a : knee + (1 - knee) * Math.tanh((a - knee) / (1 - knee));
+        curve[i] = x < 0 ? -y : y;
+    }
+    return curve;
+}
