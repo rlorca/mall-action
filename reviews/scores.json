@@ -484,6 +484,68 @@
           "label": "Run provenance and revisions"
         }
       ]
+    },
+    {
+      "name": "Sonnet–Fable, Rust port",
+      "branch": "rust-sonnet-5-5-fable-5-1",
+      "folder": "rust-sonnet-5.5-fable-5.1",
+      "technology": "Rust + raw WebAssembly, indexed framebuffer, WebGL CRT, JavaScript Web Audio; port of Sonnet 5.5 + Fable 5.1",
+      "written": "2026-11-15",
+      "commit": "1de4fe3788bae6371d40b1f317e1dbecff27c50c",
+      "scores": {
+        "gameDesign": 9.2,
+        "architecture": 9.2,
+        "codeDesign": 8.9,
+        "cleanliness": 8.7,
+        "completeness": 9.2
+      },
+      "note": "Faithful, modular Rust port with native/Wasm parity checks. Translation benchmark; invincible route tests and untested browser adapters.",
+      "assessment": {
+        "gameDesign": "Preserves the source entry’s readable storefronts, detailed sprites, clear HUD and staged screens. The deployed mall was visually inspected with CRT enabled. Source parity supports carrying over the strong design assessment, including silent cleared-store doors and the previously reviewed Black Friday layout caveat; these were not independently re-probed here. Browser keyboard movement and stepped map/pause worked. A sampled elevator boarding moved car A before the player entered dying mode; cause was not established, and no successful full traversal or human survivability result is claimed.",
+        "architecture": "The pure seeded Game/Level/Run hierarchy, separate rendering and modular mall extras are retained behind a small raw Wasm ABI. This is more granular than Rust GPT-6.1’s single 2,696-line rules module. Rust owns state and pixels; JavaScript owns input, presentation and audio. Explicit audio enums map to ordered JavaScript ID tables, creating a cross-language synchronization obligation. Audio retains the source Web Audio scheduling rather than the other Rust entry’s AudioWorklet design.",
+        "codeDesign": "The port deliberately reproduces JavaScript rounding, wrapping arithmetic, RNG call order and stable iteration, with baked difficulty values to avoid native/Wasm libm drift. Five native and four Wasm golden scenarios compare scene, music, framebuffer hashes and effects, supplemented by broad sprite/render fixtures. These finite fixtures do not prove universal equivalence or later-loop trace parity. Full-route button-driven tests on seeds 11 and 12 reach loop 2 with invincibility, proving routing rather than survivability. The documented off-left framebuffer-fill difference is deliberate and remains outside fixture coverage.",
+        "cleanliness": "Clear module boundaries, enums and preserved explanatory comments make the translation approachable. Mall and store world files are still 1,477 and 1,656 lines including tests; dense port-style expressions and duplicated ABI identity tables add maintenance cost. PORTING.md documents numerical and ownership conventions well. README verification counts are stale relative to the 605 passing checks observed here, and its claim that nothing has been published is outdated.",
+        "completeness": "Retains the source game’s broad feature/art/audio coverage and passes 525 Rust unit tests, five native golden tests and 75 Node audio/Wasm tests; one documentation test is ignored. Production output exactly matches all 24 deployed files. The source browser-only input, loop and scaling tests were not ported, and the browser debug bot is unavailable. Fresh browser coverage is limited to mall presentation, keyboard movement, stepped overlays and boarding; no full six-package browser route, hardware gamepad or listening assessment was performed. This is a translation of source commit 9475506 by Sonnet 5.5 with a Fable 5.2 advisor, despite the branch retaining the source’s Fable 5.1 label. It is not independent evidence of one-shot game creation."
+      },
+      "verification": {
+        "tests": 605,
+        "build": "Pass with isolated rustup Wasm toolchain; all 24 generated files byte-identical to deployed gh-pages assets; one documentation test ignored",
+        "browser": "Published sub-path, CRT-on screenshot, real keyboard input pumped through fixed steps, map timer freeze and pause verified; stepped elevator boarding moved car A before an unexplained death. No console warnings/errors in sampled run. No full-route, hardware-gamepad or listening result"
+      },
+      "evidence": [
+        {
+          "path": "PORTING.md",
+          "label": "Translation conventions and provenance"
+        },
+        {
+          "path": "src/lib.rs",
+          "label": "Raw ABI and state ownership"
+        },
+        {
+          "path": "src/game/level.rs",
+          "label": "Scene and overlay boundaries"
+        },
+        {
+          "path": "src/game/playthrough_tests.rs",
+          "label": "Invincible six-package route tests"
+        },
+        {
+          "path": "tests/golden.rs",
+          "label": "Five native parity scenarios"
+        },
+        {
+          "path": "tests/wasm.test.mjs",
+          "label": "Four built-Wasm parity scenarios"
+        },
+        {
+          "path": "browser.js",
+          "label": "Browser adapter"
+        },
+        {
+          "path": "README.md",
+          "label": "Omitted browser tests and parity limits"
+        }
+      ]
     }
   ]
 }
