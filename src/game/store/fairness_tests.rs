@@ -3,25 +3,21 @@
 //! "The game feels fair on loop 1: a new player can find a package without dying on the first try."
 //! A sensible-but-unspectacular scripted player (sidesteps aim lines, shoots guards that line up) must find the
 //! package in most visits to every target store on loop 1.
-//!
-//! TODO(bot): these need `game/bot.rs::play_store_smart` (the lead ports bot.ts later). The scaffold below is the
-//! TS `visit()` helper; wire it to the bot's store-player once it exists and remove the `#[ignore]`s.
 use crate::content::stores::{target_stores, StoreId};
 use crate::engine::pad::pad_from_held;
 use crate::engine::rng::Rng;
+use crate::game::bot::{play_store_smart, StoreBot};
 use crate::game::run::{Run, RunOpts};
 
 use super::levelgen::generate_level;
 use super::world::StoreWorld;
 
-#[allow(dead_code)]
 struct Visit {
     run: Run,
     world: StoreWorld,
     held: u32,
 }
 
-#[allow(dead_code)]
 impl Visit {
     fn new(store_id: StoreId, seed: u32) -> Visit {
         let mut run = Run::new(seed, RunOpts::default());
@@ -43,18 +39,29 @@ impl Visit {
     }
 }
 
+impl StoreBot for Visit {
+    fn world(&self) -> &StoreWorld {
+        &self.world
+    }
+    fn run(&self) -> &Run {
+        &self.run
+    }
+    fn hold(&mut self, held: u32, n: i32) {
+        Visit::hold(self, held, n)
+    }
+    fn tap(&mut self, btn: u32) {
+        Visit::tap(self, btn)
+    }
+}
+
 /// TS `visit(storeId, seed)` -> `{ found, died }`.
-#[allow(dead_code)]
 fn visit(store_id: StoreId, seed: u32) -> (bool, bool) {
-    let v = Visit::new(store_id, seed);
-    let _ = &v;
-    // TODO(bot): let found = play_store_smart(&mut v, 6000);
-    let found = false;
+    let mut v = Visit::new(store_id, seed);
+    let found = play_store_smart(&mut v, 6000);
     (found, v.world.died)
 }
 
 #[test]
-#[ignore = "TODO(bot): needs game::bot::play_store_smart"]
 fn loop_1_fairness_each_target_store_a_sensible_player_finds_the_package_in_at_least_60_percent_of_visits() {
     let n = 16;
     for st in target_stores() {
@@ -69,7 +76,6 @@ fn loop_1_fairness_each_target_store_a_sensible_player_finds_the_package_in_at_l
 }
 
 #[test]
-#[ignore = "TODO(bot): needs game::bot::play_store_smart"]
 fn loop_1_fairness_overall_at_least_80_percent_of_visits_succeed_on_the_first_try() {
     let n = 16;
     let (mut total, mut total_found) = (0, 0);
