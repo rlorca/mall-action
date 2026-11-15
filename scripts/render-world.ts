@@ -1,7 +1,8 @@
-// Render-parity fixture generator (R2). Run: $S/node_modules/.bin/tsx gen-render-world.ts <out.json>
+// Render-parity fixture generator. Run against the TypeScript source (branch sonnet-5-5-fable-5-1, commit 9475506):
+//   TS_SRC=/path/to/that/worktree/src npx tsx render-world.ts fixtures/render-world.json   (run from that worktree)
 // Drives the TS Game / StoreWorld / MallWorld with scripted pads and dumps framebuffer FNV-1a hashes.
 import { writeFileSync } from 'node:fs';
-const S = '/Users/rodrigo/code/mall-action/.worktrees/sonnet-5-5-fable-5-1/src';
+const S = process.env.TS_SRC ?? '../src';
 const imp = (p: string) => import(`${S}/${p}`);
 
 const { Btn, padFromHeld, maskOf } = await imp('engine/pad');

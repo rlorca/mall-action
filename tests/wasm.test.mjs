@@ -2,7 +2,7 @@
 // proving the wasm build (not just the native build) matches frame for frame, including libm differences.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { SFX_IDS, MUSIC_IDS } from '../audio/ids.js';
 
 const WASM = 'target/wasm32-unknown-unknown/release/mall_action.wasm';
@@ -13,14 +13,13 @@ const SCN = [
   ['auto-intro', 42, 4, 3000, 31, 0],
 ];
 const golden = JSON.parse(readFileSync('fixtures/golden-trace.json', 'utf8'));
-const ready = existsSync(WASM);
 
 async function load() {
   const { instance } = await WebAssembly.instantiate(readFileSync(WASM), {});
   return instance.exports;
 }
 
-test('wasm exports the expected ABI', { skip: !ready }, async () => {
+test('wasm exports the expected ABI', async () => {
   const x = await load();
   for (const n of ['memory', 'init', 'tick', 'draw', 'sfx_next', 'music', 'duck', 'osd_show', 'osd_tick', 'state_json', 'state_json_len', 'frame_hash']) assert.ok(n in x, n);
   x.init(7, 1);
@@ -31,7 +30,7 @@ test('wasm exports the expected ABI', { skip: !ready }, async () => {
 });
 
 for (const [name, seed, flags, frames, inputSeed, startAt] of SCN) {
-  test(`wasm replays golden trace: ${name}`, { skip: !ready }, async () => {
+  test(`wasm replays golden trace: ${name}`, async () => {
     const x = await load();
     x.init(seed, flags);
     let held = 0, prev = 0, lcg = inputSeed >>> 0;

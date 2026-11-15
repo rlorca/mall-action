@@ -1,14 +1,14 @@
 # Porting guide (TypeScript -> Rust)
 
 This branch is a faithful port of the TypeScript game on branch `sonnet-5-5-fable-5-1` (commit 9475506, checked out
-read-only at `/Users/rodrigo/code/mall-action/.worktrees/sonnet-5-5-fable-5-1`) into Rust compiled to WebAssembly,
+kept read-only in a separate git worktree) into Rust compiled to WebAssembly,
 in the shape of branch `rust-gpt-6.1-sol-medium` (raw wasm ABI, no wasm-bindgen, no crates).
 
 Parity is the goal: the same seed + the same inputs must give the same game, frame for frame. `fixtures/golden-trace.json`
 (made by `scripts/trace.ts` from the TS source) holds a framebuffer hash per ~10 frames; `tests/golden.rs` replays it.
 
 ## Rules of the port
-* Toolchain: `export PATH=/private/tmp/mall-rustup/toolchains/stable-aarch64-apple-darwin/bin:$PATH` (has the wasm32 target).
+* Toolchain: stable Rust with the `wasm32-unknown-unknown` target (`rustup target add wasm32-unknown-unknown`).
   Edition 2021. No third-party crates. Use `#[no_mangle]` only in lib.rs.
 * Module tree mirrors the TS tree: `src/engine`, `src/content`, `src/art`, `src/game/{mall,store,screens}`, `src/render`, `src/flickersoft.rs`.
   TS `foo/bar.ts` -> `foo/bar.rs`; a TS class -> struct + impl; unions of string literals -> `enum` (derive Clone, Copy, PartialEq, Eq, Debug)
@@ -26,8 +26,5 @@ Parity is the goal: the same seed + the same inputs must give the same game, fra
 * Comments: keep the TS doc comments (they hold the design rules). Port copy/jokes verbatim, character for character.
 * Do NOT edit the source worktree (`sonnet-5-5-fable-5-1`). Write only inside your assigned files in the rust worktree.
 
-## Parallel work etiquette
-Several agents write into this tree at once. Only create/edit the files you were assigned. Register your module in its parent
-`mod.rs` only when it compiles. Never run a bare `cargo test` in the shared tree while others are mid-edit: use a private copy,
-e.g. `rsync -a --exclude target --exclude .git <worktree>/ /private/tmp/claude-502/<you>/ && cd there && cargo test <filter>` with your own
-`lib.rs` listing only the modules you need, and a private `CARGO_TARGET_DIR`. Run `cargo fmt` is NOT required.
+## Parallel work
+The port was done by several agents at once, each owning disjoint files and building in a private copy of the tree; shared `mod.rs` files were registered by the lead only once the module compiled.
