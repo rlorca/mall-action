@@ -78,7 +78,8 @@ impl KeyMapper {
         let is_letter_key = code.starts_with("Key");
         let action = if is_letter_key {
             match ch {
-                Some(c) if c.is_ascii_alphabetic() => by_char(c),
+                // printed letter first; a printed letter with no binding falls back to the physical position
+                Some(c) if c.is_ascii_alphabetic() => by_char(c).or_else(|| by_code(code)),
                 _ => by_code(code),
             }
         } else {
@@ -229,8 +230,10 @@ mod tests {
         assert_eq!(m.key_down("KeyW", Some('z')), Some(Action::Pad(A)));
         // QWERTZ: physical KeyY prints 'z' -> shoot
         assert_eq!(m.key_down("KeyY", Some('z')), Some(Action::Pad(A)));
-        // QWERTZ: physical KeyZ prints 'y' -> unmapped
-        assert_eq!(m.key_down("KeyZ", Some('y')), None);
+        // QWERTZ: physical KeyZ prints 'y' (no binding) -> falls back to its physical position (shoot)
+        assert_eq!(m.key_down("KeyZ", Some('y')), Some(Action::Pad(A)));
+        // a letter with neither a printed nor a physical binding stays unmapped
+        assert_eq!(m.key_down("KeyB", Some('b')), None);
         // uppercase (shift held) still works
         assert_eq!(m.key_down("KeyM", Some('M')), Some(Action::ToggleMute));
     }

@@ -75,7 +75,7 @@ impl Renderer {
                     }
                     b'F' => {
                         draw_floor(cv);
-                        cv.blit(self.spr(&format!("rt_fitting_{}", room.guards.iter().any(|_| false) as i32)), x, y);
+                        cv.blit(self.spr("rt_fitting_0"), x, y);
                         let fi = room.fixtures.iter().position(|f| f.tx == tx && f.ty == ty).unwrap();
                         if st.opened[fi] || st.revealed[fi] {
                             cv.blit(self.spr("rt_fitting_1"), x, y);
@@ -232,8 +232,6 @@ impl Renderer {
         }
         let (x, y) = (room.x as i32 - 8 + ox, room.y as i32 - 8 + oy);
         let f = (room.t / 8) % 2;
-        let moving = g.frame % 1 == 0;
-        let _ = moving;
         let name = match room.st {
             PSt::Hold { .. } => "tdagent_hold".to_string(),
             PSt::Stun(_) => "tdagent_stun".to_string(),

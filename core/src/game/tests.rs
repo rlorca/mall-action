@@ -1215,3 +1215,26 @@ fn loop_one_is_fair_a_new_player_reaches_the_first_4f_store_without_dying() {
     }
     assert!(deaths <= 3, "{deaths}/40 attempts died on the way to the first store: {causes:?}");
 }
+
+#[test]
+fn first_visit_lines_and_photo_strip_are_once_per_game_not_per_loop() {
+    let mut h = H::play(50);
+    h.g.s.visited[stores::index(StoreId::KgbToys)] = true;
+    h.g.s.strip = true;
+    h.g.s.loop_n = 1;
+    h.g.next_loop_for_test();
+    assert!(h.g.stores.iter().find(|s| s.id == StoreId::KgbToys).unwrap().visited);
+    assert!(h.g.mall.booth_strip_shown, "the strip already popped up this game");
+    assert!(!h.g.stores.iter().find(|s| s.id == StoreId::SamBaddy).unwrap().visited);
+}
+
+#[test]
+fn debug_commands_teleport_and_set_state() {
+    let mut h = H::play(51);
+    h.g.debug_cmd(10, 4); // KGB Toys door
+    assert_eq!((h.m().p.floor, h.m().p.x as i32), (3, slot(StoreId::KgbToys).door_x()));
+    h.g.debug_cmd(3, 6);
+    assert_eq!(h.g.s.packages, 6);
+    h.g.debug_cmd(8, 100);
+    assert_eq!(h.m().spies.len(), 1);
+}

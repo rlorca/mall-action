@@ -114,6 +114,11 @@ async fn main() {
             gallery_page %= pages;
             renderer.draw_gallery(&mut canvas, gallery_t, gallery_page);
         } else {
+            if debug {
+                for (cmd, v) in platform::debug_take_cmds() {
+                    game.debug_cmd(cmd, v);
+                }
+            }
             if let Some((n, mask)) = platform::debug_take_steps() {
                 // ?debug=1 hook: step N frames with the given buttons held
                 for _ in 0..n {

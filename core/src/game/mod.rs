@@ -39,6 +39,8 @@ pub struct Session {
     pub egg_done: bool,
     pub jokes: Vec<usize>,
     pub strip: bool,
+    /// Stores whose first-visit lines were already spoken (once per game, by `ALL_STORES` index).
+    pub visited: Vec<bool>,
 }
 
 impl Session {
@@ -55,6 +57,7 @@ impl Session {
             egg_done: false,
             jokes: vec![],
             strip: false,
+            visited: vec![false; 13],
         }
     }
     /// Add (or subtract) points; grants the one extra life at 20,000. Returns true if a life was granted.
@@ -253,12 +256,21 @@ impl Game {
     }
     pub fn new_level(&mut self) {
         self.stores = setup_stores(&mut self.rng, self.s.bf);
+        for (st, seen) in self.stores.iter_mut().zip(self.s.visited.iter()) {
+            st.visited = *seen; // first-visit lines and the photo-strip pop-up happen once per GAME, not per loop
+        }
         self.s.packages = 0;
         self.mall = Mall::new(&mut self.rng, self.s.loop_n);
+        self.mall.booth_strip_shown = self.s.strip;
         self.room = None;
         self.cur_store = None;
         self.powers = Powers { radar: false, ..Powers::new() };
         self.overlay = Overlay::None;
+    }
+    #[cfg(test)]
+    pub fn next_loop_for_test(&mut self) {
+        self.s.loop_n += 1;
+        self.new_level();
     }
     pub fn start_game(&mut self) {
         let hi = self.hi_session;
@@ -315,6 +327,7 @@ impl Game {
                 let mut c = SCtx { powers: &mut self.powers, rng: &mut self.rng, loop_n: self.s.loop_n, packages: self.s.packages };
                 let room = StoreRoom::enter(id, &self.stores[st_idx], &mut c, egg);
                 self.stores[st_idx].visited = true;
+                self.s.visited[st_idx] = true;
                 self.room = Some(room);
                 self.cur_store = Some(id);
                 self.scene = Scene::Store;
@@ -605,6 +618,83 @@ impl Game {
             return;
         }
         self.scene = Scene::GameOver { t };
+    }
+
+    /// `?debug=1` playtest setters (see `window.mallDebug.set`). Cheats only exist for automated playtests.
+    pub fn debug_cmd(&mut self, cmd: u32, v: i32) {
+        let door = |i: i32| level::STORE_SLOTS[(i.rem_euclid(13)) as usize];
+        match cmd {
+            1 => self.mall.p.floor = v.clamp(0, 5) as u8,
+            2 => self.mall.p.x = v as f32,
+            3 => self.s.packages = v.clamp(0, 6) as u32,
+            4 => self.s.lives = v,
+            5 => self.s.score = v.max(0),
+            6 => {
+                let kinds = [
+                    PowerKind::Rapid,
+                    PowerKind::Spread,
+                    PowerKind::Armor,
+                    PowerKind::Sneakers,
+                    PowerKind::Radar,
+                    PowerKind::OneUp,
+                    PowerKind::Cinnabomb,
+                    PowerKind::Ooze,
+                    PowerKind::Pretzel,
+                ];
+                self.grant(kinds[(v.rem_euclid(9)) as usize]);
+            }
+            7 => self.mall.kill_player(Cause::Bullet),
+            8 => {
+                // a spy `v` px in front of the agent, same floor
+                let dir: i8 = if self.mall.p.face >= 0 { 1 } else { -1 };
+                let x = (self.mall.p.x + dir as f32 * v as f32).clamp(40.0, 740.0);
+                let floor = self.mall.p.floor;
+                self.mall.spies.push(mall::Spy {
+                    x,
+                    floor,
+                    dir: -dir,
+                    st: mall::SpyState::Walk,
+                    age: 130,
+                    cd: 0,
+                    walk_t: 100,
+                    goal: None,
+                    last_volley: 0,
+                    anim: 0,
+                });
+            }
+            9 => self.mall.alarm_at = self.mall.t + 1,
+            10 => {
+                let s = door(v);
+                self.mall.p.floor = s.floor;
+                self.mall.p.x = s.door_x() as f32;
+                self.mall.p.st = PState::Walk;
+                self.mall.p.z = 0.0;
+            }
+            11 => {
+                // inside a store: stand next to the package fixture (guards stay alive)
+                if let (Some(room), Some(id)) = (self.room.as_mut(), self.cur_store) {
+                    let st = self.stores.iter().find(|s| s.id == id).unwrap();
+                    if let Some(i) = st.contents.iter().position(|c| *c == level::Content::Package) {
+                        let f = room.fixtures[i];
+                        room.x = (f.tx * rooms::TILE + 8) as f32;
+                        room.y = ((f.ty + 1) * rooms::TILE + 1) as f32;
+                        room.face = store::Dir::Up;
+                    }
+                }
+            }
+            12 => self.s.continues = v.max(0) as u32,
+            13 => self.mall.t = v.max(0) * 60,
+            14 => self.mall.p.x += v as f32,
+            15 => {
+                // inside a store: stand just inside the door
+                if let Some(room) = self.room.as_mut() {
+                    let (sx, sy) = (rooms::START.0 * rooms::TILE + 8, rooms::START.1 * rooms::TILE + 8);
+                    room.x = (sx - 8) as f32;
+                    room.y = sy as f32;
+                }
+            }
+            _ => {}
+        }
     }
 
     // ------------------------------------------------------------------ audio hints

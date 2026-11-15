@@ -75,6 +75,14 @@
                 window.mallDebug = {
                     step: function (n, mask) { wasm_exports.mall_debug_step(n | 0, (mask | 0) >>> 0); },
                     get: function (i) { return wasm_exports.mall_debug_get(i | 0); },
+                    // playtest setters: set("floor",4) set("x",120) set("packages",6) set("lives",1) set("score",n)
+                    // set("power",0..8) set("kill",1) set("spy",distance) set("alarm",1) set("store",0..12 teleport to its door)
+                    // set("room_package",1) set("continues",n) set("time",seconds) set("nudge",dx) set("room_door",1)
+                    set: function (name, v) {
+                        var ids = { floor: 1, x: 2, packages: 3, lives: 4, score: 5, power: 6, kill: 7, spy: 8, alarm: 9, store: 10,
+                                    room_package: 11, continues: 12, time: 13, nudge: 14, room_door: 15 };
+                        wasm_exports.mall_debug_set(ids[name], v | 0);
+                    },
                     // after the first step() the game only advances when stepped; resume() restores real time
                     resume: function () { wasm_exports.mall_debug_resume(); },
                     fields: ["scene", "score", "lives", "packages", "loop", "x", "floor", "y", "overlay", "frame", "mallT", "spies", "alarm", "storeId", "crt", "muted", "pstate", "bullets", "coins", "banner", "cause", "pfloor", "copFloor", "copX"],

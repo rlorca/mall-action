@@ -255,7 +255,7 @@ impl StoreRoom {
             id,
             layout,
             fixtures,
-            x: sx + 8.0,
+            x: sx - 8.0,
             y: sy,
             face: Dir::Up,
             st: PSt::Walk,
@@ -286,7 +286,7 @@ impl StoreRoom {
 
     pub fn respawn(&mut self) {
         let (sx, sy) = tile_center(START.0, START.1);
-        self.x = sx + 8.0;
+        self.x = sx - 8.0;
         self.y = sy;
         self.st = PSt::Walk;
         self.inv = 120;

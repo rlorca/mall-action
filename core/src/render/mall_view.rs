@@ -113,7 +113,7 @@ impl Renderer {
             }
             let st = g.store_state(s.id);
             let look = if st.role() == Role::Target && st.package_taken { StoreLook::Cleared } else { StoreLook::Normal };
-            self.draw_storefront(cv, sx(s.x), sy(floor_y(s.floor)), s.id, (m.t / 1) as i64, look);
+            self.draw_storefront(cv, sx(s.x), sy(floor_y(s.floor)), s.id, m.t as i64, look);
             if g.s.bf && st.open_for_entry() {
                 cv.blit(self.spr("sf_sale70"), sx(s.x + 26), sy(floor_y(s.floor) - 38));
             }
@@ -489,7 +489,7 @@ impl Renderer {
         let w = lines.iter().map(|l| text_width(l)).max().unwrap_or(0) + 12;
         // slide in/out
         let slide = ((total - t).min(8).min(t.max(0))).clamp(0, 8);
-        let y = 22 + 0 * slide - (8 - slide);
+        let y = 22 - (8 - slide);
         let x = (SCREEN_W as i32 - w) / 2;
         let (bg, fg) = if alert { (c::RED_D, c::WHITE) } else { (c::BLUE_D, c::WHITE) };
         draw_box(cv, x, y, w, h, bg, c::WHITE);

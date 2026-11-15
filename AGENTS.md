@@ -53,6 +53,11 @@ elevride, store, map, clear, continue, gameover, ...). Real check: serve `dist/`
 Chrome over CDP; with `?debug=1` use `window.mallDebug.step(frames, mask)` and `get(i)` for deterministic runs. Keep the CRT ON for playtests
 (it is the default; the setting persists in localStorage, so clear it between sessions).
 
+## Playtest hooks (`?debug=1`)
+
+`window.mallDebug` (see `web/mall_plugin.js`): `step(n, mask)`, `get(i)`/`fields`, `set(name, v)` (teleport/cheats, `Game::debug_cmd`), `resume()`.
+The first `step()` suspends real-time simulation so runs are deterministic with `?seed=N`. Cheats are ignored without `?debug=1`.
+
 ## Gotchas we hit
 
 * Recent Rust no longer links wasm imports implicitly: `.cargo/config.toml` passes `-C link-arg=--import-undefined` for wasm32.
@@ -66,3 +71,7 @@ Chrome over CDP; with `?debug=1` use `window.mallDebug.step(frames, mask)` and `
 * The automatic car (shaft C) never leaves while the player is *inside*: ride its roof instead (fall onto it from the floor above).
 * Lamps hang at chest-shot height; when testing bullets on a floor, check for lamps/fountains in the line of fire (they absorb the shot).
 * Native `cargo test` of the *app* crate would need ALSA on Linux; CI tests only `mall-core`.
+* Macroquad's `load_sound_from_bytes().await` loops `next_frame()` until the browser has decoded the buffer: calling it in the game loop
+  stalls the game. All audio is therefore rendered behind a LOADING bar and decoded in coroutines (`app/src/audio.rs`).
+* Per-game (not per-loop) flags live in `Session` (`egg_done`, `visited`, `strip`), per-level state in `Mall`/`StoreState`.
+* The CRT shader samples slightly *outward* (rounded extreme corners) so no picture content is ever cropped; keep HUD text >= 4 px from the edges.

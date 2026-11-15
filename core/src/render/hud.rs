@@ -12,13 +12,13 @@ impl Renderer {
         cv.rect(0, 0, SCREEN_W as i32, 16, c::BLACK);
         cv.hline(0, 15, SCREEN_W as i32, c::GRAY_D);
         // score
-        draw_text(cv, 3, 4, &format!("{:06}", g.s.score.max(0)), c::WHITE);
+        draw_text(cv, 5, 4, &format!("{:06}", g.s.score.max(0)), c::WHITE);
         // packages
         let all = g.s.packages >= 6;
-        draw_text(cv, 45, 4, &format!("PKG {}/6", g.s.packages), if all { c::GREEN_L } else { c::RED_L });
+        draw_text(cv, 47, 4, &format!("PKG {}/6", g.s.packages), if all { c::GREEN_L } else { c::RED_L });
         // lives
-        cv.blit(self.spr("hud_head"), 92, 4);
-        draw_text(cv, 101, 4, &format!("{}", g.s.lives.max(0)), c::WHITE);
+        cv.blit(self.spr("hud_head"), 94, 4);
+        draw_text(cv, 103, 4, &format!("{}", g.s.lives.max(0)), c::WHITE);
         // active timed power-up
         if let Some((k, left, total)) = g.powers.hud_timer() {
             let name = match k {

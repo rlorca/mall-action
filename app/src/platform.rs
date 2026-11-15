@@ -93,6 +93,17 @@ pub extern "C" fn mall_debug_resume() {
     MANUAL.store(false, Relaxed);
 }
 static MANUAL: AtomicBool = AtomicBool::new(false);
+static CMDS: std::sync::Mutex<Vec<(u32, i32)>> = std::sync::Mutex::new(Vec::new());
+/// Queue a debug command (teleport, set lives/packages, spawn a spy, ...): see `Game::debug_cmd`.
+#[no_mangle]
+pub extern "C" fn mall_debug_set(cmd: u32, value: i32) {
+    if let Ok(mut q) = CMDS.lock() {
+        q.push((cmd, value));
+    }
+}
+pub fn debug_take_cmds() -> Vec<(u32, i32)> {
+    CMDS.lock().map(|mut q| std::mem::take(&mut *q)).unwrap_or_default()
+}
 /// True once a debug step was requested: real-time stepping is suspended.
 pub fn manual_mode() -> bool {
     MANUAL.load(Relaxed)

@@ -1,5 +1,6 @@
 //! The side-scrolling mall: player, elevators, escalators, spies, lights, NPCs.
 //! Pure rules; the renderer only reads this state. All randomness comes from the passed-in Rng.
+use super::difficulty;
 use super::elevator::{Car, CarEvent, Fall, Opening};
 use super::level::*;
 use super::powerups::{PowerKind, Powers, Weapon};
@@ -315,7 +316,7 @@ impl Mall {
         for (f, x) in LAMPS {
             lamps.push(Lamp { floor: f, x: x as f32, disco: f == 2, st: LampState::Hang });
         }
-        let alarm_at = (150 - 20 * (loop_n as i32 - 1)).max(60) * 60;
+        let alarm_at = difficulty(loop_n).alarm_secs * 60;
         let cop_floor = *rng.pick(&[4u8, 3, 2, 1]);
         Mall {
             t: 0,
@@ -437,8 +438,7 @@ impl Mall {
     }
     fn score(&mut self, pts: i32, x: f32, y: f32) {
         self.ev.push(Ev::Score(pts));
-        let t = if pts >= 0 { format!("{pts}") } else { format!("{pts}") };
-        self.popup(x, y, t);
+        self.popup(x, y, format!("{pts}"));
     }
     pub fn set_banner(&mut self, lines: Vec<String>, frames: i32, alert: bool) {
         self.banner = Some(Banner { lines, t: frames, total: frames, alert });
@@ -801,7 +801,7 @@ impl Mall {
             if pad.pressed(DOWN) && self.interact_down() {
                 return;
             }
-            if pad.pressed(B) && self.p.slide == 0 || (pad.pressed(B) && self.p.slide != 0) {
+            if pad.pressed(B) {
                 self.p.vz = if ctx.powers.high_jump() { JUMP_V_HIGH } else { JUMP_V };
                 self.p.z = 0.01;
                 self.p.air_dir = dir as i8;
@@ -1207,21 +1207,21 @@ impl Mall {
 // ====================== spies, bullets, lights, items ======================
 impl Mall {
     pub fn spy_speed(&self, loop_n: u32) -> f32 {
-        let mut s = 0.6 * (1.0 + 0.10 * (loop_n as f32 - 1.0)).min(1.6);
+        let mut s = 0.6 * difficulty(loop_n).spy_speed;
         if self.alarm {
             s *= 1.25;
         }
         s
     }
     pub fn spy_shot_interval(&self, loop_n: u32) -> i32 {
-        let mut i = 150.0 / (1.0 + 0.15 * (loop_n as f32 - 1.0)).min(2.2);
+        let mut i = 150.0 / difficulty(loop_n).shot_rate;
         if self.alarm {
             i *= 0.85;
         }
         (i as i32).max(60)
     }
     pub fn spawn_interval(&self, loop_n: u32, bf: bool) -> i32 {
-        let mut i = 360.0 / (1.0 + 0.15 * (loop_n as f32 - 1.0)).min(2.2);
+        let mut i = 360.0 / difficulty(loop_n).spawn_rate;
         if self.alarm {
             i /= 1.6;
         }
@@ -1361,7 +1361,7 @@ impl Mall {
             }
         }
         self.spies = spies;
-        self.spies.retain(|s| !matches!(s.st, SpyState::Dying(t) if t <= 0 && false) && !matches!(s.st, SpyState::Dying(t) if t < -1));
+        self.spies.retain(|s| !matches!(s.st, SpyState::Dying(t) if t < -1));
     }
 
     pub fn kill_spy(&mut self, idx: usize, pts: i32, ctx: &mut Ctx) {

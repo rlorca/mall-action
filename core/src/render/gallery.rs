@@ -56,7 +56,7 @@ impl Renderer {
         cv.clear(c::GRAY_D);
         let pages = self.gallery_pages();
         let page = page % pages.len();
-        draw_text(cv, 4, 4, &format!("GALLERY {}/{}  LEFT/RIGHT", page + 1, pages.len()), c::WHITE);
+        draw_text(cv, 8, 5, &format!("GALLERY {}/{}  LEFT/RIGHT", page + 1, pages.len()), c::WHITE);
         for it in &pages[page] {
             let s = self.sprites.anim(&it.base, (t / 10) as usize);
             cv.rect(it.x - 1, it.y - 1, s.w as i32 + 2, s.h as i32 + 2, c::BLACK);

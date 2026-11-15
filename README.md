@@ -79,7 +79,7 @@ The build works from any sub-path (e.g. GitHub Pages): all URLs are relative.
 | Option | Effect |
 |---|---|
 | `?seed=N` | Fixes the random seed (same seed ⇒ same game). |
-| `?debug=1` | Skips the studio splash and exposes `window.mallDebug`: `step(frames, buttonMask)` steps the game with buttons held (bitmask `U1 D2 L4 R8 A16 B32 SELECT64 START128`), `get(i)` reads the context snapshot, `fields` names the indices. |
+| `?debug=1` | Skips the studio splash and exposes `window.mallDebug` for automated playtests: `step(frames, buttonMask)` steps the game with buttons held (bitmask `U1 D2 L4 R8 A16 B32 SELECT64 START128`; after the first call the game only advances when stepped, `resume()` restores real time), `get(i)` / `fields` read the context snapshot (scene, score, lives, floor, x, player state, ...), and `set(name, value)` is a playtest cheat (`floor`, `x`, `packages`, `lives`, `store` = teleport to a store door, `room_package`, `spy`, `kill`, ...). |
 | `?gallery=1` | Shows every sprite, animated (Left/Right pages). |
 
 ## Project layout
@@ -118,12 +118,23 @@ Part of the "same one-shot prompt, different models" benchmark (see `main`).
 
 * **Model:** Claude Sonnet 5.5 (`claude-sonnet-5-5`)
 * **Date:** 2026-11-15
-* **Harness:** Claude Code (CLI), autonomous session; the art and audio modules were written by forked sub-agents of the
-  same model running in parallel worktrees (chars/items, mall environment, storefronts, top-down rooms, chiptune audio).
+* **Harness:** Claude Code (CLI), one long autonomous session (several hours of wall-clock time). Reasoning effort: the
+  session default (not raised). The art and audio modules (`core/src/art/*`, `core/src/audio/*`) were written by five forked
+  sub-agents of the same model running in parallel git worktrees (chars/items, mall environment, storefronts, top-down rooms,
+  chiptune audio); everything else was written in the main session.
 * **Deviation from the verbatim prompt:** the user asked for the implementation to be written in **Rust with Macroquad**
   (the prompt leaves the technology open) and for the branch to be named `macroquad-sonnet-...`.
-* **Interventions:** none beyond that request. Verification used `cargo test`, native PNG screenshots and a headless
-  Chrome (CDP) playtest of the real wasm build with the CRT on.
+* **Interventions:** none beyond that request. The model consulted an `advisor` tool (a stronger reviewer model that sees
+  the transcript) at the start and before finishing; its review led to the CRT-edge fix, the debug setters, the per-game
+  flags and the npm wrappers. `.github/workflows/pages.yml` was adapted from an existing implementation branch (as the repo's
+  AGENTS.md prescribes); no game code from other branches was read.
+* **Verification:** `cargo test -p mall-core` (176 tests incl. navigation, fairness and renderer-coverage tests), native PNG
+  screenshots, and a headless-Chrome (CDP) playtest of the real wasm build with the CRT on, served from a sub-path:
+  splash, title (CRT/mute toggles with real key events), zip-line arrival and selfie, elevator and escalator rides, shooting a
+  spy and a lamp, entering a store, searching and finding a package with guards alive, map, pause, level clear (tally,
+  headline, post) into loop 2, continue, game over back to the title, a 45-60 s random-input soak, a gallery page, and a
+  devicePixelRatio-2 / resized-window check. No console errors. Not verifiable in that environment: real audio output
+  (synthesis is tested for level/determinism/looping; it was never *listened to*), real gamepads, and non-QWERTY hardware.
 * **Architecture note:** because Macroquad has no gamepad/URL/localStorage APIs, a small miniquad JS plugin
   (`web/mall_plugin.js`) provides them; the game is rendered by a pure-Rust software renderer into a 256×240 RGBA canvas
   that the shell uploads as a texture, so rules *and* rendering are testable natively.

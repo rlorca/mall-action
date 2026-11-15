@@ -297,7 +297,7 @@ impl Renderer {
         let ids = [ALL_STORES[0], ALL_STORES[1], ALL_STORES[4]];
         let xs = [4, 88, 172];
         for (i, id) in ids.iter().enumerate() {
-            self.draw_storefront(cv, xs[i] - 0, fy, *id, t as i64, StoreLook::Normal);
+            self.draw_storefront(cv, xs[i], fy, *id, t as i64, StoreLook::Normal);
         }
         cv.blit(self.spr("agent_stand"), 120, fy - 24);
         // shutters roll down over storefronts and the agent

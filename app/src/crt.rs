@@ -29,9 +29,14 @@ float hash(vec2 p) {
 }
 
 void main() {
-    // mild barrel warp that pulls the picture inward (so nothing is ever blank at the edges)
+    // mild barrel curvature: sample slightly outward, so the whole picture stays visible and only
+    // the last ~3 px of the extreme corners fall off the tube
     vec2 d = uv * 2.0 - 1.0;
-    vec2 w = d / (1.0 + 0.05 * vec2(d.y * d.y, d.x * d.x));
+    vec2 w = d * (1.0 + 0.03 * vec2(d.y * d.y, d.x * d.x));
+    if (abs(w.x) > 1.0 || abs(w.y) > 1.0) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
     vec2 suv = w * 0.5 + 0.5;
     vec3 col = texture2D(Texture, suv).rgb;
     // scanlines: one dark band per source row
