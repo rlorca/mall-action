@@ -50,12 +50,16 @@ fn main() {
                 }
             }
         }
-        "f4" | "f2" | "f3" | "f1" | "p" | "elev" | "map" | "pause" | "store" | "package" | "clear" | "continue" | "gameover" | "wet" => {
+        "combat" | "elevride" | "wet2" | "kiosk" | "alarm" | "disco" | "f4" | "f2" | "f3" | "f1" | "p" | "elev" | "map" | "pause" | "store" | "package" | "clear" | "continue" | "gameover" | "wet" => {
             run(&mut g, &mut pad, 0, 20);
             tap(&mut g, &mut pad, START);
             run(&mut g, &mut pad, 0, 40);
             run(&mut g, &mut pad, 0, 400);
             let fl = match scenario {
+                "combat" | "kiosk" | "alarm" => 4,
+                "elevride" => 3,
+                "wet2" => 1,
+                "disco" => 2,
                 "f4" | "elev" => 4,
                 "f3" => 3,
                 "f2" => 2,
@@ -67,6 +71,45 @@ fn main() {
             g.mall.p.x = if scenario == "wet" { 500.0 } else { 120.0 };
             g.mall.control = true;
             match scenario {
+                "combat" => {
+                    g.mall.p.x = 190.0;
+                    g.mall.spies.push(Spy { x: 232.0, floor: 4, dir: -1, st: SpyState::Aim(10, true), age: 200, cd: 0, walk_t: 100, goal: None, last_volley: 0, anim: 0 });
+                    g.mall.spies.push(Spy { x: 140.0, floor: 4, dir: 1, st: SpyState::Dying(14), age: 200, cd: 0, walk_t: 100, goal: None, last_volley: 0, anim: 0 });
+                    g.mall.bullets.push(Bullet { x: 210.0, y: 160.0, vx: -2.0, vy: 0.0, floor: 4, hostile: true, volley: 0 });
+                    g.mall.popups.push(Popup { x: 140.0, y: 140.0, text: "100".into(), t: 40 });
+                    g.mall.bubbles.push(Bubble { x: 140.0, y: 146.0, text: "NOT THE FACE!".into(), t: 60 });
+                    g.mall.p.face = 1;
+                    g.powers.grant(mall_core::game::powerups::PowerKind::Rapid);
+                    g.powers.grant(mall_core::game::powerups::PowerKind::Armor);
+                    run(&mut g, &mut pad, A, 3);
+                }
+                "elevride" => {
+                    g.mall.cars[1] = mall_core::game::elevator::Car::new(mall_core::game::level::SHAFTS[1], 3);
+                    g.mall.p.x = 384.0;
+                    g.mall.p.st = PState::Inside(1);
+                    g.mall.set_banner(vec!["3F - TOYS & VIDEO, SPIES".into()], 100, false);
+                }
+                "wet2" => {
+                    g.mall.wet = Some(Wet { cx: 560.0, t: 600 });
+                    g.mall.janitor.x = 600.0;
+                    g.mall.p.x = 540.0;
+                    run(&mut g, &mut pad, RIGHT, 12);
+                }
+                "kiosk" => {
+                    g.mall.p.x = 292.0;
+                    tap(&mut g, &mut pad, UP);
+                }
+                "alarm" => {
+                    g.mall.alarm_at = 1;
+                    run(&mut g, &mut pad, 0, 20);
+                    g.mall.p.x = 480.0;
+                }
+                "disco" => {
+                    g.mall.p.x = 300.0;
+                    g.mall.p.face = 1;
+                    run(&mut g, &mut pad, A, 40);
+                    run(&mut g, &mut pad, 0, 40);
+                }
                 "map" => {
                     tap(&mut g, &mut pad, SELECT);
                 }

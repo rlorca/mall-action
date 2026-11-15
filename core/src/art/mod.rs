@@ -32,6 +32,8 @@ pub fn all_defs() -> Vec<SpriteDef> {
 pub struct Sprites {
     map: HashMap<&'static str, Sprite>,
     missing: Sprite,
+    /// Names that were requested but do not exist (tests assert this stays empty).
+    pub misses: std::cell::RefCell<Vec<String>>,
 }
 
 impl Sprites {
@@ -49,14 +51,23 @@ impl Sprites {
             art: "12121212\n21212121\n12121212\n21212121\n12121212\n21212121\n12121212\n21212121",
         })
         .unwrap();
-        Sprites { map, missing }
+        Sprites { map, missing, misses: Default::default() }
     }
     pub fn has(&self, name: &str) -> bool {
         self.map.contains_key(name)
     }
     /// Look up by exact name (a magenta checkerboard if missing, so bugs are visible, never a panic).
     pub fn get(&self, name: &str) -> &Sprite {
-        self.map.get(name).unwrap_or(&self.missing)
+        match self.map.get(name) {
+            Some(s) => s,
+            None => {
+                let mut m = self.misses.borrow_mut();
+                if !m.iter().any(|n| n == name) {
+                    m.push(name.to_string());
+                }
+                &self.missing
+            }
+        }
     }
     /// Number of frames of animation `base` (`base_0`, `base_1`, ...). 0 if it is not an animation.
     pub fn frames(&self, base: &str) -> usize {

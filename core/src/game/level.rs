@@ -99,8 +99,8 @@ pub fn slot(id: StoreId) -> &'static StoreSlot {
 pub const KIOSKS: [(u8, i32); 4] = [(4, 292), (3, 256), (2, 312), (1, 352)];
 pub const PHOTO_BOOTH: (u8, i32) = (3, 172);
 pub const FOUNTAINS: [(u8, i32); 2] = [(3, 216), (1, 312)];
-pub const BENCHES: [(u8, i32); 5] = [(4, 436), (3, 636), (2, 640), (1, 560), (4, 600)];
-pub const PLANTS: [(u8, i32); 8] = [(4, 52), (4, 704), (3, 380), (3, 700), (2, 60), (2, 600), (1, 52), (1, 620)];
+pub const BENCHES: [(u8, i32); 5] = [(4, 436), (3, 636), (2, 640), (1, 560), (4, 350)];
+pub const PLANTS: [(u8, i32); 8] = [(4, 56), (4, 704), (3, 612), (3, 700), (2, 56), (2, 600), (1, 52), (1, 620)];
 pub const PILLARS: [i32; 6] = [100, 200, 300, 470, 640, 700];
 pub const WAGON_X: i32 = 540;
 pub const WAGON_W: i32 = 56;
@@ -323,6 +323,34 @@ mod tests {
             for b in STORE_SLOTS.iter() {
                 if a.id != b.id && a.floor == b.floor {
                     assert!(a.x + STORE_W <= b.x || b.x + STORE_W <= a.x);
+                }
+            }
+        }
+    }
+    #[test]
+    fn furniture_never_overlaps_stores_shafts_or_escalators() {
+        let items: Vec<(&str, u8, i32, i32)> = KIOSKS
+            .iter()
+            .map(|(f, x)| ("kiosk", *f, *x, 12))
+            .chain(std::iter::once(("booth", PHOTO_BOOTH.0, PHOTO_BOOTH.1, 12)))
+            .chain(FOUNTAINS.iter().map(|(f, x)| ("fountain", *f, *x, 16)))
+            .chain(BENCHES.iter().map(|(f, x)| ("bench", *f, *x, 12)))
+            .chain(PLANTS.iter().map(|(f, x)| ("plant", *f, *x, 8)))
+            .collect();
+        for (name, f, x, half) in items {
+            let (a, b) = (x - half, x + half);
+            for s in STORE_SLOTS.iter().filter(|s| s.floor == f) {
+                assert!(b <= s.x || a >= s.x + STORE_W, "{name} at {x} on {f} overlaps {:?}", s.id);
+            }
+            for sh in SHAFTS.iter().filter(|sh| sh.serves(f)) {
+                assert!(b <= sh.x || a >= sh.x + SHAFT_W, "{name} at {x} on {f} overlaps shaft {}", sh.name);
+            }
+            for e in ESCALATORS.iter() {
+                if e.low == f {
+                    assert!(b <= e.x_low - 24 || a >= e.x_low + 12, "{name} at {x} blocks the bottom landing");
+                }
+                if e.high() == f {
+                    assert!(b <= e.x_high() - 12 || a >= e.x_high() + 28, "{name} at {x} blocks the top landing");
                 }
             }
         }
