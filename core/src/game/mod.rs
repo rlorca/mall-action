@@ -6,6 +6,8 @@ pub mod mall;
 pub mod powerups;
 pub mod rooms;
 pub mod store;
+#[cfg(test)]
+mod tests;
 
 use crate::audio::{Sfx, Song};
 use crate::copy;
