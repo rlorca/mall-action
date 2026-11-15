@@ -62,7 +62,9 @@
                 window.mallDebug = {
                     step: function (n, mask) { wasm_exports.mall_debug_step(n | 0, (mask | 0) >>> 0); },
                     get: function (i) { return wasm_exports.mall_debug_get(i | 0); },
-                    fields: ["scene", "score", "lives", "packages", "loop", "x", "floor", "y", "overlay", "frame", "mallT", "spies", "alarm", "storeId", "crt", "muted"],
+                    // after the first step() the game only advances when stepped; resume() restores real time
+                    resume: function () { wasm_exports.mall_debug_resume(); },
+                    fields: ["scene", "score", "lives", "packages", "loop", "x", "floor", "y", "overlay", "frame", "mallT", "spies", "alarm", "storeId", "crt", "muted", "pstate", "bullets", "coins", "banner"],
                 };
             }
         },

@@ -113,6 +113,7 @@ async fn main() {
                 pad.set_gamepad(0);
             }
             let steps = fixed.advance(get_frame_time() as f64);
+            let steps = if platform::manual_mode() { 0 } else { steps };
             for _ in 0..steps {
                 let ps = pad.begin_step();
                 game.step(ps);

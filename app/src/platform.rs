@@ -1,7 +1,7 @@
 //! Browser glue (see web/mall_plugin.js): gamepad, URL options, localStorage, debug hooks.
 //! On native builds these are inert stand-ins so the same code runs in `cargo run`.
 use mall_core::game::{Game, Overlay, Scene};
-use std::sync::atomic::{AtomicU32, Ordering::Relaxed};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering::Relaxed};
 
 #[cfg(target_arch = "wasm32")]
 extern "C" {
@@ -77,13 +77,25 @@ pub fn storage_set(i: i32, v: i32) {
 // ---- debug hooks (?debug=1): exported to JS as window.mallDebug ----
 static STEP_N: AtomicU32 = AtomicU32::new(0);
 static STEP_MASK: AtomicU32 = AtomicU32::new(0);
-static SNAP: [AtomicU32; 16] = [const { AtomicU32::new(0) }; 16];
+static SNAP: [AtomicU32; 20] = [const { AtomicU32::new(0) }; 20];
 
 /// Step the game `n` frames with the buttons in `mask` held (picked up on the next rendered frame).
 #[no_mangle]
 pub extern "C" fn mall_debug_step(n: u32, mask: u32) {
     STEP_N.store(n, Relaxed);
     STEP_MASK.store(mask, Relaxed);
+    // from now on the game only advances when stepped (deterministic playtests)
+    MANUAL.store(true, Relaxed);
+}
+/// Resume real-time simulation after manual stepping.
+#[no_mangle]
+pub extern "C" fn mall_debug_resume() {
+    MANUAL.store(false, Relaxed);
+}
+static MANUAL: AtomicBool = AtomicBool::new(false);
+/// True once a debug step was requested: real-time stepping is suspended.
+pub fn manual_mode() -> bool {
+    MANUAL.load(Relaxed)
 }
 /// Read a field of the game context snapshot (see `fields` in web/mall_plugin.js).
 #[no_mangle]
@@ -119,7 +131,17 @@ pub fn debug_publish(g: &Game, crt: bool, muted: bool) {
         Overlay::Map => 1,
         Overlay::Pause => 2,
     };
-    let vals: [i32; 16] = [
+    let pst = match g.mall.p.st {
+        mall_core::game::mall::PState::Walk => 0,
+        mall_core::game::mall::PState::Inside(_) => 1,
+        mall_core::game::mall::PState::Roof(_) => 2,
+        mall_core::game::mall::PState::Esc { .. } => 3,
+        mall_core::game::mall::PState::Fall { .. } => 4,
+        mall_core::game::mall::PState::Dying(_) => 5,
+        mall_core::game::mall::PState::Hidden(_) => 6,
+        _ => 7,
+    };
+    let vals: [i32; 20] = [
         scene,
         g.s.score,
         g.s.lives,
@@ -136,6 +158,10 @@ pub fn debug_publish(g: &Game, crt: bool, muted: bool) {
         g.cur_store.map(|s| mall_core::stores::index(s) as i32).unwrap_or(-1),
         crt as i32,
         muted as i32,
+        pst,
+        g.mall.bullets.len() as i32,
+        g.mall.coins.len() as i32,
+        g.mall.banner.is_some() as i32,
     ];
     for (i, v) in vals.iter().enumerate() {
         SNAP[i].store(*v as u32, Relaxed);

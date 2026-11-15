@@ -1164,3 +1164,54 @@ fn every_floor_is_reachable_in_play_and_no_car_can_strand_the_player() {
     }
 }
 
+
+#[test]
+fn loop_one_is_fair_a_new_player_reaches_the_first_4f_store_without_dying() {
+    let mut deaths = 0;
+    let mut causes = vec![];
+    for seed in 0..40 {
+        let mut h = H::new(1000 + seed);
+        h.run(0, 20);
+        h.tap(START);
+        h.run(0, 60);
+        for _ in 0..600 {
+            if h.g.mall.control {
+                break;
+            }
+            h.tap(A);
+        }
+        h.run(0, 40);
+        let lives0 = h.g.s.lives;
+        // walk to A, ride to 4F, walk to Forever 12's door shooting all the way
+        let sx = SHAFTS[0].cx() as f32;
+        for _ in 0..400 {
+            let px = h.g.mall.p.x;
+            if (px - (sx + 30.0)).abs() < 1.0 { break; }
+            h.step_held(if px < sx + 30.0 { RIGHT } else { LEFT } | A);
+        }
+        h.tap(UP);
+        for _ in 0..500 {
+            h.step_held(A);
+            if matches!(h.g.mall.p.st, PState::Inside(_)) { break; }
+        }
+        h.run(0, 14);
+        for _ in 0..600 {
+            let at = h.g.mall.cars[0].y;
+            h.step_held(if at < floor_y(4) - 3 { DOWN } else { 0 } | A);
+            if h.g.mall.cars[0].floor_at() == Some(4) && h.g.mall.cars[0].dir == 0 { break; }
+        }
+        h.run(RIGHT | A, 12);
+        let door = slot(StoreId::Forever12).door_x() as f32;
+        for _ in 0..400 {
+            let px = h.g.mall.p.x;
+            if (px - door).abs() < 1.0 { break; }
+            h.step_held(if px < door { RIGHT } else { LEFT } | A);
+        }
+        h.run(A, 120);
+        if h.g.s.lives < lives0 {
+            deaths += 1;
+            causes.push((seed, h.g.mall.dying_cause, h.g.mall.t));
+        }
+    }
+    assert!(deaths <= 3, "{deaths}/40 attempts died on the way to the first store: {causes:?}");
+}
