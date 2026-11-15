@@ -410,8 +410,13 @@ fn a_car_rising_into_the_top_crushes_someone_on_the_roof() {
     assert!(s.pv().on_roof && s.alive(), "{:?}", s.pv());
     s.m.core.cars[0].target = Some(Floor::Roof);
     s.m.core.cars[0].call = false;
-    s.frames(0, 120);
-    assert!(s.pv().dying, "someone on the roof is crushed against the top of the shaft");
+    let mut died = false;
+    for _ in 0..120 {
+        s.step(0);
+        died |= s.pv().dying;
+    }
+    assert!(died, "someone on the roof is crushed against the top of the shaft");
+    assert_eq!(s.run.lives, 2);
 }
 
 #[test]

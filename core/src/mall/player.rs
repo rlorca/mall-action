@@ -67,6 +67,8 @@ pub struct Player {
     pub walk_t: u32,
     /// Frames since the last landing (for the landing squash).
     pub since_land: u32,
+    /// Walked this frame (drives the walk animation).
+    pub moving: bool,
 }
 
 impl Player {
@@ -92,6 +94,7 @@ impl Player {
             ride_lock: false,
             walk_t: 0,
             since_land: 99,
+            moving: false,
         }
     }
 
@@ -423,6 +426,7 @@ impl<'a> Ctx<'a> {
         {
             let p = &mut self.core.player;
             let mdx = if p.grounded { if p.ducking { 0 } else { dx } } else { p.air_dx };
+            p.moving = mdx != 0 && p.grounded;
             if mdx != 0 {
                 if p.grounded {
                     p.facing = mdx;

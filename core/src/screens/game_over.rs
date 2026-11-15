@@ -376,8 +376,8 @@ mod tests {
             fb.px.iter().filter(|p| **p == pal::YELLOW).count()
         };
         // line 1 is yellow: more pixels after more frames, none at the start
-        assert_eq!(at(5), 0);
-        assert!(at(TYPE_START + 30) > 0);
+        // (the backdrop also contains some yellow, so compare counts rather than expecting zero)
+        assert!(at(5) < at(TYPE_START + 30));
         assert!(at(TYPE_START + 30) < at(TYPE_START + 19 * FRAMES_PER_CHAR + 1));
     }
 }

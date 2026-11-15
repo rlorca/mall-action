@@ -231,6 +231,7 @@ pub fn decor_items(f: Floor) -> Vec<DecorItem> {
     if f == Floor::Roof {
         return Vec::new();
     }
+    let lamps = lamp_slots(f);
     let mut items = Vec::new();
     let pattern = [DecorKind::Plant, DecorKind::Bench, DecorKind::Plant, DecorKind::Vending, DecorKind::Bench, DecorKind::Trash];
     let mut n = f.index() * 2;
@@ -239,15 +240,21 @@ pub fn decor_items(f: Floor) -> Vec<DecorItem> {
         let mut x = a;
         // Short gaps get one plant centred; long stretches alternate items with breathing room.
         if w < 40 {
-            let k = if w >= 16 { DecorKind::Plant } else { DecorKind::Trash };
+            let k = if w >= 16 && f != Floor::Parking { DecorKind::Plant } else { DecorKind::Trash };
             if w >= k.width() {
                 items.push(DecorItem { kind: k, floor: f, x: a + (w - k.width()) / 2 });
             }
             continue;
         }
         while x + 16 <= b {
-            let k = pattern[n % pattern.len()];
+            let mut k = pattern[n % pattern.len()];
             n += 1;
+            if f == Floor::Parking && matches!(k, DecorKind::Plant | DecorKind::Bench) {
+                k = DecorKind::Trash;
+            }
+            if k == DecorKind::Vending && lamps.iter().any(|l| (l - (x + 8)).abs() < 18) {
+                k = DecorKind::Trash;
+            }
             if x + k.width() > b {
                 break;
             }
@@ -276,17 +283,20 @@ pub fn lamp_slots(f: Floor) -> Vec<i32> {
     }
     if f == Floor::Parking {
         blockers.push((layout::CAR_X, layout::CAR_X + layout::CAR_W));
+        for px in pillar_xs() {
+            blockers.push((px - 2, px + 18));
+        }
     }
     blockers.sort();
     let mut spans = Vec::new();
-    let mut cursor = WALL_L;
+    let mut cursor = WALL_L + 18; // keep clear of the floor label on the left wall
     for (a, b) in blockers {
-        if a - cursor >= 16 {
+        if a - cursor >= 18 {
             spans.push((cursor, a));
         }
         cursor = cursor.max(b);
     }
-    if WALL_R - cursor >= 16 {
+    if WALL_R - cursor >= 18 {
         spans.push((cursor, WALL_R));
     }
     let mut out = Vec::new();

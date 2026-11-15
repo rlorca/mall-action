@@ -327,8 +327,6 @@ impl<'a> Ctx<'a> {
 
     /// Step every elevator car; returns after handling dings, banners and call pickups.
     pub(super) fn step_cars(&mut self, drive: i32) {
-        let p_floor_y = self.core.player.y();
-        let _ = p_floor_y;
         for i in 0..3 {
             let rider = self.core.is_riding_car(i);
             self.core.cars[i].rider = rider;

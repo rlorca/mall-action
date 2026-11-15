@@ -347,11 +347,10 @@ impl Game {
     fn leave_store(&mut self, id: StoreId, out: &mut Out) {
         self.store = None;
         if let Some(m) = self.mall.as_mut() {
-            m.return_from_store(id);
+            m.return_from_store_out(id, &self.run, out);
         }
         self.scene = Scene::Mall;
         self.elev = false;
-        out.music(self.mall_track());
     }
 
     fn level_clear(&mut self, out: &mut Out) {

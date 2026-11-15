@@ -15,6 +15,8 @@ fn playing() -> Game {
     g.inject.title = Some(TitleOutcome::Start { black_friday: false });
     g.step(idle());
     assert_eq!(g.scene_name(), "mall");
+    // the real mall starts with a multi-second arrival; these tests are about the Game, so skip it
+    g.inject.arrival = Some(false);
     g
 }
 
@@ -518,4 +520,87 @@ fn e2e_debug_playtest_flow_reaches_game_over_and_title() {
     }
     assert!(["mall", "store", "title", "game_over", "continue", "level_clear"].contains(&g.scene_name()));
     assert!(g.high_score() >= g.run().score);
+}
+
+// ---- headless QA with the REAL scenes -------------------------------------------------------------------
+
+fn run_until(g: &mut Game, max: u32, mut pad: impl FnMut(u32) -> PadState, done: impl Fn(&Game) -> bool) -> bool {
+    for i in 0..max {
+        if done(g) {
+            return true;
+        }
+        g.step(pad(i));
+        g.drain_events();
+    }
+    done(g)
+}
+
+fn tap(i: u32, b: u8) -> PadState {
+    if i % 2 == 0 {
+        PadState::from_held(0, b)
+    } else {
+        PadState::from_held(b, 0)
+    }
+}
+
+fn real_game_in_mall(seed: u64) -> Game {
+    let mut g = Game::new(seed, GameOptions { skip_splash: true });
+    assert!(run_until(&mut g, 600, |i| tap(i, START), |g| g.scene_name() == "mall"), "title -> mall");
+    assert!(run_until(&mut g, 3000, |i| tap(i, A), |g| !g.in_arrival()), "arrival ends / can be skipped");
+    g
+}
+
+#[test]
+fn real_flow_arrival_store_clear_loop2() {
+    let mut g = real_game_in_mall(11);
+    // arrival: Select/Start do not open overlays and the clock did not run
+    assert_eq!(g.overlay_name(), "none");
+    // enter a store through the real door: warp to its door and press Up
+    let id = StoreId::KgbToys;
+    g.debug_cmd("warp 2 0");
+    g.debug_cmd(&format!("warp {} {}", id.info().floor.index(), layout::door_x(id)));
+    let mut d = Fb::new();
+    let entered = run_until(&mut g, 120, |i| tap(i, UP), |g| g.scene_name() == "store");
+    assert!(entered, "Up at an open store door enters it: {}", g.debug_state());
+    g.draw(&mut d);
+    // leave again via the real exit (walk down out of the door)
+    let left = run_until(&mut g, 1500, |i| if i % 3 == 0 { PadState::from_held(0, DOWN) } else { PadState::from_held(DOWN, DOWN) }, |g| g.scene_name() == "mall");
+    assert!(left, "walking out leaves the store: {}", g.debug_state());
+    steps(&mut g, 2 * FADE_FRAMES);
+    assert!(g.fade.is_none());
+    // level clear -> loop 2
+    g.debug_cmd("packages");
+    g.debug_cmd("clear");
+    assert_eq!(g.scene_name(), "level_clear");
+    let score = g.run.score;
+    assert!(run_until(&mut g, 6000, |i| tap(i, START), |g| g.scene_name() == "mall"), "level clear ends: {}", g.debug_state());
+    assert_eq!(g.run.loop_no, 2);
+    assert_eq!(g.run.packages_found(), 0);
+    assert!(g.run.score >= score);
+}
+
+#[test]
+fn real_flow_continue_then_game_over_then_title() {
+    let mut g = real_game_in_mall(12);
+    g.debug_cmd("score 900");
+    g.debug_cmd("lives 1");
+    g.debug_cmd("kill");
+    assert!(run_until(&mut g, 1500, |_| idle(), |g| g.scene_name() == "continue"), "{}", g.debug_state());
+    assert!(run_until(&mut g, 600, |i| tap(i, START), |g| g.scene_name() == "mall"), "{}", g.debug_state());
+    assert_eq!((g.run.lives, g.run.continues_left, g.run.score), (3, 2, 900));
+    // burn the other continues
+    for _ in 0..2 {
+        assert!(run_until(&mut g, 600, |_| idle(), |g| g.fade.is_none()));
+        g.debug_cmd("lives 1");
+        g.debug_cmd("kill");
+        assert!(run_until(&mut g, 1500, |_| idle(), |g| g.scene_name() == "continue"));
+        assert!(run_until(&mut g, 600, |i| tap(i, START), |g| g.scene_name() == "mall"));
+    }
+    assert_eq!(g.run.continues_left, 0);
+    assert!(run_until(&mut g, 600, |_| idle(), |g| g.fade.is_none()));
+    g.debug_cmd("lives 1");
+    g.debug_cmd("kill");
+    assert!(run_until(&mut g, 1500, |_| idle(), |g| g.scene_name() == "game_over"), "{}", g.debug_state());
+    assert!(run_until(&mut g, 6000, |i| tap(i, START), |g| g.scene_name() == "title"), "{}", g.debug_state());
+    assert_eq!(g.high_score(), 900);
 }

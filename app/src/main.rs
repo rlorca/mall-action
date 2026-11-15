@@ -27,6 +27,7 @@ use bevy::{
 use mall_core::input as pad;
 use mall_core::pixel::{H, W};
 
+use bevy::audio::AddAudioSource;
 use crate::audio::SynthSource;
 use crate::crt::CrtMaterial;
 
