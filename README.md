@@ -28,6 +28,10 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 
 Each branch has its own README, tests and CI; pushing to a branch republishes its build.
 
+[Leaderboard and play links](https://rlorca.github.io/mall-action/) · [Full assessments](https://rlorca.github.io/mall-action/reviews/index.html)
+
+The Rust entry is a constrained, interactively revised run; the leaderboard assesses current snapshots, not original one-shot performance. [Rust assessment](https://rlorca.github.io/mall-action/reviews/index.html#rust-gpt-6.1-sol-medium).
+
 ## Using it as a benchmark
 
 When a new model comes out, give it [`one-shot-prompt.md`](one-shot-prompt.md) in an empty directory, let it work
