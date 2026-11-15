@@ -546,6 +546,118 @@
           "label": "Omitted browser tests and parity limits"
         }
       ]
+    },
+    {
+      "name": "Claude Sonnet 5.5 + Bevy",
+      "branch": "bevy-sonnet-5-5",
+      "folder": "bevy-sonnet-5.5",
+      "commit": "0417a7c2e30f3eebb8a79c4b4afcf655b8666dec",
+      "written": "2026-11-15",
+      "technology": "Rust + Bevy, software framebuffer, WebGL CRT, source-synthesised audio",
+      "scores": {
+        "gameDesign": 8.4,
+        "architecture": 8.8,
+        "codeDesign": 8.5,
+        "cleanliness": 8.4,
+        "completeness": 9.1
+      },
+      "note": "Broad, modular Rust caper with a Bevy shell. Busy room art, substantial Wasm payload and prepared-state progression checks limit polish.",
+      "assessment": {
+        "gameDesign": "Detailed themed rooms, recognizable actors, animated storefronts and clear overlays support the caper. The CRT-on Forever 12 screenshot showed a readable player but strong pink checker patterns competing with furniture. Stepped walking, map timer freezing, prepared store entry and walking out through the door worked. The seeded first-door fairness test permits up to one death on at least 14 of 20 seeds; this is a threshold check, not proof that every route is fair.",
+        "architecture": "A dependency-free core owns rules, software pixels and sample-by-sample audio synthesis; the standalone splash is reusable. Typed output events connect the simulation to a small Bevy shell with fixed-step scheduling, a framebuffer texture, CRT material and audio source. Mall subsystems have separate modules, improving locality over the GPT Rust monolith. Bevy is primarily a platform shell here, not an ECS redesign of gameplay; rules and drawing coexist in core subsystems although draw methods borrow immutable state.",
+        "codeDesign": "Seeded frame-based state, explicit input mapping, shared layout data and typed sound/track events provide a solid foundation. Broad rule and geometry tests pass. Verification has uneven strength: one debug end-to-end test can return early and accepts nearly every scene; stronger neighboring tests explicitly exercise store exit, continue and loop transitions. Loop-clear tests inject packages and invoke clear, so they do not prove the complete acquisition-and-escape route.",
+        "cleanliness": "Logical core/app/splash boundaries, centralized copy and documented interfaces aid maintenance. Three compiler warnings remain (unused import, method and constant), plus a wasm-bindgen warning about stripped target-feature metadata. The tested core has no engine dependency, but the application toolchain requires an exact wasm-bindgen CLI match. Some comments still describe implemented mall hooks as empty.",
+        "completeness": "Broad rules, art, synthesized audio, extras, power-ups and scene coverage; 448 core and 11 splash tests passed. The production build passed with the existing Rust Wasm toolchain and wasm-bindgen 0.2.130. Local Wasm is about 25.0 MB uncompressed, versus roughly 1.08 MB for Macroquad, without a measured load-time comparison. Local and deployed Wasm/glue differ; browser results refer to the deployed build. This is a Rust/Bevy-constrained Sonnet run with delegated module work, not a verbatim technology-neutral run. No independent full-route, listening or hardware-gamepad result is claimed."
+      },
+      "verification": {
+        "tests": 459,
+        "build": "Pass; exact wasm-bindgen 0.2.130 used. Three core warnings plus stripped-target-features warning. Local Wasm/glue differ from deployed artifacts; HTML matches.",
+        "browser": "Published sub-path; CRT-on store screenshot, stepped title/arrival/walking, frozen map timers, debug store entry and ordinary door exit. Favicon 404 only; no game exception observed. No full-route or audio listening check."
+      },
+      "evidence": [
+        {
+          "path": "core/src/game.rs",
+          "label": "Scene flow and debug commands"
+        },
+        {
+          "path": "core/src/game/tests.rs",
+          "label": "Prepared-state progression tests"
+        },
+        {
+          "path": "core/src/mall/tests_p2.rs",
+          "label": "First-door fairness threshold"
+        },
+        {
+          "path": "app/src/main.rs",
+          "label": "Bevy application shell"
+        },
+        {
+          "path": "build.sh",
+          "label": "Wasm packaging and toolchain"
+        },
+        {
+          "path": "README.md",
+          "label": "Benchmark provenance"
+        }
+      ]
+    },
+    {
+      "name": "Claude Sonnet 5.5 + Macroquad",
+      "branch": "macroquad-sonnet-5-5",
+      "folder": "macroquad-sonnet-5.5",
+      "commit": "bba75d6a99e502b5f4bf13a836e4ee46030e6fc0",
+      "written": "2026-11-15",
+      "technology": "Rust + Macroquad, software framebuffer, WebGL CRT, source-synthesised audio",
+      "scores": {
+        "gameDesign": 8.3,
+        "architecture": 8.7,
+        "codeDesign": 8.4,
+        "cleanliness": 8.5,
+        "completeness": 9.0
+      },
+      "note": "Compact framework build with broad mechanics and a testable core. Overlapping dialogue and large world modules reduce polish.",
+      "assessment": {
+        "gameDesign": "Attractive title and distinct themed rooms retain the arcade feel. The prepared live store search collected one package for 500 points with three lives remaining. CRT-on inspection exposed overlapping guard speech bubbles that obscure each other, and the pink floor grid competes with fixtures. Walking and map behavior worked in stepped checks. The first-store fairness test counts lost lives but does not assert that the bot reached or entered its intended door, so its name overstates what it proves.",
+        "architecture": "A pure dependency-free core separates rules, software rendering, art, input and audio synthesis from the Macroquad application. Fixed-step scheduling caps catch-up; platform-specific services stay in a small browser plugin. This is a maintainable boundary and a much smaller deployed Wasm than Bevy. Gamepad, settings and URL support still require custom JavaScript; the framework does not remove the need to maintain that integration.",
+        "codeDesign": "Explicit elevator states, persistent per-game flags, queued taps and deterministic simulation are sound foundations. The navigation suite covers calling cars from floors and traversing the mall. However, its roof-to-parking test grants invincibility and injects six packages. The test named every_store_can_hold_a_package checks only KGB Toys, teleports beside the fixture and clears guards. Browser package acquisition independently confirms that prepared search path, not a natural full mission.",
+        "cleanliness": "Clear workspace boundaries, source-defined art/audio, centralized copy and explicit enums make the project approachable. Mall and store files are about 1,678 and 1,408 lines including tests, concentrating many responsibilities. The checked-in JavaScript runtime bundle must remain synchronized with pinned Macroquad dependencies. Test names occasionally promise broader coverage than their assertions deliver.",
+        "completeness": "Broad coverage includes traversal, ten rooms, powers, NPCs, generated music, CRT, overlays and progression screens. All 176 core tests and the production build passed. The Wasm is about 1.08 MB uncompressed; local HTML and runtime bundle match deployment but Wasm is not byte-identical. Browser sampling verified prepared store entry and a one-tap package search, with real-key CRT toggling. This is a fresh Rust/Macroquad-constrained Sonnet run with delegated art/audio and advisor review, not the earlier Rust translation. No uninterrupted six-package route, listening assessment or hardware-gamepad result is claimed."
+      },
+      "verification": {
+        "tests": 176,
+        "build": "Pass using existing rustup Wasm toolchain. HTML/runtime bundle match deployed files; Wasm differs. Approximately 1.08 MB uncompressed Wasm.",
+        "browser": "Published sub-path; CRT-on title/store screenshots, stepped arrival/walking/map, prepared door entry and package search with guards present; real C key toggled CRT off/on. Overlapping guard dialogue reproduced. Favicon 404 only; no game exception observed."
+      },
+      "evidence": [
+        {
+          "path": "core/src/game/tests.rs",
+          "label": "Route, fairness and prepared package tests"
+        },
+        {
+          "path": "core/src/game/mall.rs",
+          "label": "Mall rules"
+        },
+        {
+          "path": "core/src/game/store.rs",
+          "label": "Store rules"
+        },
+        {
+          "path": "core/src/render/store_view.rs",
+          "label": "Room presentation"
+        },
+        {
+          "path": "app/src/platform.rs",
+          "label": "Queued debug and browser integration"
+        },
+        {
+          "path": "app/src/audio.rs",
+          "label": "Audio preparation and playback"
+        },
+        {
+          "path": "README.md",
+          "label": "Constrained-run provenance"
+        }
+      ]
     }
   ]
 }
