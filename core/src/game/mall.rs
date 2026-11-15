@@ -450,7 +450,7 @@ impl Mall {
     /// Player is inside the doorway zone (opening or right beside it) of shaft `i`.
     fn near_opening(&self, i: usize, floor: u8) -> bool {
         let s = &SHAFTS[i];
-        s.serves(floor) && self.p.x >= (s.x - 18) as f32 && self.p.x <= (s.x + SHAFT_W + 18) as f32
+        s.serves(floor) && self.p.x >= (s.x - 30) as f32 && self.p.x <= (s.x + SHAFT_W + 30) as f32
     }
     pub fn cars_occupied(&self, i: usize) -> bool {
         matches!(self.p.st, PState::Inside(j) if j == i)
@@ -907,7 +907,7 @@ impl Mall {
             if !s.serves(floor) {
                 continue;
             }
-            if x >= (s.x + 2) as f32 && x <= (s.x + SHAFT_W - 2) as f32 && self.cars[i].opening(floor) == Opening::CarHere {
+            if self.near_opening(i, floor) && self.cars[i].opening(floor) == Opening::CarHere {
                 self.p.st = PState::Inside(i);
                 self.p.x = s.cx() as f32;
                 self.p.board_delay = 12;
@@ -974,7 +974,7 @@ impl Mall {
             if !s.serves(floor) {
                 continue;
             }
-            if x >= (s.x + 2) as f32 && x <= (s.x + SHAFT_W - 2) as f32 && self.cars[i].opening(floor) == Opening::CarHere {
+            if self.near_opening(i, floor) && self.cars[i].opening(floor) == Opening::CarHere {
                 self.p.st = PState::Inside(i);
                 self.p.x = s.cx() as f32;
                 self.p.board_delay = 12;
