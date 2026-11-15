@@ -131,3 +131,9 @@ pub extern "C" fn state_json() -> *const u8 {
 pub extern "C" fn state_json_len() -> u32 {
     with(|r| r.json.len() as u32)
 }
+
+/// FNV-1a hash of the palette-index framebuffer from the last `draw()` (used by the wasm parity test).
+#[no_mangle]
+pub extern "C" fn frame_hash() -> u32 {
+    with(|r| r.fb.hash())
+}
