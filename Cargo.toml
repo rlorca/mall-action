@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = ["core", "splash", "app"]
+default-members = ["core", "splash"]
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+debug = false
+strip = true
+panic = "abort"
+
+[profile.dev]
+debug = false
