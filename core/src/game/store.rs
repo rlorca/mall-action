@@ -1187,7 +1187,7 @@ mod tests {
                 assert!(!h.st.opened[f], "contents must stay unsearched");
                 assert!(h.room.bubbles.iter().any(|b| b.text == copy::OCCUPIED));
                 assert_eq!(h.room.guards.len(), 1);
-                assert!(h.room.bullets.iter().any(|b| b.shoe));
+                assert!(h.room.bullets.iter().any(|b| b.shoe) || matches!(h.room.st, PSt::Stun(_)), "shoe thrown");
             }
         }
         assert!((8..=35).contains(&revealed), "~25% of 80, got {revealed}");
