@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-11-10",
+  "reviewedAt": "2026-11-15",
   "scale": 10,
   "criteria": [
     { "key": "gameDesign", "label": "Game design", "description": "Playability, fairness, feedback, pacing, visual readability, and how the mall and store mechanics work together." },
@@ -424,6 +424,64 @@
         {
           "path": "DECISIONS.md",
           "label": "Implementation's declared simplifications"
+        }
+      ]
+    },
+    {
+      "name": "GPT-6.1 Sol (medium), Rust",
+      "branch": "rust-gpt-6.1-sol-medium",
+      "folder": "rust-gpt-6.1-sol-medium",
+      "technology": "Rust + WebAssembly, software framebuffer, WebGL CRT, AudioWorklet synth",
+      "written": "2026-11-14",
+      "commit": "b490b96690b0234dbfec8dd5524971cdbfa10341",
+      "scores": {
+        "gameDesign": 8.2,
+        "architecture": 8.5,
+        "codeDesign": 8.3,
+        "cleanliness": 8.1,
+        "completeness": 9.0
+      },
+      "note": "Broad Rust/Wasm caper with focused collision and audio regressions. Large rule files; interactively revised, not a strict one-shot.",
+      "assessment": {
+        "gameDesign": "Source review shows considerate single-tap searching, persistent fixtures, entry protection, nearest-fixture selection and swept platform landings. These support a coherent mall/store loop. Playability scoring is provisional: this review sampled the deployed launch but did not independently complete a real-time route or assess music by ear.",
+        "architecture": "Pure seeded integer-frame simulation and immutable rendering are separated from the browser adapter. A sample-clock AudioWorklet isolates music from rendering stalls. This is a strong boundary comparable to the leading TypeScript entries, but the 2,696-line game.rs combines world setup, traversal, combat, stores and progression; Sonnet 5.5 has more granular rule ownership.",
+        "codeDesign": "Explicit feet, hurt boxes and projectile rectangles, unit-step movement, moving-platform sweeps and per-key input ownership address concrete correctness concerns. Collision and waveform regressions are substantial. Numeric ABI field IDs, sound IDs and content tags make extensions more error-prone than closed typed event contracts. The mission test teleports to fixtures and the exit, so passing it establishes progression rather than route survivability.",
+        "cleanliness": "Dependency-free Rust, named geometry helpers and separate copy/art/audio modules are useful foundations. Large game and renderer files (2,696 and 1,599 lines), numeric protocol tags and compressed JavaScript make local reasoning harder than in the highest-rated modular TypeScript entries. Benchmark notes clearly disclose user interventions and subsequent revisions.",
+        "completeness": "Broad source and test coverage includes six packages, room reachability, elevators, powers, extras, continues, harder loops, Black Friday, source bitmap art and distinct store scores. All 72 tests passed. Production build passed using the existing isolated Rust toolchain after the default compiler lacked the Wasm target. Compared with the leading Sonnet/advisor entries, fresh full-route browser evidence is weaker. This is a Rust-constrained, interactively revised implementation, including reference viewing and later collision/audio/art changes, not an unchanged-prompt one-shot."
+      },
+      "verification": {
+        "tests": 72,
+        "build": "Pass with RUSTUP_HOME=/tmp/mall-rustup and CARGO_HOME=/tmp/mall-cargo; default toolchain lacks wasm32-unknown-unknown; relative hashed asset references checked",
+        "browser": "Published URL loaded successfully and accepted Enter; no console errors in sampled launch. No independent full-route, hardware gamepad or listening assessment. Earlier README browser claims remain author-reported"
+      },
+      "evidence": [
+        {
+          "path": "src/game.rs",
+          "label": "Simulation and store rules"
+        },
+        {
+          "path": "src/collision.rs",
+          "label": "Swept collision geometry"
+        },
+        {
+          "path": "tests/rules.rs",
+          "label": "Prepared-position mission and reachability checks"
+        },
+        {
+          "path": "tests/collisions.rs",
+          "label": "Collision regressions"
+        },
+        {
+          "path": "tests/audio.test.mjs",
+          "label": "Sample-clock audio regressions"
+        },
+        {
+          "path": "src/lib.rs",
+          "label": "Numeric Wasm ABI"
+        },
+        {
+          "path": "README.md",
+          "label": "Run provenance and revisions"
         }
       ]
     }
