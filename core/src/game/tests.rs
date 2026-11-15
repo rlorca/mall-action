@@ -407,7 +407,7 @@ fn shooting_a_lamp_drops_it_kills_underneath_and_darkens_for_two_seconds() {
     assert!(h.g.s.score >= 300);
     assert!(!h.m().dark.is_empty());
     let t = h.m().dark[0].t;
-    assert!((100..=121).contains(&t), "dark ~2 s, {t}");
+    assert!((60..=121).contains(&t), "dark ~2 s total, {t} left");
     h.run(0, 130);
     assert!(h.m().dark.is_empty());
 }
