@@ -306,8 +306,9 @@ fn shaft_hit(x: f32) -> Option<usize> {
 impl Mall {
     pub fn new(rng: &mut Rng, loop_n: u32) -> Mall {
         let cars = [
-            Car::new(SHAFTS[0], *rng.pick(&[5u8, 4, 3, 2])),
-            Car::new(SHAFTS[1], *rng.pick(&[4u8, 3, 2, 1, 0])),
+            // loop 1 fairness: the first open pits a new player meets are survivable (one floor down at most)
+            Car::new(SHAFTS[0], *rng.pick(&[5u8, 4])),
+            Car::new(SHAFTS[1], *rng.pick(&[4u8, 3])),
             Car::new(SHAFTS[2], *rng.pick(&[3u8, 2, 1])),
         ];
         let mut lamps = Vec::new();
@@ -449,7 +450,7 @@ impl Mall {
     /// Player is inside the doorway zone (opening or right beside it) of shaft `i`.
     fn near_opening(&self, i: usize, floor: u8) -> bool {
         let s = &SHAFTS[i];
-        s.serves(floor) && self.p.x >= (s.x - 14) as f32 && self.p.x <= (s.x + SHAFT_W + 14) as f32
+        s.serves(floor) && self.p.x >= (s.x - 18) as f32 && self.p.x <= (s.x + SHAFT_W + 18) as f32
     }
     pub fn cars_occupied(&self, i: usize) -> bool {
         matches!(self.p.st, PState::Inside(j) if j == i)
@@ -1073,6 +1074,7 @@ impl Mall {
                     && (f as i32 - pf as i32).abs() <= 1
                     && (cx - self.p.x).abs() < 200.0
                     && self.live_spies() < self.spy_cap(ctx)
+                    && !(f == pf && (cx - self.p.x).abs() < 70.0)
                     && ctx.rng.chance(30)
                 {
                     let dir = if self.p.x >= cx { 1 } else { -1 };
@@ -1621,7 +1623,7 @@ impl Mall {
             let (y0, y1) = self.player_y_range();
             for si in 0..self.spies.len() {
                 let s = &self.spies[si];
-                if matches!(s.st, SpyState::Dying(_)) || s.floor != pf {
+                if matches!(s.st, SpyState::Dying(_)) || s.floor != pf || s.age < 20 {
                     continue;
                 }
                 let sfy = floor_y(s.floor) as f32;

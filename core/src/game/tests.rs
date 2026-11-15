@@ -1028,7 +1028,7 @@ fn spies_step_out_of_stopping_cars_sometimes_with_a_line() {
     for seed in 0..60 {
         let mut h = H::play(700 + seed);
         h.m().p.inv = 100_000;
-        h.put(3, 450.0);
+        h.put(3, 500.0);
         h.car(1, 4);
         h.m().cars[1].target = Some(3);
         h.m().cars[1].called = false;
@@ -1064,3 +1064,103 @@ fn spy_drops_and_last_words_happen_at_roughly_the_right_rates() {
     let r = words as f32 / n as f32;
     assert!((0.25..=0.45).contains(&r), "last words rate {r}");
 }
+
+// ---------------------------------------------------------------- navigation (no softlocks)
+impl H {
+    fn walk_to(&mut self, x: f32) {
+        for _ in 0..1500 {
+            let px = self.g.mall.p.x;
+            if (px - x).abs() < 1.0 {
+                return;
+            }
+            self.step_held(if px < x { RIGHT } else { LEFT });
+        }
+        panic!("could not walk to {x}: stuck at {}", self.g.mall.p.x);
+    }
+    /// Ride shaft `i` (manual) to `floor`: board, drive, release, wait for it to stop level.
+    fn ride_to(&mut self, i: usize, floor: u8) {
+        let sx = SHAFTS[i].cx() as f32;
+        let here = self.g.mall.p.floor;
+        // approach beside the shaft, call, wait to be picked up
+        self.walk_to(if sx - 30.0 < 30.0 { sx + 30.0 } else { sx - 30.0 });
+        self.run(0, 2);
+        self.tap(UP);
+        let mut boarded = false;
+        for _ in 0..800 {
+            self.step_held(0);
+            if matches!(self.g.mall.p.st, PState::Inside(_)) {
+                boarded = true;
+                break;
+            }
+        }
+        assert!(boarded, "car {i} never came for floor {here}: car {:?} p {:?} x {} pickup {:?}", self.g.mall.cars[i].y, self.g.mall.p.st, self.g.mall.p.x, self.g.mall.p.pickup);
+        self.run(0, 20);
+        let dir = if floor > here { UP } else { DOWN };
+        for _ in 0..2000 {
+            if self.g.mall.cars[i].floor_at() == Some(floor) && self.g.mall.cars[i].dir == 0 {
+                break;
+            }
+            let at = self.g.mall.cars[i].y;
+            let target = floor_y(floor);
+            let held = if (floor > here && at > target + 3) || (floor < here && at < target - 3) { dir } else { 0 };
+            self.step_held(held);
+        }
+        assert_eq!(self.g.mall.cars[i].floor_at(), Some(floor), "car stops level with floor {floor}");
+        self.run(RIGHT, 12);
+        assert!(matches!(self.g.mall.p.st, PState::Walk), "got out: {:?}", self.g.mall.p.st);
+        assert_eq!(self.g.mall.p.floor, floor);
+    }
+}
+
+#[test]
+fn route_roof_to_parking_with_elevators_and_escalators_is_always_possible() {
+    for seed in 0..6 {
+        let mut h = H::play(300 + seed);
+        h.g.mall.p.inv = 1_000_000;
+        // roof -> 4F by shaft A, then 4F -> 3F by escalator, 3F -> 2F by shaft A or B, down to P by B
+        h.ride_to(0, 4);
+        h.ride_to(1, 4); // cross shaft B by riding through the car
+        h.walk_to(ESCALATORS[0].x_high() as f32);
+        h.tap(DOWN);
+        h.run(0, 80);
+        assert_eq!(h.g.mall.p.floor, 3);
+        h.ride_to(1, 0);
+        // walk to the getaway car; blocked until all six packages
+        h.walk_to((WAGON_X + 20) as f32);
+        h.tap(UP);
+        assert!(matches!(h.g.scene, Scene::Mall));
+        h.g.s.packages = 6;
+        h.tap(UP);
+        assert!(matches!(h.g.scene, Scene::Clear(_)), "seed {seed}");
+    }
+}
+
+#[test]
+fn every_floor_is_reachable_in_play_and_no_car_can_strand_the_player() {
+    // From each floor, park each serving car as far away as possible: calling must always work.
+    for floor in 1..=4u8 {
+        for i in 0..3 {
+            if !SHAFTS[i].serves(floor) {
+                continue;
+            }
+            for far in [SHAFTS[i].top, SHAFTS[i].bottom] {
+                let mut h = H::play(400 + floor as u64);
+                h.g.mall.p.inv = 1_000_000;
+                h.car(i, far);
+                let sx = SHAFTS[i].cx() as f32;
+                h.put(floor, if sx - 26.0 < 30.0 { sx + 26.0 } else { sx - 26.0 });
+                h.tap(UP);
+                let mut ok = false;
+                for _ in 0..900 {
+                    h.step_held(0);
+                    if matches!(h.g.mall.p.st, PState::Inside(_)) {
+                        ok = true;
+                        break;
+                    }
+                }
+                assert!(ok, "floor {floor} shaft {} car parked at {far}", SHAFTS[i].name);
+            }
+        }
+    }
+}
+
