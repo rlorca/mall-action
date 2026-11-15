@@ -1,0 +1,727 @@
+[
+ {
+  "owner": "characters",
+  "name": "agent.stand",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   815549677
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.walk",
+  "w": 16,
+  "h": 24,
+  "frames": 4,
+  "hashes": [
+   3004605273,
+   935988381,
+   1974298397,
+   3488573181
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.jump",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   1262660618
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.kick",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   2208716895
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.duck",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   1140383924
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.shoot",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   2876161582
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.shootlow",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   2899460685
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.die",
+  "w": 16,
+  "h": 24,
+  "frames": 3,
+  "hashes": [
+   1926829560,
+   1132292053,
+   1214488343
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.hang",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   479505773
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.crouch",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   3327354327
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.selfie",
+  "w": 16,
+  "h": 24,
+  "frames": 2,
+  "hashes": [
+   1967268265,
+   1764644641
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.ride",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   988362191
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "agent.hold",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   2216296425
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "spy.stand",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   976960414
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "spy.walk",
+  "w": 16,
+  "h": 24,
+  "frames": 4,
+  "hashes": [
+   1698965917,
+   3733424558,
+   980458437,
+   3898633710
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "spy.aimhigh",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   4150545450
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "spy.aimlow",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   611432634
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "spy.duck",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   1901734180
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "spy.die",
+  "w": 16,
+  "h": 24,
+  "frames": 3,
+  "hashes": [
+   1922028256,
+   2583176538,
+   1855064220
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "cop.segway",
+  "w": 24,
+  "h": 24,
+  "frames": 2,
+  "hashes": [
+   3750071281,
+   3920390981
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "cop.whistle",
+  "w": 24,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   4213919392
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "janitor.walk",
+  "w": 16,
+  "h": 24,
+  "frames": 2,
+  "hashes": [
+   612959376,
+   3677588734
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "janitor.mop",
+  "w": 16,
+  "h": 24,
+  "frames": 2,
+  "hashes": [
+   4253575214,
+   949755299
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "walker.walk",
+  "w": 16,
+  "h": 24,
+  "frames": 4,
+  "hashes": [
+   3577183,
+   311810463,
+   4140348403,
+   1275107381
+  ]
+ },
+ {
+  "owner": "characters",
+  "name": "sign.wet",
+  "w": 8,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   2428267421
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.rapid",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   7384609
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.spread",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   2284545876
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.armor",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   3477947261
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.sneakers",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   2726934817
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.radar",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   1712646213
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.oneup",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   885174011
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.cinnabomb",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   1260703554
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.ooze",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   3466394328
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.pretzel",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   1676358341
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.package",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   782004124
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.joke",
+  "w": 12,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   1682359848
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.photostrip",
+  "w": 8,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   2349312811
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.coin",
+  "w": 8,
+  "h": 8,
+  "frames": 4,
+  "hashes": [
+   1867933317,
+   3174489753,
+   1352763921,
+   2548797497
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "item.goldcoin",
+  "w": 8,
+  "h": 8,
+  "frames": 4,
+  "hashes": [
+   3096485419,
+   3144152423,
+   544037093,
+   1664568754
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "bullet.player",
+  "w": 5,
+  "h": 3,
+  "frames": 1,
+  "hashes": [
+   1686696391
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "bullet.enemy",
+  "w": 5,
+  "h": 3,
+  "frames": 1,
+  "hashes": [
+   2202384340
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "fx.spark",
+  "w": 8,
+  "h": 8,
+  "frames": 3,
+  "hashes": [
+   580672209,
+   2134397595,
+   3043598885
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "fx.puff",
+  "w": 16,
+  "h": 16,
+  "frames": 4,
+  "hashes": [
+   2340500167,
+   211316240,
+   4002028545,
+   1961349503
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "fx.glass",
+  "w": 8,
+  "h": 8,
+  "frames": 3,
+  "hashes": [
+   4220481779,
+   1032415115,
+   1762304762
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "hud.head",
+  "w": 8,
+  "h": 8,
+  "frames": 1,
+  "hashes": [
+   1530706851
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "hud.armor",
+  "w": 8,
+  "h": 8,
+  "frames": 1,
+  "hashes": [
+   1979916107
+  ]
+ },
+ {
+  "owner": "items",
+  "name": "hud.radar",
+  "w": 8,
+  "h": 8,
+  "frames": 1,
+  "hashes": [
+   546621537
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "mall.wall",
+  "w": 16,
+  "h": 16,
+  "frames": 2,
+  "hashes": [
+   3029745803,
+   2790805004
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "mall.slab",
+  "w": 16,
+  "h": 8,
+  "frames": 1,
+  "hashes": [
+   3173841116
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "shaft.wall",
+  "w": 24,
+  "h": 16,
+  "frames": 1,
+  "hashes": [
+   2730088767
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "grate",
+  "w": 24,
+  "h": 4,
+  "frames": 1,
+  "hashes": [
+   4163603477
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "car.closed",
+  "w": 24,
+  "h": 32,
+  "frames": 1,
+  "hashes": [
+   651110045
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "car.open",
+  "w": 24,
+  "h": 32,
+  "frames": 1,
+  "hashes": [
+   2834255213
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "esc.step",
+  "w": 8,
+  "h": 4,
+  "frames": 4,
+  "hashes": [
+   1902987997,
+   1343436957,
+   1778311453,
+   1805550045
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "esc.rail",
+  "w": 4,
+  "h": 4,
+  "frames": 1,
+  "hashes": [
+   911343401
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "lamp.shade",
+  "w": 12,
+  "h": 10,
+  "frames": 2,
+  "hashes": [
+   1907444580,
+   1202920975
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "lamp.broken",
+  "w": 12,
+  "h": 10,
+  "frames": 1,
+  "hashes": [
+   1594631403
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "disco.ball",
+  "w": 12,
+  "h": 12,
+  "frames": 4,
+  "hashes": [
+   433110789,
+   3352182869,
+   1494408213,
+   524317877
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "kiosk",
+  "w": 24,
+  "h": 32,
+  "frames": 2,
+  "hashes": [
+   1389282608,
+   2644231348
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "booth",
+  "w": 24,
+  "h": 32,
+  "frames": 2,
+  "hashes": [
+   712509301,
+   1522504305
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "fountain",
+  "w": 40,
+  "h": 24,
+  "frames": 4,
+  "hashes": [
+   1187729801,
+   1105400347,
+   1274825260,
+   3604272554
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "bench",
+  "w": 24,
+  "h": 12,
+  "frames": 1,
+  "hashes": [
+   3261768323
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "plant",
+  "w": 16,
+  "h": 24,
+  "frames": 1,
+  "hashes": [
+   2596056994
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "pillar",
+  "w": 16,
+  "h": 48,
+  "frames": 1,
+  "hashes": [
+   1864542447
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "wagon",
+  "w": 72,
+  "h": 28,
+  "frames": 2,
+  "hashes": [
+   1878975154,
+   3808408810
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "post",
+  "w": 8,
+  "h": 16,
+  "frames": 1,
+  "hashes": [
+   3819991323
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "ac",
+  "w": 24,
+  "h": 16,
+  "frames": 1,
+  "hashes": [
+   700945427
+  ]
+ },
+ {
+  "owner": "mallprops",
+  "name": "pigeon",
+  "w": 8,
+  "h": 8,
+  "frames": 2,
+  "hashes": [
+   1828529558,
+   854607722
+  ]
+ }
+]
