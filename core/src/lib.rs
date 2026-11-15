@@ -5,3 +5,8 @@ pub mod audio;
 pub mod font;
 pub mod pixel;
 pub mod stores;
+pub mod copy;
+pub mod fixedstep;
+pub mod input;
+pub mod rng;
+pub mod game;
