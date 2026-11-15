@@ -1,5 +1,6 @@
 //! The rules. Mirrors `src/game/` of the TypeScript source.
 pub mod bot;
+pub mod debug;
 pub mod difficulty;
 pub mod game;
 pub mod hud;

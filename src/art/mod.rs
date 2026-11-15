@@ -3,6 +3,7 @@ pub mod items;
 pub mod mallprops;
 pub mod manifest;
 pub mod registry;
+pub use registry::init;
 pub mod storeart;
 pub mod storefront;
 pub mod storefronts;
