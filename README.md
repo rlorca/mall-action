@@ -31,7 +31,9 @@ Each branch has its own README, tests and CI; pushing to a branch republishes it
 
 [Leaderboard and play links](https://rlorca.github.io/mall-action/) · [Full assessments](https://rlorca.github.io/mall-action/reviews/index.html)
 
-The Rust entry is a constrained, interactively revised run; the leaderboard assesses current snapshots, not original one-shot performance. [Rust assessment](https://rlorca.github.io/mall-action/reviews/index.html#rust-gpt-6.1-sol-medium).
+The GPT-6.1 Rust entry is a constrained, interactively revised run; the leaderboard assesses current snapshots, not original one-shot performance. [Rust assessment](https://rlorca.github.io/mall-action/reviews/index.html#rust-gpt-6.1-sol-medium).
+
+The [Sonnet–Fable Rust assessment](https://rlorca.github.io/mall-action/reviews/index.html#rust-sonnet-5-5-fable-5-1) covers a parity-tested port, not a new one-shot implementation. The port used a Fable 5.2 advisor; its branch name retains the source’s Fable 5.1 label.
 
 ## Using it as a benchmark
 
