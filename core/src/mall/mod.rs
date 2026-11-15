@@ -14,8 +14,13 @@
 //!   not serve the floor), `wall_bounds()`, `near_player(x, y)`, `view_span()`.
 //! * Each hook has `new()`, `step(&mut Ctx)`, `draw(fb, cam, run, tick)` and `clear()`. `Mall::step` calls the
 //!   hooks AFTER the player and the cars moved: `spies`, `lights`, `npcs`, `pickups`, then bullets vs the
-//!   player. `Mall::draw` paints: scene, `lights`, `pickups`, `npcs`, `spies`, the agent, bullets, effects,
+//!   player. `Mall::draw` paints: scene, `lights`, `pickups`, `fixtures`, `npcs`, `spies`, the agent, bullets,
+//!   effects, then every hook's `draw_top` (speech bubbles, kiosk panel, photo strip, alarm flash), then the
 //!   banner. `clear()` runs on every respawn (also after a continue).
+//! * PHASE 2 (done): the step order is `npcs`, `spies`, `lights`, `fixtures` (kiosk, booth, fountain),
+//!   `pickups` (power-ups and coins), `events` (alarm, PA): the NPCs swallow bullets before anything looks
+//!   for hits. Hooks talk through `Core` lists (`wet` patches the player and spies slide on, `lethal`
+//!   rectangles from lamps / balls, `drops` handed to `pickups`); see `state.rs`.
 //! * `Ctx { core, run, out, pad }` is what `step` receives. The hurt-the-player entry point is
 //!   `ctx.kill_player(DeathCause::X)`: it applies Cinnabomb, invulnerability, armour (spark + short
 //!   invulnerability), lives and the death flow, and returns true only if the player died.
@@ -34,10 +39,13 @@
 
 pub mod arrival;
 pub mod bullets;
+pub mod bubble;
 pub mod camera;
 pub mod draw;
 pub mod elevator;
 pub mod escalator;
+pub mod events;
+pub mod fixtures;
 pub mod lights;
 pub mod npcs;
 pub mod pickups;
@@ -48,6 +56,8 @@ pub mod world;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_p2;
 
 use crate::events::{Out, Track};
 use crate::input::PadState;
@@ -87,6 +97,10 @@ pub struct Mall {
     pub lights: lights::Lights,
     pub npcs: npcs::Npcs,
     pub pickups: pickups::Pickups,
+    /// Kiosks, the photo booth and the fountains.
+    pub fixtures: fixtures::Fixtures,
+    /// The alarm and the PA.
+    pub events: events::Events,
 }
 
 impl Mall {
@@ -96,7 +110,7 @@ impl Mall {
         let want = core.desired_track(run);
         core.last_track = Some(want);
         out.music(want);
-        Mall { core, spies: spies::Spies::new(), lights: lights::Lights::new(), npcs: npcs::Npcs::new(), pickups: pickups::Pickups::new() }
+        Mall { core, spies: spies::Spies::new(), lights: lights::Lights::new(), npcs: npcs::Npcs::new(), pickups: pickups::Pickups::new(), fixtures: fixtures::Fixtures::new(), events: events::Events::new() }
     }
 
     /// Advance exactly one 60 Hz frame. Does not assume continuous calls (the Game stops stepping the mall while
@@ -126,10 +140,13 @@ impl Mall {
                 let on = matches!(ctx.core.player.mode, Mode::Escalator { idx, .. } if idx == i);
                 e.step(riding_esc && on);
             }
+            // NPCs first: walkers and the cop swallow bullets before the spies and lamps look for hits
+            self.npcs.step(&mut ctx);
             self.spies.step(&mut ctx);
             self.lights.step(&mut ctx);
-            self.npcs.step(&mut ctx);
+            self.fixtures.step(&mut ctx);
             self.pickups.step(&mut ctx);
+            self.events.step(&mut ctx);
             ctx.step_bullets();
             let death = ctx.step_death_flow();
             if outcome == MallOutcome::None {
@@ -152,6 +169,8 @@ impl Mall {
         self.lights.clear();
         self.npcs.clear();
         self.pickups.clear();
+        self.fixtures.clear();
+        self.events.clear();
     }
 
     /// Draw the mall viewport (below the HUD strip) with every in-world overlay (bubbles, banners).
@@ -238,6 +257,16 @@ impl Mall {
         self.core.player.place(x, y);
         self.core.last_safe = (x, y);
         self.core.cam.snap_to(x, y, 1);
+    }
+
+    /// Debug/tests: a calm mall. No spies spawn, no walkers or cop, no lamps, no PA announcement (the
+    /// janitor, the fixtures and the alarm clock keep working).
+    pub fn debug_quiet(&mut self) {
+        self.spies.enabled = false;
+        self.spies.spies.clear();
+        self.lights.lamps.clear();
+        self.npcs.disable_roamers();
+        self.events.next_pa = u32::MAX;
     }
 
     /// Debug/playtest: kill the player right now (normal death flow, runs on the next step).

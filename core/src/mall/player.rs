@@ -69,6 +69,12 @@ pub struct Player {
     pub since_land: u32,
     /// Walked this frame (drives the walk animation).
     pub moving: bool,
+    /// Skidding on a wet patch: the direction he cannot stop or turn out of (0 = not sliding).
+    pub slide_dir: i32,
+    /// The slide started from a jump-kick landing: he keeps kicking while he slides.
+    pub slide_kick: bool,
+    /// Frames left detained by the mall cop (no control).
+    pub frozen: u32,
 }
 
 impl Player {
@@ -95,6 +101,9 @@ impl Player {
             walk_t: 0,
             since_land: 99,
             moving: false,
+            slide_dir: 0,
+            slide_kick: false,
+            frozen: 0,
         }
     }
 
@@ -131,12 +140,18 @@ impl Player {
         self.xacc = 0;
         self.ride_lock = false;
         self.hidden = false;
+        self.slide_dir = 0;
+        self.slide_kick = false;
+        self.frozen = 0;
     }
 
     pub fn start_dying(&mut self) {
         self.mode = Mode::Dying { t: 0 };
         self.ducking = false;
         self.kick = false;
+        self.slide_dir = 0;
+        self.slide_kick = false;
+        self.frozen = 0;
         self.ride_lock = false;
     }
 
@@ -165,6 +180,8 @@ impl Player {
         self.kick = false;
         self.on_roof = None;
         self.ride_lock = lock;
+        self.slide_dir = 0;
+        self.slide_kick = false;
     }
 }
 
@@ -228,6 +245,13 @@ impl<'a> Ctx<'a> {
             p.aim = p.aim.saturating_sub(1);
             p.since_land = p.since_land.saturating_add(1);
         }
+        // detained by the mall cop: the pad does nothing
+        let pad = if self.core.player.frozen > 0 {
+            self.core.player.frozen -= 1;
+            PadState::default()
+        } else {
+            pad
+        };
         match self.core.player.mode {
             Mode::Dying { t } => {
                 self.core.player.mode = Mode::Dying { t: t + 1 };
@@ -239,6 +263,11 @@ impl<'a> Ctx<'a> {
                 MallOutcome::None
             }
             Mode::Riding { car } => self.step_riding(car, pad),
+            Mode::Normal if self.core.player.hidden => {
+                // inside the photo booth: the hook releases him; nothing moves
+                self.core.player.moving = false;
+                MallOutcome::None
+            }
             Mode::Normal => self.step_normal(pad),
         }
     }
@@ -335,6 +364,7 @@ impl<'a> Ctx<'a> {
         if let Some((s, kind)) = land {
             let fall = s - self.core.player.peak_y;
             let jumped = self.core.player.jumped;
+            let (was_kick, air_dx) = (self.core.player.kick, self.core.player.air_dx);
             {
                 let p = &mut self.core.player;
                 p.set_y(s);
@@ -346,6 +376,16 @@ impl<'a> Ctx<'a> {
                 p.peak_y = s;
                 p.since_land = 0;
                 p.on_roof = if let Support::Roof(i) = kind { Some(i) } else { None };
+            }
+            // landing on a wet patch with momentum: slide on (a jump-kick keeps kicking)
+            if air_dx != 0 && jumped && matches!(kind, Support::Floor) {
+                if let Some(f) = world::floor_at_y(s) {
+                    if self.core.wet_at(f, x) {
+                        let p = &mut self.core.player;
+                        p.slide_dir = air_dx;
+                        p.slide_kick = was_kick;
+                    }
+                }
             }
             if deadly && fall > FLOOR_GAP {
                 if self.kill_player(DeathCause::Fall) {
@@ -373,11 +413,28 @@ impl<'a> Ctx<'a> {
         }
 
         let grounded = self.core.player.grounded;
-        let dx = pad.dx();
+
+        // ---- wet floor: entering a patch makes him slide at walking speed; he cannot stop, turn or duck
+        if grounded {
+            let on_wet = match world::floor_at_y(self.core.player.y()) {
+                Some(f) => self.core.wet_at(f, self.core.player.x),
+                None => false,
+            };
+            let p = &mut self.core.player;
+            if p.slide_dir != 0 && (!on_wet || p.x <= WALL_L + 4 || p.x >= WALL_R - 4) {
+                p.slide_dir = 0;
+                p.slide_kick = false;
+            } else if p.slide_dir == 0 && on_wet && pad.dx() != 0 {
+                p.slide_dir = pad.dx();
+                p.slide_kick = false;
+            }
+        }
+        let sliding = self.core.player.slide_dir != 0;
+        let dx = if sliding { self.core.player.slide_dir } else { pad.dx() };
 
         // ---- Up / Down actions
         let mut acted = false;
-        if grounded && (pad.just_pressed(UP) || pad.just_pressed(DOWN)) {
+        if grounded && !sliding && (pad.just_pressed(UP) || pad.just_pressed(DOWN)) {
             if let Some(o) = self.try_actions(pad) {
                 match o {
                     Action::Outcome(o) => return o,
@@ -390,12 +447,12 @@ impl<'a> Ctx<'a> {
         }
 
         // ---- standing in a call zone for a while calls the car
-        self.update_auto_call(pad, acted);
+        self.update_auto_call(pad, acted || sliding);
 
         // ---- duck
         {
             let p = &mut self.core.player;
-            p.ducking = p.grounded && pad.is_held(DOWN) && !acted;
+            p.ducking = p.grounded && pad.is_held(DOWN) && !acted && !sliding;
         }
 
         // ---- shoot

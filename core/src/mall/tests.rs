@@ -25,6 +25,7 @@ impl Sim {
         let mut run = RunState::new(seed, false);
         let mut out = Out::new();
         let mut m = Mall::new(&mut run, &mut out);
+        m.debug_quiet();
         m.debug_teleport(Floor::Roof, 120);
         let mut s = Sim { m, run, out, held: 0 };
         s.step(0);

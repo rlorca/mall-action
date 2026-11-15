@@ -63,6 +63,10 @@ pub struct PlayerView {
     /// Zip line + selfie: spies ignore the player, no control.
     pub in_arrival: bool,
     pub grounded: bool,
+    /// Skidding along a wet patch (cannot stop or turn until off it).
+    pub sliding: bool,
+    /// Detained by the mall cop (no control, cannot be hurt by spies or bullets).
+    pub frozen: bool,
     /// Inside a car of this shaft.
     pub riding: Option<ShaftId>,
     pub on_escalator: bool,
@@ -145,6 +149,44 @@ pub struct Core {
     pub post: usize,
     /// Set by `Mall::new`: the station wagon's brake lights (after the exit).
     pub wagon_lights: bool,
+    /// Wet patches this frame (the janitor sets them; the player and the spies slide on them).
+    pub wet: Vec<Wet>,
+    /// Lethal rectangles this frame (falling lamps, rolling disco balls): the spies hook kills spies inside them.
+    pub lethal: Vec<Lethal>,
+    /// Things spawned this frame for the pickups hook (spy drops, fountain coins).
+    pub drops: Vec<Drop>,
+}
+
+/// A wet patch on a floor (world x range, the feet line of `floor`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Wet {
+    pub floor: Floor,
+    pub x0: i32,
+    pub x1: i32,
+}
+
+/// Something that kills whoever overlaps it this frame.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Lethal {
+    pub floor: Floor,
+    pub rect: Rect,
+    pub cause: DeathCause,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum DropKind {
+    Power(crate::types::PowerUp),
+    /// A bouncing coin (initial velocity in 1/16 px per frame).
+    Coin { vx16: i32, vy16: i32, gold: bool },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Drop {
+    pub floor: Floor,
+    /// World x centre and feet / start y.
+    pub x: i32,
+    pub y: i32,
+    pub kind: DropKind,
 }
 
 impl Core {
@@ -171,6 +213,9 @@ impl Core {
             call_wait: 0,
             post,
             wagon_lights: false,
+            wet: Vec::new(),
+            lethal: Vec::new(),
+            drops: Vec::new(),
         };
         core.player.begin_arrival();
         let (x, y) = (core.player.x, core.player.y());
@@ -190,12 +235,14 @@ impl Core {
             facing: p.facing,
             ducking: p.ducking && p.grounded,
             jumping: !p.grounded && p.jumped,
-            kicking: !p.grounded && p.jumped && p.kick,
+            kicking: (!p.grounded && p.jumped && p.kick) || (p.grounded && p.slide_dir != 0 && p.slide_kick),
             hidden: p.hidden,
             dying: matches!(p.mode, Mode::Dying { .. }),
             invulnerable: p.invuln > 0,
             in_arrival: self.arrival.is_some(),
             grounded: p.grounded,
+            sliding: p.grounded && p.slide_dir != 0,
+            frozen: p.frozen > 0,
             riding: match p.mode {
                 Mode::Riding { car } => Some(SHAFTS[car].id),
                 _ => None,
@@ -224,6 +271,11 @@ impl Core {
     pub fn opening(&self, shaft: ShaftId, floor: Floor) -> Option<Opening> {
         let i = SHAFTS.iter().position(|s| s.id == shaft)?;
         world::opening_state(shaft, floor, self.cars[i].y)
+    }
+
+    /// Is world x on a wet patch of `floor`?
+    pub fn wet_at(&self, floor: Floor, x: i32) -> bool {
+        self.wet.iter().any(|w| w.floor == floor && x >= w.x0 && x < w.x1)
     }
 
     /// Walkable span of every floor (x0, x1).
@@ -291,7 +343,7 @@ impl<'a> Ctx<'a> {
                 return false;
             }
             if !matches!(cause, DeathCause::Crushed | DeathCause::Fall) {
-                if self.core.player.invuln > 0 || self.core.player.hidden {
+                if self.core.player.invuln > 0 || self.core.player.hidden || self.core.player.frozen > 0 {
                     return false;
                 }
                 if self.run.power.absorb_hit() {

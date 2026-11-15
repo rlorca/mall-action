@@ -149,6 +149,7 @@ pub fn draw_mall(m: &Mall, fb: &mut Fb, run: &RunState, tick: u32) {
     // hook modules paint between the scene and the agent
     m.lights.draw(fb, &cam, run, tick);
     m.pickups.draw(fb, &cam, run, tick);
+    m.fixtures.draw(fb, &cam, run, tick);
     m.npcs.draw(fb, &cam, run, tick);
     m.spies.draw(fb, &cam, run, tick);
     {
@@ -157,6 +158,11 @@ pub fn draw_mall(m: &Mall, fb: &mut Fb, run: &RunState, tick: u32) {
         draw_bullets(&mut pen, core);
         draw_effects(&mut pen, core);
     }
+    m.spies.draw_top(fb, &cam, run, tick);
+    m.npcs.draw_top(fb, &cam, run, tick);
+    m.fixtures.draw_top(fb, &cam, run, tick);
+    m.pickups.draw_top(fb, &cam, run, tick);
+    m.events.draw_top(fb, &cam, run, tick);
     fb.set_clip(old);
     fb.reset_clip();
     // UI on top (screen space)
@@ -519,18 +525,6 @@ fn draw_floor_fixtures(p: &mut Pen, f: Floor, run: &RunState, tick: u32, _core_w
         // painted "P" on the wall
         p.fb.text_scaled(p.cam.sx(36), p.cam.sy(sy - 34), "P", pal::YELLOW, 2);
     }
-    // lamps (static for now) and disco balls on 2F
-    for lx in world::lamp_slots(f) {
-        if lx + 8 < x0 || lx - 8 > x1 {
-            continue;
-        }
-        if f == Floor::F2 {
-            p.rect(lx, sy - CORRIDOR_H, 1, 8, pal::LGRAY);
-            p.sprite_tick("disco_ball", tick, 8, lx - 8, sy - CORRIDOR_H + 6);
-        } else {
-            p.sprite_tick("lamp", tick, 50, lx - 8, sy - CORRIDOR_H);
-        }
-    }
     // directory sign on the wall above kiosks is part of the kiosk sprite; show the floor's name on the left wall
     let name = f.label();
     p.rect(WALL_L + 1, sy - 30, 14, 10, pal::BLACK);
@@ -649,6 +643,11 @@ fn draw_player(p: &mut Pen, core: &Core, tick: u32) {
                 }
             } else if !pl.grounded {
                 name = if pl.jumped && pl.kick { "agent_kick" } else { "agent_jump" };
+            } else if pl.slide_dir != 0 {
+                // skidding on the wet floor (still kicking if he landed a jump-kick on it)
+                name = if pl.slide_kick { "agent_kick" } else { "agent_slip" };
+            } else if pl.frozen > 0 {
+                name = "agent_stand";
             } else if pl.ducking {
                 name = if pl.aim > 0 { "agent_aim_duck" } else { "agent_duck" };
             } else if pl.aim > 0 {
@@ -667,6 +666,12 @@ fn draw_player(p: &mut Pen, core: &Core, tick: u32) {
     }
     let _ = tick;
     p.sprite(name, frame, x - 8, feet - 24, flip);
+    // detained by the mall cop: stars circle his head
+    if pl.frozen > 0 {
+        let f = ((tick / 4) % 3) as usize;
+        let off = [(-6, -3), (0, -6), (6, -3)][(tick as usize / 6) % 3];
+        p.sprite("spark", f, x - 4 + off.0, feet - 30 + off.1, false);
+    }
 }
 
 fn draw_bullets(p: &mut Pen, core: &Core) {
