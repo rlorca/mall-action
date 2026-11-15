@@ -37,6 +37,8 @@ The GPT-6.1 Rust entry is a constrained, interactively revised run; the leaderbo
 
 The [Sonnet–Fable Rust assessment](https://rlorca.github.io/mall-action/reviews/index.html#rust-sonnet-5-5-fable-5-1) covers a parity-tested port, not a new one-shot implementation. The port used a Fable 5.2 advisor; its branch name retains the source’s Fable 5.1 label.
 
+The [Bevy assessment](https://rlorca.github.io/mall-action/reviews/index.html#bevy-sonnet-5-5) and [Macroquad assessment](https://rlorca.github.io/mall-action/reviews/index.html#macroquad-sonnet-5-5) cover separate framework-constrained Sonnet implementations.
+
 ## Using it as a benchmark
 
 When a new model comes out, give it [`one-shot-prompt.md`](one-shot-prompt.md) in an empty directory, let it work
