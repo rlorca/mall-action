@@ -17,6 +17,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | GPT-6.1 Sol (medium), Rust | [`rust-gpt-6.1-sol-medium`](../../tree/rust-gpt-6.1-sol-medium) | https://rlorca.github.io/mall-action/rust-gpt-6.1-sol-medium/ |
 | Claude Sonnet 5.5 + Fable 5.1 advisor, Rust | [`rust-sonnet-5-5-fable-5-1`](../../tree/rust-sonnet-5-5-fable-5-1) | https://rlorca.github.io/mall-action/rust-sonnet-5.5-fable-5.1/ |
 | Claude Sonnet 5.5, Rust + Macroquad | [`macroquad-sonnet-5-5`](../../tree/macroquad-sonnet-5-5) | https://rlorca.github.io/mall-action/macroquad-sonnet-5.5/ |
+| Claude Sonnet 5.5, Rust + Bevy | [`bevy-sonnet-5-5`](../../tree/bevy-sonnet-5-5) | https://rlorca.github.io/mall-action/bevy-sonnet-5.5/ |
 | Claude Fable 5.1 | [`fable-5-1`](../../tree/fable-5-1) | https://rlorca.github.io/mall-action/fable-5.1/ |
 | Claude Fable 5.2 | [`fable-5-2`](../../tree/fable-5-2) | https://rlorca.github.io/mall-action/fable-5.2/ |
 | Claude Haiku 4.5 | [`haiku-4-5`](../../tree/haiku-4-5) | https://rlorca.github.io/mall-action/haiku-4.5/ |
