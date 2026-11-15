@@ -1,0 +1,11 @@
+[package]
+name = "mall-core"
+version = "0.1.0"
+edition = "2021"
+description = "MALL ACTION game rules, software renderer, pixel art and chiptune synth (no dependencies, no browser needed)"
+
+[lib]
+name = "mall_core"
+path = "src/lib.rs"
+
+[dependencies]

@@ -1,0 +1,9 @@
+[package]
+name = "mall-action"
+version = "0.1.0"
+edition = "2021"
+description = "MALL ACTION - Macroquad shell (window, CRT shader, input, audio playback)"
+
+[dependencies]
+mall-core = { path = "../core" }
+macroquad = { version = "=0.4.16", default-features = false, features = ["audio"] }
