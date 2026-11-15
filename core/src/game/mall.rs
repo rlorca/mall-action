@@ -737,6 +737,8 @@ impl Mall {
                 self.p.face = if left { -1 } else { 1 };
                 self.p.x = if left { (s.x - 8) as f32 } else { (s.x + SHAFT_W + 8) as f32 };
                 self.p.pickup = None;
+                // a moment of grace while the doors open: a spy loitering outside is not an instant death
+                self.p.inv = self.p.inv.max(24);
             }
         }
     }
@@ -758,6 +760,7 @@ impl Mall {
                 self.p.floor = f;
                 self.p.z = 0.0;
                 self.p.x = if dir < 0 { (s.x - 8) as f32 } else { (s.x + SHAFT_W + 8) as f32 };
+                self.p.inv = self.p.inv.max(24);
             }
         }
     }

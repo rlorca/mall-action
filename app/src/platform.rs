@@ -77,7 +77,7 @@ pub fn storage_set(i: i32, v: i32) {
 // ---- debug hooks (?debug=1): exported to JS as window.mallDebug ----
 static STEP_N: AtomicU32 = AtomicU32::new(0);
 static STEP_MASK: AtomicU32 = AtomicU32::new(0);
-static SNAP: [AtomicU32; 20] = [const { AtomicU32::new(0) }; 20];
+static SNAP: [AtomicU32; 24] = [const { AtomicU32::new(0) }; 24];
 
 /// Step the game `n` frames with the buttons in `mask` held (picked up on the next rendered frame).
 #[no_mangle]
@@ -141,7 +141,15 @@ pub fn debug_publish(g: &Game, crt: bool, muted: bool) {
         mall_core::game::mall::PState::Hidden(_) => 6,
         _ => 7,
     };
-    let vals: [i32; 20] = [
+    let cause = match g.mall.dying_cause {
+        None => 0,
+        Some(mall_core::game::mall::Cause::Bullet) => 1,
+        Some(mall_core::game::mall::Cause::Touch) => 2,
+        Some(mall_core::game::mall::Cause::Crush) => 3,
+        Some(mall_core::game::mall::Cause::Lamp) => 4,
+        Some(mall_core::game::mall::Cause::Fall) => 5,
+    };
+    let vals: [i32; 24] = [
         scene,
         g.s.score,
         g.s.lives,
@@ -162,6 +170,10 @@ pub fn debug_publish(g: &Game, crt: bool, muted: bool) {
         g.mall.bullets.len() as i32,
         g.mall.coins.len() as i32,
         g.mall.banner.is_some() as i32,
+        cause,
+        g.mall.p.floor as i32,
+        g.mall.cop.floor as i32,
+        g.mall.cop.x as i32,
     ];
     for (i, v) in vals.iter().enumerate() {
         SNAP[i].store(*v as u32, Relaxed);

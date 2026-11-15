@@ -37,6 +37,19 @@
         name: "mall_plugin",
         version: 1,
         register_plugin: function (importObject) {
+            // Audio must never take the game down: swallow errors from the audio imports (no AudioContext, blocked, ...).
+            ["audio_init", "audio_add_buffer", "audio_play_buffer", "audio_source_is_loaded", "audio_source_set_volume",
+             "audio_source_stop", "audio_source_delete", "audio_playback_stop", "audio_playback_set_volume"].forEach(function (n) {
+                var f = importObject.env[n];
+                if (typeof f !== "function") return;
+                importObject.env[n] = function () {
+                    try { return f.apply(this, arguments); }
+                    catch (e) {
+                        if (!window.__mallAudioWarned) { window.__mallAudioWarned = true; console.warn("MALL ACTION: audio unavailable (" + e + ")"); }
+                        return n === "audio_source_is_loaded" ? 1 : 0;
+                    }
+                };
+            });
             importObject.env.mall_gamepad_mask = gamepadMask;
             importObject.env.mall_focus_lost = function () { return focusLost; };
             importObject.env.mall_param_seed = function () {
@@ -64,7 +77,7 @@
                     get: function (i) { return wasm_exports.mall_debug_get(i | 0); },
                     // after the first step() the game only advances when stepped; resume() restores real time
                     resume: function () { wasm_exports.mall_debug_resume(); },
-                    fields: ["scene", "score", "lives", "packages", "loop", "x", "floor", "y", "overlay", "frame", "mallT", "spies", "alarm", "storeId", "crt", "muted", "pstate", "bullets", "coins", "banner"],
+                    fields: ["scene", "score", "lives", "packages", "loop", "x", "floor", "y", "overlay", "frame", "mallT", "spies", "alarm", "storeId", "crt", "muted", "pstate", "bullets", "coins", "banner", "cause", "pfloor", "copFloor", "copX"],
                 };
             }
         },

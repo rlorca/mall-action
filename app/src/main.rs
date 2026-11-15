@@ -45,6 +45,21 @@ async fn main() {
     let mut focus_seen = platform::focus_lost();
     let mut first_input = false;
 
+    // ---------------- LOADING: synthesise every sound behind a progress bar ----------------
+    loop {
+        audio.preload_step(0.012);
+        let (done, total) = (audio.preload_total() - audio.preload_remaining(), audio.preload_total().max(1));
+        canvas.clear(mall_core::pixel::c::BLACK);
+        mall_core::font::draw_text_center(&mut canvas, 128, 108, "LOADING", mall_core::pixel::c::WHITE);
+        canvas.frame(78, 124, 100, 8, mall_core::pixel::c::GRAY);
+        canvas.rect(80, 126, 96 * done as i32 / total as i32, 4, mall_core::pixel::c::YELLOW);
+        present(&canvas, &mut image, &tex, &crt_mat, crt_on);
+        if audio.preload_remaining() == 0 {
+            break;
+        }
+        next_frame().await;
+    }
+
     loop {
         // ---------------- input ----------------
         let actions = keys.poll();
@@ -119,32 +134,37 @@ async fn main() {
                 game.step(ps);
                 audio.sfx(game.take_sfx());
             }
-            audio.update(&game).await;
+            audio.update(&game);
             renderer.render(&game, &mut canvas);
             platform::debug_publish(&game, crt_on, audio.muted());
         }
 
         // ---------------- present ----------------
-        image.bytes.copy_from_slice(&canvas.data);
-        tex.update(&image);
-        clear_background(BLACK);
-        let dpi = screen_dpi_scale();
-        let (pw, ph) = (screen_width() * dpi, screen_height() * dpi);
-        let scale = (pw / SCREEN_W as f32).min(ph / SCREEN_H as f32);
-        let scale = if scale >= 1.0 { scale.floor() } else { scale };
-        let (dw, dh) = (SCREEN_W as f32 * scale, SCREEN_H as f32 * scale);
-        let x = ((pw - dw) / 2.0).floor() / dpi;
-        let y = ((ph - dh) / 2.0).floor() / dpi;
-        let params = DrawTextureParams { dest_size: Some(vec2(dw / dpi, dh / dpi)), ..Default::default() };
-        match (&crt_mat, crt_on) {
-            (Some(m), true) => {
-                m.set_uniform("Time", get_time() as f32);
-                gl_use_material(m);
-                draw_texture_ex(&tex, x, y, WHITE, params);
-                gl_use_default_material();
-            }
-            _ => draw_texture_ex(&tex, x, y, WHITE, params),
-        }
+        present(&canvas, &mut image, &tex, &crt_mat, crt_on);
         next_frame().await;
+    }
+}
+
+/// Upload the software canvas and draw it at the largest whole-number scale, centred on black (optionally through the CRT shader).
+fn present(canvas: &Canvas, image: &mut Image, tex: &Texture2D, crt_mat: &Option<Material>, crt_on: bool) {
+    image.bytes.copy_from_slice(&canvas.data);
+    tex.update(image);
+    clear_background(BLACK);
+    let dpi = screen_dpi_scale();
+    let (pw, ph) = (screen_width() * dpi, screen_height() * dpi);
+    let scale = (pw / SCREEN_W as f32).min(ph / SCREEN_H as f32);
+    let scale = if scale >= 1.0 { scale.floor() } else { scale };
+    let (dw, dh) = (SCREEN_W as f32 * scale, SCREEN_H as f32 * scale);
+    let x = ((pw - dw) / 2.0).floor() / dpi;
+    let y = ((ph - dh) / 2.0).floor() / dpi;
+    let params = DrawTextureParams { dest_size: Some(vec2(dw / dpi, dh / dpi)), ..Default::default() };
+    match (crt_mat, crt_on) {
+        (Some(m), true) => {
+            m.set_uniform("Time", get_time() as f32);
+            gl_use_material(m);
+            draw_texture_ex(tex, x, y, WHITE, params);
+            gl_use_default_material();
+        }
+        _ => draw_texture_ex(tex, x, y, WHITE, params),
     }
 }
