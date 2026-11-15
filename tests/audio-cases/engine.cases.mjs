@@ -404,7 +404,7 @@ describe('purity of the audio data layer', () => {
             const p = join(dir, name);
             if (statSync(p).isDirectory())
                 walk(p, out);
-            else if (p.endsWith('.js') && true)
+            else if (p.endsWith('.js'))
                 out.push(p);
         }
         return out;
