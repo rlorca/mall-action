@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MALL ACTION - FLICKERSOFT</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  canvas#glcanvas { display: block; width: 100%; height: 100%; outline: none; background: #000; }
+  #msg { display: none; position: fixed; inset: 0; color: #fff; background: #000;
+         font: 16px/1.5 monospace; text-align: center; padding: 20vh 10vw; }
+  #msg b { color: #f55; }
+</style>
+</head>
+<body>
+<canvas id="glcanvas" tabindex="1"></canvas>
+<div id="msg"></div>
+<script src="mq_js_bundle.js"></script>
+<script>
+  (function () {
+    var msg = document.getElementById("msg");
+    function fail(html) { msg.innerHTML = html; msg.style.display = "block"; document.getElementById("glcanvas").style.display = "none"; }
+    var ok = false;
+    try {
+      var t = document.createElement("canvas");
+      ok = !!(t.getContext("webgl") || t.getContext("experimental-webgl"));
+    } catch (e) { ok = false; }
+    if (!ok) {
+      fail("<b>MALL ACTION needs WebGL</b><br><br>Your browser or graphics driver does not support WebGL.<br>Try a recent desktop Chrome, Firefox, Safari or Edge with hardware acceleration enabled.");
+      return;
+    }
+    window.addEventListener("error", function (e) {
+      if (e && e.message && /WebAssembly|wasm/i.test(e.message)) {
+        fail("<b>MALL ACTION could not start</b><br><br>" + e.message);
+      }
+    });
+    load("mall-action.wasm");
+    window.addEventListener("pointerdown", function () { document.getElementById("glcanvas").focus(); });
+  })();
+</script>
+</body>
+</html>

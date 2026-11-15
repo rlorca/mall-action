@@ -75,6 +75,7 @@ pub struct Player {
     pub anim: i32,
     pub shoot_pose: i32,
     pub came_out_of_booth: bool,
+    pub moving: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -340,6 +341,7 @@ impl Mall {
                 anim: 0,
                 shoot_pose: 0,
                 came_out_of_booth: false,
+                moving: false,
             },
             cars,
             spies: vec![],
@@ -805,6 +807,7 @@ impl Mall {
         }
         self.p.duck = !airborne && !frozen && pad.is(DOWN) && self.p.slide == 0 && self.p.z <= 0.0;
         // ---- horizontal motion ----
+        self.p.moving = dir != 0 && !(self.p.duck && self.p.slide == 0);
         if dir != 0 && !(self.p.duck && self.p.slide == 0) {
             self.p.face = dir as i8;
             let nx = (self.p.x + dir as f32 * spd).clamp((WALL_L + 6) as f32, (WALL_R - 6) as f32);

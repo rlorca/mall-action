@@ -200,6 +200,27 @@ impl Canvas {
             }
         }
     }
+    /// Blit scaled up by an integer factor `k` (chunky pixels).
+    pub fn blit_scaled(&mut self, s: &Sprite, x: i32, y: i32, k: i32, flip_x: bool) {
+        let cols = [rgb(s.pal[0]), rgb(s.pal[1]), rgb(s.pal[2])];
+        for sy in 0..s.h {
+            for sx in 0..s.w {
+                let scol = if flip_x { s.w - 1 - sx } else { sx };
+                let v = s.px[sy * s.w + scol];
+                if v == 0 {
+                    continue;
+                }
+                let c = cols[(v - 1) as usize];
+                let (x0, y0) = (x + sx as i32 * k, y + sy as i32 * k);
+                for yy in y0.max(self.clip.1)..(y0 + k).min(self.clip.3) {
+                    for xx in x0.max(self.clip.0)..(x0 + k).min(self.clip.2) {
+                        let i = (yy as usize * self.w + xx as usize) * 4;
+                        self.data[i..i + 4].copy_from_slice(&[c[0], c[1], c[2], 255]);
+                    }
+                }
+            }
+        }
+    }
     /// Darken a rectangle by dithering to black (checkerboard) - used for dimmed areas.
     pub fn dim_rect(&mut self, x: i32, y: i32, w: i32, h: i32, parity: i32) {
         for yy in y.max(self.clip.1)..(y + h).min(self.clip.3) {
