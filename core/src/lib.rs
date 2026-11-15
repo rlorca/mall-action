@@ -13,6 +13,7 @@ pub mod mall;
 pub mod pixel;
 pub mod png;
 pub mod powerup;
+pub mod query;
 pub mod rng;
 pub mod run;
 pub mod screens;

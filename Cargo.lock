@@ -3383,13 +3383,18 @@ name = "mall-app"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "js-sys",
  "mall-core",
- "mall-splash",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
 name = "mall-core"
 version = "0.1.0"
+dependencies = [
+ "mall-splash",
+]
 
 [[package]]
 name = "mall-splash"

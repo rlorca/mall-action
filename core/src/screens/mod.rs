@@ -3,7 +3,10 @@
 
 pub mod continue_screen;
 pub mod game_over;
+pub mod hud;
 pub mod level_clear;
+pub mod map;
+pub mod pause;
 pub mod spygram;
 pub mod splash;
 pub mod title;

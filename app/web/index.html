@@ -1,4 +1,73 @@
-<!doctype html><html><head><meta charset="utf-8"><title>MALL ACTION</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}canvas{width:100%;height:100%;display:block}</style></head>
-<body><canvas id="game" tabindex="0"></canvas>
-<script type="module">import init from './mall_app.js'; init();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MALL ACTION</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+  #msg { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+         color: #ecee9c; font: 16px/1.5 "Courier New", monospace; white-space: pre-line; padding: 24px; }
+  #msg.err { color: #ec6a64; }
+  #msg.hide { display: none; }
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0"></canvas>
+<div id="msg">LOADING MALL ACTION...</div>
+<script>
+// Browsers keep an AudioContext suspended until a user gesture. The game's audio stream creates its context
+// internally, so remember every context and resume them on the first keypress / click / pad button.
+(function () {
+  var A = window.AudioContext || window.webkitAudioContext;
+  if (!A) return;
+  var all = [];
+  window.__mallAudioContexts = all;
+  class P extends A { constructor(...a) { super(...a); all.push(this); } }
+  window.AudioContext = P;
+  function resume() { all.forEach(function (c) { if (c.state !== 'running') c.resume().catch(function () {}); }); }
+  ['keydown', 'pointerdown', 'touchstart', 'mousedown'].forEach(function (e) { addEventListener(e, resume, { capture: true }); });
+  setInterval(resume, 500);
+})();
+
+function show(text, err) {
+  var m = document.getElementById('msg');
+  m.textContent = text; m.className = err ? 'err' : '';
+}
+
+function hasWebGL2() {
+  try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; }
+}
+
+if (!hasWebGL2()) {
+  show('MALL ACTION needs WebGL 2.\n\nYour browser or graphics driver does not provide it.\nTry a recent desktop Chrome, Edge, Firefox or Safari\nwith hardware acceleration enabled.', true);
+} else {
+  window.addEventListener('error', function (e) {
+    if (e && e.message && /control flow/i.test(e.message)) return;
+    if (document.getElementById('msg').className.indexOf('hide') < 0 && e.message) show('Something went wrong:\n' + e.message, true);
+  });
+  import('./mall-app.js').then(async function (mod) {
+    try {
+      await mod.default();
+    } catch (e) {
+      if (!/control flow/i.test(String(e))) throw e;
+    }
+    var q = new URLSearchParams(location.search);
+    if (q.get('debug') && q.get('debug') !== '0') {
+      window.mallDebug = {
+        step: mod.mall_step, resume: mod.mall_resume, state: mod.mall_state, cmd: mod.mall_cmd,
+        fbHash: mod.mall_fb_hash, crt: mod.mall_crt,
+        // bit order of the held mask
+        UP: 1, DOWN: 2, LEFT: 4, RIGHT: 8, A: 16, B: 32, SELECT: 64, START: 128,
+      };
+    }
+    document.getElementById('msg').className = 'hide';
+    document.getElementById('game').focus();
+  }).catch(function (e) {
+    show('Could not start MALL ACTION:\n' + e, true);
+  });
+}
+</script>
+</body>
+</html>

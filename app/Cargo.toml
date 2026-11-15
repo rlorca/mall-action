@@ -2,8 +2,14 @@
 name = "mall-app"
 version = "0.1.0"
 edition = "2021"
+description = "Bevy shell for MALL ACTION: window, input, CRT shader, audio output. All game rules live in mall-core."
 
 [dependencies]
 mall-core = { path = "../core" }
-mall-splash = { path = "../splash" }
-bevy = { version = "0.20", default-features = false, features = ["2d_api","default_app","std","bevy_winit","bevy_gilrs","webgl2","bevy_render","bevy_core_pipeline","bevy_sprite_render","bevy_audio","web"] }
+bevy = { version = "0.20", default-features = false, features = ["2d_api", "default_app", "std", "bevy_winit", "bevy_gilrs", "webgl2", "bevy_render", "bevy_core_pipeline", "bevy_sprite_render", "bevy_audio", "web"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# Must match the wasm-bindgen CLI used by build.sh / CI exactly (see AGENTS.md).
+wasm-bindgen = "=0.2.130"
+web-sys = { version = "0.3", features = ["Window", "Location", "Storage"] }
+js-sys = "0.3"
