@@ -148,6 +148,7 @@ fn main() {
         run(&mut g, &mut pad, 0, n);
     }
     r.render(&g, &mut cv);
-    std::fs::write(&out, encode_png(256, 240, &cv.data, 3)).unwrap();
+    let scale = std::env::var("SCALE").ok().and_then(|s| s.parse().ok()).unwrap_or(3);
+    std::fs::write(&out, encode_png(256, 240, &cv.data, scale)).unwrap();
     eprintln!("wrote {out}");
 }
