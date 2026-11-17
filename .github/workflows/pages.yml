@@ -1,0 +1,62 @@
+name: Mall Action Pages
+
+on:
+  push:
+    branches: [gpt-6-2-sol-xhigh]
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PUBLISH_DIR: gpt-6.2-sol-xhigh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAGES_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Publish the benchmark build
+        env:
+          GH_TOKEN: ${{ secrets.PAGES_TOKEN || github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pages_root="$RUNNER_TEMP/mall-action-pages"
+          git fetch --no-tags origin gh-pages
+          git worktree add --detach "$pages_root" FETCH_HEAD
+          git -C "$pages_root" config user.name "github-actions[bot]"
+          git -C "$pages_root" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3 4; do
+            if (( attempt > 1 )); then
+              git fetch --no-tags origin gh-pages
+              git -C "$pages_root" reset --hard FETCH_HEAD
+            fi
+            rm -rf -- "$pages_root/$PUBLISH_DIR"
+            mkdir -p -- "$pages_root/$PUBLISH_DIR"
+            cp -a dist/. "$pages_root/$PUBLISH_DIR/"
+            node scripts/pages-link.mjs "$pages_root/index.html" "$PUBLISH_DIR"
+            git -C "$pages_root" add -- "$PUBLISH_DIR" index.html
+            if git -C "$pages_root" diff --cached --quiet; then
+              exit 0
+            fi
+            git -C "$pages_root" commit -m "Publish $PUBLISH_DIR from ${GITHUB_SHA::8}"
+            if git -C "$pages_root" push origin HEAD:gh-pages; then
+              gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds" --silent ||
+                echo "::warning::Pages build request was unavailable. Check the repository's Pages deployment."
+              exit 0
+            fi
+          done
+          exit 1

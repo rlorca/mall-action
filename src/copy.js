@@ -1,0 +1,83 @@
+export const words = {
+  studio: 'FLICKERSOFT', presents: 'PRESENTS', title: 'MALL ACTION',
+  subtitle: 'A SHOPPING MALL ESPIONAGE', copyright: '(C) 2026 FLICKERSOFT',
+  start: 'PRESS START', controlsShort: 'Z SHOOT  X JUMP', credits: 'ARROWS MOVE  Z SHOOT  X JUMP', settings: 'SHIFT MAP  C CRT  M SOUND',
+  blackFriday: 'BLACK FRIDAY!', sale: '70% OFF', saleTitle: '70% OFF EVERYTHING',
+  directory: 'MALL DIRECTORY', pause: 'PAUSE', resume: 'PRESS START TO RESUME',
+  continuation: 'CONTINUE?', continuePrompt: 'PRESS START TO CONTINUE', continues: 'CONTINUES LEFT',
+  gameOver: 'GAME OVER', closing: ['ATTENTION SHOPPERS:', 'THE MALL IS NOW CLOSED'],
+  inventory: 'INVENTORY', empty: 'EMPTY', exit: 'GETAWAY CAR',
+  tally: 'MISSION COMPLETE', packages: 'PACKAGES', time: 'TIME BONUS', clear: 'CLEAR BONUS',
+  skip: 'START TO SKIP', newspaper: 'THE DAILY MALL', edition: 'LATE EDITION', gram: 'SPYGRAM',
+  locked: 'PACKAGES LEFT', alarm: 'ALARM! SECURITY ALERTED', alarmShort: 'ALARM',
+  search: 'PRESS X TO SEARCH', searching: 'SEARCHING...', trap: "IT'S A TRAP!", nothing: 'NOTHING HERE',
+  found: 'PACKAGE', occupied: 'OCCUPIED!!', sideB: 'NOW PLAYING: SIDE B',
+  clerk: ["IT'S DANGEROUS TO GO ALONE!", 'TAKE THIS.'], gift: 'YOU GOT: ',
+  walker: 'HEY!', cop: 'HEY! STOP RIGHT THERE!', detained: 'DETAINED! -500',
+  kiosk: 'NEAREST PACKAGE', booth: 'PHOTO STRIP', boothHint: 'UP TO HIDE',
+  wet: 'WET FLOOR', forLease: 'FOR LEASE', closingSale: 'CLOSING SALE'
+};
+
+export const floorNames = ['R','4F','3F','2F','1F','P'];
+export const floorAnnouncements = [
+  'ROOF ACCESS', 'FASHION & GADGETS, SPIES', 'TOYS, GIFTS & SURVEILLANCE',
+  'MUSIC, FOOD & DISCO', 'SPORTS & SUSPICIOUS BOOKS', 'PARKING & GETAWAYS'
+];
+export const visits = {
+  fashion: ["IT'S NOT A DISGUISE.", "IT'S A LOOK, SERGEI."],
+  radio: ["YOU'LL NEED BATTERIES.", 'BEEP. NOT INCLUDED.'],
+  toys: ["DIMITRI, HE'S HERE!", 'DA! HIDE THE TEDDIES!'],
+  food: ['WANT FRIES WITH THAT?'], sports: ['THESE ARE MY GETAWAY SHOES','BOTH LEFT FEET, COMRADE'],
+  music: ['TURN IT UP, BORIS!'], crook: ['TRY THE MASSAGE CHAIR...'],
+  sharper: ["BEEP. PLEASE DON'T TOUCH."], gifts: ['WHOA... THE LAVA LAMP...']
+};
+export const lastWords = [
+  'I WAS JUST BROWSING!', "WHAT'S YOUR RETURN POLICY?!", 'I HAD A COUPON!', 'TELL MY CAT...',
+  'NOT THE FACE!', 'I WAS ON MY LUNCH BREAK!', 'WORTH IT. 70% OFF.', 'MY RECEIPT...'
+];
+export const elevatorLines = ['...NICE WEATHER.', 'GOING DOWN? ME TOO.', '*AWKWARD COUGH*', 'THIS IS MY FLOOR, ACTUALLY'];
+export const pa = [
+  ['ATTENTION SHOPPERS:', 'CLEANUP ON 3F. AGAIN.'],
+  ['FREE SAMPLES AT HOT SPY.', 'NOT POISONED. PROBABLY.'],
+  ['WILL THE OWNER OF A BLACK VAN', "MARKED 'NOT SPIES' PLEASE MOVE IT."],
+  ['LOST CHILD AT THE 2F KIOSK.', 'SAYS HIS NAME IS AGENT 7.'],
+  ['BLOCKBLUSTER IS STILL CLOSED.', 'BE KIND, REWIND.'],
+  ['THE MALL CLOSES AT 9.', 'SPIES CLOSE AT NEVER.'],
+  ['A REMINDER: SECURITY IS WATCHING.', 'MOSTLY TV.']
+];
+export const headlines = [
+  ['LOCAL AGENT FINDS 6', 'PACKAGES, STILL NO PARKING'],
+  ['SPIES FOILED; FOOD COURT', 'SALES UP 300%'],
+  ['MAN ZIPLINES ONTO ROOF.', "SECURITY 'NOT SURPRISED'"],
+  ['MALL WALKERS DEMAND', "APOLOGY FOR 'HEY!'", 'INCIDENT'],
+  ['GAMESTONK SHARE PRICE', 'DOWN ANOTHER 99%']
+];
+export const arrivalPosts = [
+  ['FEELING CUTE,','MIGHT DELETE LATER','MOM: SO PROUD OF U'],
+  ['FIRST DAY ON THE JOB!','#BLESSED','BOSS: DELETE THIS'],
+  ['MALL RAT? NO.','MALL AGENT.','MOM: WEAR A JACKET'],
+  ['ZIPLINE WAS $0.','PARKING WAS $12.','DAD: TOLD U SO'],
+  ['OUTFIT OF THE DAY:','TRENCHCOAT, AGAIN','FOREVER12: 20% OFF!'],
+  ['NO SPIES WERE HARMED','IN THIS SELFIE. YET.','DIMITRI: :( )'],
+  ['ROOFTOP VIBES','#UNDERCOVER','HQ: WHY IS IT PUBLIC'],
+  ["DON'T TELL HQ, I'M",'HERE FOR PRETZELS','HQ: WE CAN SEE THIS'],
+  ['GOLDEN HOUR.','LICENSE TO CHILL.','MOM: CALL YOUR MOTHER'],
+  ['SECRET MISSION.','PLEASE LIKE & SHARE','HQ: ...SERIOUSLY?']
+];
+export const clearPosts = [
+  ['MISSION COMPLETE.','ALSO BOUGHT SOCKS.','MOM: WHAT COLOR?'],
+  ['6 PACKAGES.','0 RECEIPTS. #WIN','RETURNS DESK: NO'],
+  ['SAVED THE WORLD.','STILL NO PARKING.','DAD: TYPICAL'],
+  ['SPIES: 0','ME: 1 #MALLRAT','BORIS: REMATCH?'],
+  ['GETAWAY CAR:','WOOD PANELING. ICONIC','HQ: RETURN THE CAR'],
+  ['TREATED MYSELF TO A','CINNABOMB. EARNED IT.','MOM: EAT A VEGGIE'],
+  ['HQ SAID KEEP IT QUIET','SO HERE IS A POST',"HQ: YOU'RE FIRED"],
+  ['FOUND A PET ROCK.','HIS NAME IS KEVIN.','KEVIN: ...'],
+  ['BRB, RETURNING 6','SUSPICIOUS PACKAGES','MALL COP: WAIT WHAT'],
+  ['SEE YOU NEXT LOOP,','FOOD COURT','HOT SPY: ♥♥♥']
+];
+export const gifts = ['EXPIRED COUPON','PRE-OWNED STRATEGY GUIDE','PET ROCK','MOOD RING','1 SHARE (DOWN 99%)'];
+export const powerNames = {
+  rapid:'RAPID FIRE', spread:'SPREAD SHOT', armor:'ARMOR VEST', sneakers:'SNEAKERS',
+  radar:'RADAR', life:'1-UP', cinna:'CINNABOMB', orange:'ORANGE JULI-OOZE', pretzel:'SOFT PRETZEL'
+};
