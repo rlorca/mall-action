@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-11-15",
+  "reviewedAt": "2026-11-17",
   "scale": 10,
   "criteria": [
     { "key": "gameDesign", "label": "Game design", "description": "Playability, fairness, feedback, pacing, visual readability, and how the mall and store mechanics work together." },
@@ -656,6 +656,60 @@
         {
           "path": "README.md",
           "label": "Constrained-run provenance"
+        }
+      ]
+    },
+    {
+      "name": "GPT-6.2 Sol (xhigh)",
+      "branch": "gpt-6-2-sol-xhigh",
+      "folder": "gpt-6.2-sol-xhigh",
+      "technology": "Native JavaScript modules, Canvas 2D and Web Audio",
+      "written": "2026-11-17",
+      "commit": "d0f69a40d46479c5030813357c0a25881c49354c",
+      "scores": {
+        "gameDesign": 8.6,
+        "architecture": 9.1,
+        "codeDesign": 8.8,
+        "cleanliness": 8.5,
+        "completeness": 9.3
+      },
+      "note": "A playable six-package caper with reliable elevator and search rules. Repeated shelf art makes the toy store harder to read at a glance.",
+      "assessment": {
+        "gameDesign": "The agent, door and guard dialogue were easy to pick out in the CRT-on KGB Toys room. Its repeated shelf sprites did less to distinguish the merchandise. On all eleven sampled seeds the scripted player finished its first package search with three lives. It knew which fixture to search.",
+        "architecture": "A seeded, fixed-step state machine runs in Node. Scene rules emit sound events, browser code owns playback and timing, and rendering reads the resulting state. Persistent fixture contents live outside the temporary room, so leaving a store can reset guards while preserving searches. Each tick clones the entire game state, including inactive room data.",
+        "codeDesign": "Input tracks physical key ownership and queues tap edges across simulation ticks. Elevator landing targets, single-tap searches and persistent caches have focused regression tests. The route test uses ordinary movement and combat rules but reads fixture contents, supplies press edges directly and automatically accepts continues. The independent seed sweep missed the KGB Toys entrance on seeds 8 and 9. Player recovery on those routes remains unverified.",
+        "cleanliness": "Copy, geometry and store layouts have clear homes, and the dependency-free build is easy to reproduce. Compact multi-assignment statements and single-letter actor variables make the busier combat paths harder to follow. Fixture drawing repeatedly searches the row-major fixture array for a tile that already has a stable position.",
+        "completeness": "Tests exercise traversal, store-specific interactions, powers, NPCs, persistent searches and the escape sequence. The seed-1986 route collected six packages, reached Parking and advanced to loop two. Eight of ten additional seeds completed the same route. Browser sampling covered the roof-to-store journey and end-of-life screens. Music quality and hardware gamepad behavior were outside the runtime check."
+      },
+      "verification": {
+        "tests": 41,
+        "build": "npm ci and production build passed. All output files matched the published build byte for byte",
+        "browser": "Clean Chromium context at /dist/. Keyboard Start unlocked a running AudioContext. CRT defaulted on and toggled after resize. Stepped controls exercised the directory, pause, elevator and KGB Toys entry. Inspected the CRT-on store capture. Prepared last-life states reached continue, resumed the store, then reached game over and title. No browser error observed"
+      },
+      "evidence": [
+        {
+          "path": "test/route.test.js",
+          "label": "Six-package input route"
+        },
+        {
+          "path": "src/engine.js",
+          "label": "State transitions and tick ownership"
+        },
+        {
+          "path": "src/input.js",
+          "label": "Input ownership and queued edges"
+        },
+        {
+          "path": "src/store.js",
+          "label": "Search and store rules"
+        },
+        {
+          "path": "src/draw-store.js",
+          "label": "Room and fixture rendering"
+        },
+        {
+          "path": "README.md",
+          "label": "Run provenance"
         }
       ]
     }
