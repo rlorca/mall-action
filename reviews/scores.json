@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-11-17",
+  "reviewedAt": "2026-11-18",
   "scale": 10,
   "criteria": [
     { "key": "gameDesign", "label": "Game design", "description": "Playability, fairness, feedback, pacing, visual readability, and how the mall and store mechanics work together." },
@@ -9,6 +9,62 @@
     { "key": "completeness", "label": "Prompt completeness", "description": "Working coverage of the original prompt: traversal, packages, stores, enemies, extras, power-ups, screens, audio, art, input, and technical constraints." }
   ],
   "implementations": [
+    {
+      "name": "GPT-6.2 Astra (xhigh)",
+      "branch": "gpt-6-2-astra-xhigh",
+      "folder": "gpt-6.2-astra-xhigh",
+      "technology": "JavaScript, Canvas 2D and Web Audio",
+      "written": "2026-11-18",
+      "commit": "77081c07eefab7f0f04406745b6420c33b46372a",
+      "scores": {
+        "gameDesign": 8.9,
+        "architecture": 8.6,
+        "codeDesign": 8.8,
+        "cleanliness": 8.2,
+        "completeness": 9.4
+      },
+      "note": "One tap, a raised package and a clear exit make the first store easy to read. Bullets hang in midair while the agent rides an escalator.",
+      "assessment": {
+        "gameDesign": "In Forever 12, the drawn curtains identify the fitting room, the open rack shows where you searched, and the gold parcel stands out against the agent’s suit. On seed 17, one search tap raised the count to 1/6 and awarded 500 points with all three lives intact. The next escalator ride broke the sense of motion. Two bullets hung in place and the patrol officer stood still through the entire descent.",
+        "architecture": "A seeded simulation accepts a virtual pad and emits events for sound. The browser owns the clock, canvas and audio context, so the mission can run headless with the same collision and combat rules. Classic scripts also let the build run from disk. Their shared globals make load order significant, and the 1,362-line rules file owns everything from elevator calls to shop guards and end screens.",
+        "codeDesign": "Physical key ownership and queued presses preserve short taps. Store fixtures persist across visits, while guards are recreated on entry. The mission test finds paths around solid fixtures and checks each collection, escape and loop transition. One update-order issue showed up during play. The escalator branch returns before mall actors update, so the level timer advances while bullets, the cop and the automatic elevator’s wait timer stand still.",
+        "cleanliness": "The layout table, interface copy and reusable studio splash are easy to locate, and the build has no package dependencies. Numeric store IDs recur across rule and drawing branches. Tracking a special such as the Sam Baddy booth requires matching its index across files. Short field names and a 1,137-line renderer add to that lookup cost.",
+        "completeness": "The input-driven route collected all six packages, used both escalator connections, escaped through Parking and reached loop two on seeds 1–10 and 17. Only seed 17 used a continue. The driver reads hidden fixture contents, so these results establish that the mission is traversable. First-time discovery remains a separate challenge. Focused tests also cover Black Friday, the GameStonk item, store power timers, continues and game over."
+      },
+      "verification": {
+        "tests": 29,
+        "build": "npm ci, npm test and npm run build passed. The complete dist directory matched the deployed snapshot byte for byte",
+        "browser": "Published Chromium build, seed 17, default CRT. Real keyboard input exercised title, selfie, walking, map, pause and CRT toggling. Stepped controls boarded the elevator, entered Forever 12, collected a package, exited and rode the escalator. Inspected the CRT-on pickup screenshot. Zero console errors. A separate canvas readback produced a Chromium performance warning. Audio quality and physical gamepads were outside this check"
+      },
+      "evidence": [
+        {
+          "path": "test/mission.test.js",
+          "label": "Six-package controller route and fixture knowledge"
+        },
+        {
+          "path": "src/rules.js",
+          "line": 679,
+          "label": "Escalator update and early return"
+        },
+        {
+          "path": "src/input.js",
+          "label": "Queued input and fixed-step clock"
+        },
+        {
+          "path": "src/render.js",
+          "line": 587,
+          "label": "Fixtures, opened racks and room signs"
+        },
+        {
+          "path": "test/game.test.js",
+          "label": "Focused rule and presentation tests"
+        },
+        {
+          "path": "README.md",
+          "label": "Run provenance and controls"
+        }
+      ]
+    },
     {
       "name": "Claude Fable 5.2", "branch": "fable-5-2", "folder": "fable-5.2",
       "technology": "TypeScript + Vite, indexed framebuffer & WebGL CRT shader, Web Audio synth",

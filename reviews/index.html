@@ -13,7 +13,7 @@
 
   <p class="back"><a href="../index.html">← All implementations</a></p>
   <h1 class="report-title">IMPLEMENTATION REVIEW</h1>
-  <p class="sub">17 Nov 2026 · 21 current branch snapshots</p>
+  <p class="sub">18 Nov 2026 · 22 current branch snapshots</p>
   <section class="methodology" aria-labelledby="methodology-title">
     <h2 id="methodology-title">How the scores work</h2>
     <p>These are editorial judgments about the implementations at the linked commits, including later fixes. They are not measurements of model capability or ratings of the original one-shot commits.</p>
@@ -24,6 +24,7 @@
 <div><dt>Code cleanliness</dt><dd>Readability, naming, formatting, duplication, useful comments, type discipline, and removal of unfinished or disconnected code.</dd></div>
 <div><dt>Prompt completeness</dt><dd>Working coverage of the original prompt: traversal, packages, stores, enemies, extras, power-ups, screens, audio, art, input, and technical constraints.</dd></div></dl>
     <h3>Review scope</h3>
+    <p>GPT-6.2 Astra (xhigh) was assessed on 18 November 2026. Its Node mission driver reached loop two on seeds 1–10 and 17 with ordinary controller inputs and knowledge of the package locations. The published Chromium playtest covered the first package, store exit and following escalator ride. Keyboard and stepped portions are identified in the assessment.</p>
     <p>GPT-6.2 Sol (xhigh) was assessed on 17 November 2026. The Node route collected all six packages and reached loop two on nine of eleven sampled seeds, including the supplied seed 1986. Browser checks used the matching local production files and covered a shorter roof-to-store route.</p>
     <p>Bevy and Macroquad Sonnet 5.5 were assessed on 15 November 2026 as separate framework-constrained implementations. Their 459 and 176 tests and production builds passed. Browser checks used deployed sub-path builds with CRT enabled; local Wasm artifacts were not byte-identical to deployment. Bevy received stepped movement, map-freeze and prepared store-entry/ordinary-exit checks. Macroquad received stepped movement, map and a prepared one-tap package search, plus real-key CRT toggling; overlapping guard dialogue was visible. Both produced only a favicon 404 in sampled console checks. Neither received a complete six-package route or listening assessment. Route-test shortcuts and fairness-test assertion limits are documented per entry.</p>
     <p>The Rust Sonnet–Fable port was reviewed on 15 November 2026: 605 checks passed and its build matched all 24 deployed files. Five native and four Wasm traces support sampled parity with the TypeScript source; full-route native tests use invincibility. Fresh browser checks covered CRT presentation, keyboard movement, map, pause and elevator boarding, not a completed route. It is a translation benchmark led by Sonnet 5.5 with Fable 5.2 advice, retaining the source branch’s Fable 5.1 name.</p>
@@ -33,13 +34,14 @@
     <p>DeepSeek V4 Pro (high) was reviewed on its local Vite development server because its production build failed TypeScript checking, also blocking GitHub Pages deployment. Real-time keyboard checks with the default CRT covered splash, title, arrival, selfie, walking, the elevator boarding softlock, ordinary store entry immediately returning to the mall, map, pause and Konami input. A package search required placing the player beside a fixture and removing guards. Prepared package and life counts exercised level clear, newspaper, mission post, loop 2, continue and game over. Isolated rule probes reproduced the elevator and store-entry blockers, frozen store power-up timers, reset fixtures, repeated GameStonk rewards, retained packages in loop 2, roof respawn on continue, non-firing store spies, Black Friday loot gaps and keyboard/gamepad merging defects. Screenshots were inspected; no game JavaScript exception was observed, but the dev server returned favicon 404s. Music was not assessed by ear.</p>
     <p>Fable 5.2 was assessed on 10 November 2026 at commit 2249d2902db7a859cb2c91166873be284e792247. A clean npm ci, all 151 tests and the typechecked production build passed; its generated HTML and JavaScript matched the published branch artifacts byte for byte. The real renderer produced offline scenes inspected for splash, title, arrival, mall floors, all ten open stores, map, pause, tally, newspaper, post, continue, game over, kiosk, Radar and Black Friday. These images do not include the WebGL CRT effect. Independent browser automation could not run: Chrome failed to launch, and the alternate browser connection could not verify its policy. No new browser-console, real-time input, CRT or audio-playback result is claimed.</p>
     <p>Additional Fable 5.2 probes used the supplied bot with normal three-life starts, no invulnerability and known package locations on seeds 1–20. Nineteen routes reached six packages and level clear within 28,800 frames without a continue; eight were deathless. Seed 16 stalled beside adjacent Hot Spy fixtures because the bot wanted the package fixture while the search prompt selected its neighbor. One ordinary search input followed by waiting and resuming the bot completed that route without a death or continue, establishing a bot limitation rather than a game softlock. Its separate first-package probe, with package locations hidden from the bot, succeeded deathless on 19/20 seeds. A natural seed-9 route reproduced death during the forced package pose; an isolated contact probe confirmed that Cinnabomb does not kill store spies. The implementation's own whole-route, loop-2 and Black Friday tests use 99 lives. The original README reports browser playtests and advisor assistance; neither is presented as independent browser verification here.</p>
-    <p>This was not an uninterrupted six-package walkthrough of all 21 games; the two browser routes and Fable 5.2's Node routes are distinguished above. Unverified full-route completion is not claimed for the others. Test counts are reported as context; they do not determine scores. Other findings come from source inspection and are described as inferences where relevant. Scores describe these source snapshots; published Play builds may change independently. The "written" date on each card is the day the model produced the implementation, taken from the branch README's benchmark notes or, where a README has none, from the branch's first commit.</p>
+    <p>This was not an uninterrupted six-package walkthrough of all 22 games; the two browser routes and Fable 5.2's Node routes are distinguished above. Unverified full-route completion is not claimed for the others. Test counts are reported as context; they do not determine scores. Other findings come from source inspection and are described as inferences where relevant. Scores describe these source snapshots; published Play builds may change independently. The "written" date on each card is the day the model produced the implementation, taken from the branch README's benchmark notes or, where a README has none, from the branch's first commit.</p>
   </section>
   <nav class="review-nav" aria-label="Implementation assessments"><a href="#sonnet-5-5-fable-5-1">Claude Sonnet 5.5 + Fable 5.1 advisor</a>
 <a href="#sonnet-5-5-opus-5-5">Claude Sonnet 5.5 + Opus 5.5 advisor</a>
 <a href="#sonnet-5-5">Claude Sonnet 5.5</a>
 <a href="#rust-sonnet-5-5-fable-5-1">Sonnet–Fable, Rust port</a>
 <a href="#gpt-6-2-sol-xhigh">GPT-6.2 Sol (xhigh)</a>
+<a href="#gpt-6-2-astra-xhigh">GPT-6.2 Astra (xhigh)</a>
 <a href="#fable-5-2">Claude Fable 5.2</a>
 <a href="#fable-5-1">Claude Fable 5.1</a>
 <a href="#bevy-sonnet-5-5">Claude Sonnet 5.5 + Bevy</a>
@@ -151,8 +153,27 @@
   <p class="back"><a href="../index.html">Back to implementations</a></p>
 </article>
 
+<article class="assessment" id="gpt-6-2-astra-xhigh" aria-labelledby="gpt-6-2-astra-xhigh-title">
+  <h2 id="gpt-6-2-astra-xhigh-title"><span class="rank">06</span>GPT-6.2 Astra (xhigh)</h2>
+  <p class="review-note">One tap, a raised package and a clear exit make the first store easy to read. Bullets hang in midair while the agent rides an escalator.</p>
+  <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.9<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>8.6<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.8<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.2<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>9.4<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.8<span> / 10</span></dd></div></dl>
+  <p class="snapshot">Written <time datetime="2026-11-18">18 Nov 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/77081c07eefab7f0f04406745b6420c33b46372a"><code>77081c07eefa</code></a> · branch <code>gpt-6-2-astra-xhigh</code></p>
+  <dl class="reasoning"><div><dt>Game design</dt><dd>In Forever 12, the drawn curtains identify the fitting room, the open rack shows where you searched, and the gold parcel stands out against the agent’s suit. On seed 17, one search tap raised the count to 1/6 and awarded 500 points with all three lives intact. The next escalator ride broke the sense of motion. Two bullets hung in place and the patrol officer stood still through the entire descent.</dd></div>
+<div><dt>Code architecture</dt><dd>A seeded simulation accepts a virtual pad and emits events for sound. The browser owns the clock, canvas and audio context, so the mission can run headless with the same collision and combat rules. Classic scripts also let the build run from disk. Their shared globals make load order significant, and the 1,362-line rules file owns everything from elevator calls to shop guards and end screens.</dd></div>
+<div><dt>Code design</dt><dd>Physical key ownership and queued presses preserve short taps. Store fixtures persist across visits, while guards are recreated on entry. The mission test finds paths around solid fixtures and checks each collection, escape and loop transition. One update-order issue showed up during play. The escalator branch returns before mall actors update, so the level timer advances while bullets, the cop and the automatic elevator’s wait timer stand still.</dd></div>
+<div><dt>Code cleanliness</dt><dd>The layout table, interface copy and reusable studio splash are easy to locate, and the build has no package dependencies. Numeric store IDs recur across rule and drawing branches. Tracking a special such as the Sam Baddy booth requires matching its index across files. Short field names and a 1,137-line renderer add to that lookup cost.</dd></div>
+<div><dt>Prompt completeness</dt><dd>The input-driven route collected all six packages, used both escalator connections, escaped through Parking and reached loop two on seeds 1–10 and 17. Only seed 17 used a continue. The driver reads hidden fixture contents, so these results establish that the mission is traversable. First-time discovery remains a separate challenge. Focused tests also cover Black Friday, the GameStonk item, store power timers, continues and game over.</dd></div></dl>
+  <div class="verification"><h3>Verification</h3><ul>
+    <li>29 tests passed.</li>
+    <li>Build: npm ci, npm test and npm run build passed. The complete dist directory matched the deployed snapshot byte for byte.</li>
+    <li>Runtime: Published Chromium build, seed 17, default CRT. Real keyboard input exercised title, selfie, walking, map, pause and CRT toggling. Stepped controls boarded the elevator, entered Forever 12, collected a package, exited and rode the escalator. Inspected the CRT-on pickup screenshot. Zero console errors. A separate canvas readback produced a Chromium performance warning. Audio quality and physical gamepads were outside this check.</li>
+  </ul></div>
+  <p class="evidence">Source evidence: <a href="https://github.com/rlorca/mall-action/blob/77081c07eefab7f0f04406745b6420c33b46372a/test/mission.test.js">Six-package controller route and fixture knowledge</a> · <a href="https://github.com/rlorca/mall-action/blob/77081c07eefab7f0f04406745b6420c33b46372a/src/rules.js#L679">Escalator update and early return</a> · <a href="https://github.com/rlorca/mall-action/blob/77081c07eefab7f0f04406745b6420c33b46372a/src/input.js">Queued input and fixed-step clock</a> · <a href="https://github.com/rlorca/mall-action/blob/77081c07eefab7f0f04406745b6420c33b46372a/src/render.js#L587">Fixtures, opened racks and room signs</a> · <a href="https://github.com/rlorca/mall-action/blob/77081c07eefab7f0f04406745b6420c33b46372a/test/game.test.js">Focused rule and presentation tests</a> · <a href="https://github.com/rlorca/mall-action/blob/77081c07eefab7f0f04406745b6420c33b46372a/README.md">Run provenance and controls</a></p>
+  <p class="back"><a href="../index.html">Back to implementations</a></p>
+</article>
+
 <article class="assessment" id="fable-5-2" aria-labelledby="fable-5-2-title">
-  <h2 id="fable-5-2-title"><span class="rank">06</span>Claude Fable 5.2</h2>
+  <h2 id="fable-5-2-title"><span class="rank">07</span>Claude Fable 5.2</h2>
   <p class="review-note">A broad, well-structured caper with strong route coverage. Forced item poses remain vulnerable; store Cinnabomb contact kills are missing.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.6<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>8.9<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.5<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.8<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>9.3<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.8<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-11-10">10 Nov 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/2249d2902db7a859cb2c91166873be284e792247"><code>2249d2902db7</code></a> · branch <code>fable-5-2</code></p>
@@ -171,7 +192,7 @@
 </article>
 
 <article class="assessment" id="fable-5-1" aria-labelledby="fable-5-1-title">
-  <h2 id="fable-5-1-title"><span class="rank">07</span>Claude Fable 5.1</h2>
+  <h2 id="fable-5-1-title"><span class="rank">08</span>Claude Fable 5.1</h2>
   <p class="review-note">Colorful, generous, and feature-rich, with dependable seeded rules. Large mall and store modules and busy floors limit polish.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.7<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>8.7<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.4<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.5<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>9.4<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.7<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-29">29 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/de6cd0d974dcfddf4fd9cd52f9919607cfa2dc48"><code>de6cd0d974dc</code></a> · branch <code>fable-5-1</code></p>
@@ -190,7 +211,7 @@
 </article>
 
 <article class="assessment" id="bevy-sonnet-5-5" aria-labelledby="bevy-sonnet-5-5-title">
-  <h2 id="bevy-sonnet-5-5-title"><span class="rank">08</span>Claude Sonnet 5.5 + Bevy</h2>
+  <h2 id="bevy-sonnet-5-5-title"><span class="rank">09</span>Claude Sonnet 5.5 + Bevy</h2>
   <p class="review-note">Broad, modular Rust caper with a Bevy shell. Busy room art, substantial Wasm payload and prepared-state progression checks limit polish.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.4<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>8.8<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.5<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.4<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>9.1<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.6<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-11-15">15 Nov 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/0417a7c2e30f3eebb8a79c4b4afcf655b8666dec"><code>0417a7c2e30f</code></a> · branch <code>bevy-sonnet-5-5</code></p>
@@ -209,7 +230,7 @@
 </article>
 
 <article class="assessment" id="macroquad-sonnet-5-5" aria-labelledby="macroquad-sonnet-5-5-title">
-  <h2 id="macroquad-sonnet-5-5-title"><span class="rank">09</span>Claude Sonnet 5.5 + Macroquad</h2>
+  <h2 id="macroquad-sonnet-5-5-title"><span class="rank">10</span>Claude Sonnet 5.5 + Macroquad</h2>
   <p class="review-note">Compact framework build with broad mechanics and a testable core. Overlapping dialogue and large world modules reduce polish.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.3<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>8.7<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.4<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.5<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>9.0<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.6<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-11-15">15 Nov 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/bba75d6a99e502b5f4bf13a836e4ee46030e6fc0"><code>bba75d6a99e5</code></a> · branch <code>macroquad-sonnet-5-5</code></p>
@@ -228,7 +249,7 @@
 </article>
 
 <article class="assessment" id="opus-5" aria-labelledby="opus-5-title">
-  <h2 id="opus-5-title"><span class="rank">10</span>Claude Opus 5</h2>
+  <h2 id="opus-5-title"><span class="rank">11</span>Claude Opus 5</h2>
   <p class="review-note">A thorough, playable caper with strong palette rules and safety fixes. Huge rule files and injected callbacks complicate maintenance.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.6<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>8.3<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.1<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.4<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>9.3<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.5<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-29">29 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/6bb30716daec1f9cdbdf7745cee351a1659d1ff4"><code>6bb30716daec</code></a> · branch <code>opus-5</code></p>
@@ -247,7 +268,7 @@
 </article>
 
 <article class="assessment" id="rust-gpt-6.1-sol-medium" aria-labelledby="rust-gpt-6.1-sol-medium-title">
-  <h2 id="rust-gpt-6.1-sol-medium-title"><span class="rank">11</span>GPT-6.1 Sol (medium), Rust</h2>
+  <h2 id="rust-gpt-6.1-sol-medium-title"><span class="rank">12</span>GPT-6.1 Sol (medium), Rust</h2>
   <p class="review-note">Broad Rust/Wasm caper with focused collision and audio regressions. Large rule files; interactively revised, not a strict one-shot.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.2<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>8.5<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.3<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.1<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>9.0<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.4<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-11-14">14 Nov 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/b490b96690b0234dbfec8dd5524971cdbfa10341"><code>b490b96690b0</code></a> · branch <code>rust-gpt-6.1-sol-medium</code></p>
@@ -266,7 +287,7 @@
 </article>
 
 <article class="assessment" id="opus-5-5" aria-labelledby="opus-5-5-title">
-  <h2 id="opus-5-5-title"><span class="rank">12</span>Claude Opus 5.5</h2>
+  <h2 id="opus-5-5-title"><span class="rank">13</span>Claude Opus 5.5</h2>
   <p class="review-note">Rich arcade detail and focused rule modules. Pixi scenes own some scoring and timing, and busy rooms weaken visual clarity.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>8.0<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>7.8<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>8.0<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>8.0<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>8.8<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>8.1<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-28">28 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/8b77751ed9ff8b614f930d81ec75c3d6df4dc1aa"><code>8b77751ed9ff</code></a> · branch <code>opus-5-5</code></p>
@@ -285,7 +306,7 @@
 </article>
 
 <article class="assessment" id="gpt-6-1-sol" aria-labelledby="gpt-6-1-sol-title">
-  <h2 id="gpt-6-1-sol-title"><span class="rank">13</span>GPT-6.1 Sol</h2>
+  <h2 id="gpt-6-1-sol-title"><span class="rank">14</span>GPT-6.1 Sol</h2>
   <p class="review-note">A compact, broadly working game with useful route tests. One large rules file, simpler art, and uneven encounter protection hold it back.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>7.5<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>7.5<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>7.2<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>7.7<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>8.5<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>7.7<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-29">29 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/c02a646e080f3f8bce85ea56a0b5c67a0a8af247"><code>c02a646e080f</code></a> · branch <code>gpt-6-1-sol</code></p>
@@ -304,7 +325,7 @@
 </article>
 
 <article class="assessment" id="gpt-6-astra" aria-labelledby="gpt-6-astra-title">
-  <h2 id="gpt-6-astra-title"><span class="rank">14</span>GPT-6 Astra</h2>
+  <h2 id="gpt-6-astra-title"><span class="rank">15</span>GPT-6 Astra</h2>
   <p class="review-note">A complete, legible mall with no dependencies, built in forty minutes. Store rooms are flat identical grids; songs are eight-note loops.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>7.4<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>7.8<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>7.2<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>7.0<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>8.0<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>7.5<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-10-09">9 Oct 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/483c7038c15377615489f7e0b8c72545448b9280"><code>483c7038c153</code></a> · branch <code>gpt-6-astra</code></p>
@@ -323,7 +344,7 @@
 </article>
 
 <article class="assessment" id="haiku-5-5" aria-labelledby="haiku-5-5-title">
-  <h2 id="haiku-5-5-title"><span class="rank">15</span>Claude Haiku 5.5</h2>
+  <h2 id="haiku-5-5-title"><span class="rank">16</span>Claude Haiku 5.5</h2>
   <p class="review-note">A complete, playable caper with clean rule boundaries. Power-ups never expire, the map breaks stores, and Game Over hides behind shutters.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>6.2<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>7.4<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>6.5<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>7.4<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>7.5<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>7.0<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-10-08">8 Oct 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/1ec98345999f5393af9fe5369fb5d351518f3c1a"><code>1ec98345999f</code></a> · branch <code>haiku-5-5</code></p>
@@ -342,7 +363,7 @@
 </article>
 
 <article class="assessment" id="kimi-k3-1-pro-high" aria-labelledby="kimi-k3-1-pro-high-title">
-  <h2 id="kimi-k3-1-pro-high-title"><span class="rank">16</span>Kimi K3.1 Pro (high)</h2>
+  <h2 id="kimi-k3-1-pro-high-title"><span class="rank">17</span>Kimi K3.1 Pro (high)</h2>
   <p class="review-note">Every screen is there on a tidy rules core, but car roofs drop the agent out of the world and the roof start kills most first walks.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>5.6<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>7.0<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>5.8<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>6.0<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>6.8<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>6.2<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-10-24">24 Oct 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/a42596e3a4a741acf91658f744a00461b09e483d"><code>a42596e3a4a7</code></a> · branch <code>kimi-k3-1-pro-high</code></p>
@@ -361,7 +382,7 @@
 </article>
 
 <article class="assessment" id="opus-4-6" aria-labelledby="opus-4-6-title">
-  <h2 id="opus-4-6-title"><span class="rank">17</span>Claude Opus 4.6</h2>
+  <h2 id="opus-4-6-title"><span class="rank">18</span>Claude Opus 4.6</h2>
   <p class="review-note">A substantial core, but several features stop at emitted events. Simplified collisions, mismatched audio hooks, and dark art hurt play.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>6.0<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>6.5<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>5.3<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>6.3<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>6.2<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>6.1<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-29">29 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/dc90ad97ff8483b3d4faa4971b39c960799488d0"><code>dc90ad97ff84</code></a> · branch <code>opus-4-6</code></p>
@@ -380,7 +401,7 @@
 </article>
 
 <article class="assessment" id="gpt-6-sol" aria-labelledby="gpt-6-sol-title">
-  <h2 id="gpt-6-sol-title"><span class="rank">18</span>GPT-6 Sol</h2>
+  <h2 id="gpt-6-sol-title"><span class="rank">19</span>GPT-6 Sol</h2>
   <p class="review-note">A recognizable, lightweight prototype. Compressed rules hide revived dead spies, loot gaps, weak collisions, and a very small sprite set.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>5.2<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>5.8<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>4.2<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>2.5<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>5.8<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>4.7<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-29">29 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/ef387d79eb3a92c2fcfc4b36c9afb6b8ace3edf7"><code>ef387d79eb3a</code></a> · branch <code>gpt-6-sol</code></p>
@@ -399,7 +420,7 @@
 </article>
 
 <article class="assessment" id="deepseek-v4-pro-high" aria-labelledby="deepseek-v4-pro-high-title">
-  <h2 id="deepseek-v4-pro-high-title"><span class="rank">19</span>DeepSeek V4 Pro (high)</h2>
+  <h2 id="deepseek-v4-pro-high-title"><span class="rank">20</span>DeepSeek V4 Pro (high)</h2>
   <p class="review-note">Readable, separated rules, but elevators trap the agent and stores eject them immediately. All 60 tests pass; the build fails.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>1.5<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>6.5<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>3.0<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>6.0<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>2.5<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>3.9<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-10-26">26 Oct 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/5e524e1d4c8484d07ec499cd04f81d73e2db26ab"><code>5e524e1d4c84</code></a> · branch <code>deepseek-v4-pro-high</code></p>
@@ -418,7 +439,7 @@
 </article>
 
 <article class="assessment" id="gemini-3-6-flash" aria-labelledby="gemini-3-6-flash-title">
-  <h2 id="gemini-3-6-flash-title"><span class="rank">20</span>Gemini 3.6 Flash</h2>
+  <h2 id="gemini-3-6-flash-title"><span class="rank">21</span>Gemini 3.6 Flash</h2>
   <p class="review-note">Readable scaffolding, but the game loop is unfinished: stores cannot be exited, elevators do not carry the agent, and combat is incomplete.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>2.0<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>4.0<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>3.0<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>5.0<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>2.0<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>3.2<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-29">29 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/3c26ac0a257488aac7ec94680f5e1a4ced465163"><code>3c26ac0a2574</code></a> · branch <code>gemini-3-6-flash</code></p>
@@ -437,7 +458,7 @@
 </article>
 
 <article class="assessment" id="haiku-4-5" aria-labelledby="haiku-4-5-title">
-  <h2 id="haiku-4-5-title"><span class="rank">21</span>Claude Haiku 4.5</h2>
+  <h2 id="haiku-4-5-title"><span class="rank">22</span>Claude Haiku 4.5</h2>
   <p class="review-note">The browser never leaves frame zero. Readable pieces exist, but broken timing, disconnected elevators, and instant searches prevent play.</p>
   <dl class="scores" aria-label="Implementation scores out of 10"><div class="score" data-criterion="gameDesign"><dt>Game design</dt><dd>1.0<span> / 10</span></dd></div><div class="score" data-criterion="architecture"><dt>Code architecture</dt><dd>2.5<span> / 10</span></dd></div><div class="score" data-criterion="codeDesign"><dt>Code design</dt><dd>2.0<span> / 10</span></dd></div><div class="score" data-criterion="cleanliness"><dt>Code cleanliness</dt><dd>4.0<span> / 10</span></dd></div><div class="score" data-criterion="completeness"><dt>Prompt completeness</dt><dd>1.5<span> / 10</span></dd></div><div class="score overall" data-criterion="overall"><dt>Overall score</dt><dd>2.2<span> / 10</span></dd></div></dl>
   <p class="snapshot">Written <time datetime="2026-09-29">29 Sept 2026</time> · snapshot <a href="https://github.com/rlorca/mall-action/tree/d2b8c71ca66fbaef022f8dbd42ad99ce56c37b8f"><code>d2b8c71ca66f</code></a> · branch <code>haiku-4-5</code></p>
