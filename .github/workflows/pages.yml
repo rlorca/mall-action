@@ -1,0 +1,26 @@
+name: Test, build and publish Mall Action
+on:
+  push:
+    branches: [gpt-6-2-astra-xhigh, main]
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          destination_dir: gpt-6.2-astra-xhigh
+          keep_files: true

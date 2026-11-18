@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#050409" />
+    <link rel="icon" href="data:," />
+    <title>Mall Action • FLICKERSOFT</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #000;
+        overflow: hidden;
+      }
+      body {
+        display: grid;
+        place-items: center;
+        color: white;
+        font: 16px monospace;
+      }
+      canvas {
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      width="256"
+      height="240"
+      aria-label="Mall Action arcade game. Enter to start. Arrows move, Z shoots, X jumps or searches."
+    ></canvas>
+    <script src="./src/copy.js"></script>
+    <script src="./src/data.js"></script>
+    <script src="./src/input.js"></script>
+    <script src="./splash/studio.js"></script>
+    <script src="./src/rules.js"></script>
+    <script src="./src/art.js"></script>
+    <script src="./src/render.js"></script>
+    <script src="./src/audio.js"></script>
+    <script src="./src/main.js"></script>
+  </body>
+</html>
