@@ -15,6 +15,7 @@ asked to build it from scratch in one go. Every implementation lives on its own 
 | GPT-6 Astra | [`gpt-6-astra`](../../tree/gpt-6-astra) | https://rlorca.github.io/mall-action/gpt-6.astra/ |
 | GPT-6.1 Sol | [`gpt-6-1-sol`](../../tree/gpt-6-1-sol) | https://rlorca.github.io/mall-action/gpt-6.1-sol/ |
 | GPT-6.2 Sol (xhigh) | [`gpt-6-2-sol-xhigh`](../../tree/gpt-6-2-sol-xhigh) | https://rlorca.github.io/mall-action/gpt-6.2-sol-xhigh/ |
+| GPT-6.2 Astra (xhigh) | [`gpt-6-2-astra-xhigh`](../../tree/gpt-6-2-astra-xhigh) | https://rlorca.github.io/mall-action/gpt-6.2-astra-xhigh/ |
 | GPT-6.1 Sol (medium), Rust | [`rust-gpt-6.1-sol-medium`](../../tree/rust-gpt-6.1-sol-medium) | https://rlorca.github.io/mall-action/rust-gpt-6.1-sol-medium/ |
 | Claude Sonnet 5.5 + Fable 5.1 advisor, Rust | [`rust-sonnet-5-5-fable-5-1`](../../tree/rust-sonnet-5-5-fable-5-1) | https://rlorca.github.io/mall-action/rust-sonnet-5.5-fable-5.1/ |
 | Claude Sonnet 5.5, Rust + Macroquad | [`macroquad-sonnet-5-5`](../../tree/macroquad-sonnet-5-5) | https://rlorca.github.io/mall-action/macroquad-sonnet-5.5/ |
